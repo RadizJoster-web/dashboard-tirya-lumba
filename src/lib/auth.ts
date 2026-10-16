@@ -17,7 +17,7 @@ interface StoredUser {
 // Demo accounts mirrored from the HTML prototype.
 const USERS: Record<string, StoredUser> = {
   admin: { pw: 'admin123', role: 'admin', nama: 'Admin Pusat' },
-  pengelola: { pw: 'kolam123', role: 'pengelola', nama: 'Budi (Pengelola)', lokasi: 'Kolam Tirta Jaya' },
+  pengelola: { pw: 'kolam123', role: 'pengelola', nama: 'Budi Santoso', lokasi: 'Kolam Tirta Jaya' },
 };
 
 const TOKEN_KEY = 'tl_token';

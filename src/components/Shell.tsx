@@ -12,7 +12,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Button, RoleTag } from './ui';
+import Topbar from './Topbar';
 import Absensi from '../pages/Absensi';
 import Jadwal from '../pages/Jadwal';
 import Lokasi from '../pages/Lokasi';
@@ -24,6 +24,7 @@ import Pengelola from '../pages/Pengelola';
 import Siswa from '../pages/Siswa';
 import { NAV, logout, pathsFor } from '../lib/auth';
 import type { SessionUser } from '../lib/auth';
+import { initials } from '../lib/format';
 import { useAntrean } from '../lib/store';
 import { useUiStore } from '../lib/ui-store';
 
@@ -50,15 +51,6 @@ const GROUPS: Array<{ title: string; paths: string[] }> = [
   { title: 'Operasional', paths: ['/', '/pendaftaran', '/absen', '/siswa'] },
   { title: 'Master Data', paths: ['/jadwal', '/lokasi', '/paket', '/pelatih', '/pengelola'] },
 ];
-
-function initials(nama: string): string {
-  return nama
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
 
 export default function Shell({ user, activePath, onNavigate, onLogout }: ShellProps) {
   const nav = pathsFor(user.role);
@@ -173,13 +165,7 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
       </aside>
 
       <div className={`min-w-0 transition-[padding] duration-300 ease-in-out ${sidebarOpen ? 'min-[861px]:pl-[248px]' : ''}`}>
-        <div className="flex justify-end items-center gap-2.5 pt-3 px-7 max-[860px]:px-4">
-          <RoleTag>{user.role === 'admin' ? 'Admin Pusat' : 'Pengelola Kolam'}</RoleTag>
-          <span>{user.nama}</span>
-          <Button variant="ghost" onClick={handleLogout} className="text-[13px] px-2.5 py-1">
-            Keluar
-          </Button>
-        </div>
+        <Topbar user={user} onNavigate={onNavigate} onLogout={handleLogout} />
         <main className="p-6 px-7 max-[860px]:p-4 min-w-0">
           {activePath === '/' ? (
             <Overview user={user} />
