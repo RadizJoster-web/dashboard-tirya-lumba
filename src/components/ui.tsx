@@ -3,9 +3,9 @@ import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react
 type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline';
 
 const variantClass: Record<ButtonVariant, string> = {
-  primary: 'bg-aqua text-white hover:bg-primary',
+  primary: 'bg-primary text-white hover:bg-[#005f8f]',
   ghost: 'bg-transparent text-ink border border-gray-200 hover:bg-azure',
-  danger: 'bg-coral text-white hover:brightness-95',
+  danger: 'bg-[#B3341F] text-white hover:brightness-95',
   outline: 'bg-transparent text-primary border border-aqua hover:bg-azure',
 };
 
@@ -17,7 +17,7 @@ export function Button({ variant = 'primary', className = '', type = 'button', .
   return (
     <button
       type={type}
-      className={`rounded-lg px-3.5 py-2 font-semibold cursor-pointer transition-all duration-300 ease-in-out disabled:opacity-50 ${variantClass[variant]} ${className}`}
+      className={`rounded-lg px-3.5 py-2 min-h-[44px] inline-flex items-center justify-center font-semibold cursor-pointer transition-all duration-300 ease-in-out disabled:opacity-50 ${variantClass[variant]} ${className}`}
       {...rest}
     />
   );
@@ -43,7 +43,7 @@ export function Field({ label, error, id, ...rest }: FieldProps) {
         className="mt-1 block w-full font-medium bg-white border border-gray-300 rounded-lg px-3 py-2 transition-all duration-300 ease-in-out focus:outline-none focus:border-aqua focus:ring-2 focus:ring-aqua/40"
         {...rest}
       />
-      {error ? <span className="block text-coral text-[13px] font-medium mt-1">{error}</span> : null}
+      {error ? <span className="block text-[#B3341F] text-[13px] font-medium mt-1">{error}</span> : null}
     </label>
   );
 }

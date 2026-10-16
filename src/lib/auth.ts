@@ -40,7 +40,7 @@ export function login(username: string, password: string, remember: boolean): Se
   try {
     storage(remember).setItem(TOKEN_KEY, btoa(JSON.stringify(payload)));
   } catch {
-    // storage unavailable (private mode) — session still works in-memory
+    // storage unavailable (private mode), session still works in-memory
   }
   return toSession(key);
 }

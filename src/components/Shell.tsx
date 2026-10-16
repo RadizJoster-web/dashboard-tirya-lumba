@@ -1,5 +1,14 @@
 import { Button, RoleTag } from './ui';
-import { logout, pathsFor } from '../lib/auth';
+import Absensi from '../pages/Absensi';
+import Jadwal from '../pages/Jadwal';
+import Lokasi from '../pages/Lokasi';
+import Overview from '../pages/Overview';
+import Paket from '../pages/Paket';
+import Pelatih from '../pages/Pelatih';
+import Pendaftaran from '../pages/Pendaftaran';
+import Pengelola from '../pages/Pengelola';
+import Siswa from '../pages/Siswa';
+import { NAV, logout, pathsFor } from '../lib/auth';
 import type { SessionUser } from '../lib/auth';
 
 interface ShellProps {
@@ -30,11 +39,12 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
           <a
             key={n.path}
             href={`#${n.path}`}
+            aria-current={activePath === n.path ? 'page' : undefined}
             onClick={(e) => {
               e.preventDefault();
               onNavigate(n.path);
             }}
-            className={`px-3 py-2 rounded-lg no-underline transition-all duration-300 ease-in-out max-[860px]:whitespace-nowrap ${
+            className={`px-3 py-2 min-h-[44px] flex items-center rounded-lg no-underline transition-all duration-300 ease-in-out max-[860px]:whitespace-nowrap ${
               activePath === n.path
                 ? 'bg-primary text-white'
                 : 'text-slate-500 hover:bg-azure hover:text-primary'
@@ -54,15 +64,35 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
           </Button>
         </div>
         <main className="p-6 px-7 max-[860px]:p-4 min-w-0">
-          <div className="mb-5">
-            <h2 className="text-2xl leading-8 font-bold">Overview</h2>
-            <p className="text-slate-500">
-              {user.role === 'admin' ? 'Statistik seluruh cabang' : `Statistik ${user.lokasi ?? ''}`}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-7 text-center text-slate-500">
-            Halaman konten menyusul setelah konfirmasi.
-          </div>
+          {activePath === '/' ? (
+            <Overview user={user} />
+          ) : activePath === '/siswa' ? (
+            <Siswa user={user} />
+          ) : activePath === '/pendaftaran' ? (
+            <Pendaftaran user={user} />
+          ) : activePath === '/jadwal' ? (
+            <Jadwal />
+          ) : activePath === '/lokasi' ? (
+            <Lokasi />
+          ) : activePath === '/paket' ? (
+            <Paket />
+          ) : activePath === '/pelatih' ? (
+            <Pelatih />
+          ) : activePath === '/pengelola' ? (
+            <Pengelola />
+          ) : activePath === '/absen' ? (
+            <Absensi user={user} />
+          ) : (
+            <div>
+              <div className="mb-5">
+                <h2 className="text-2xl leading-8 font-bold">{NAV.find((n) => n.path === activePath)?.label ?? 'Halaman'}</h2>
+                <p className="text-slate-500">Halaman tidak ditemukan.</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-7 text-center text-slate-500">
+                Pilih menu di samping untuk berpindah halaman.
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

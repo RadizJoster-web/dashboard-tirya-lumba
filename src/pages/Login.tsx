@@ -44,7 +44,7 @@ export default function Login({ onSuccess }: { onSuccess: (u: SessionUser) => vo
           </span>
           PT Tirya Lumba
         </div>
-        <h1 className="text-[26px] leading-[34px] mt-3.5 mb-1">Masuk ke dasbor</h1>
+        <h1 className="text-[26px] leading-[34px] mt-3.5 mb-1">Masuk ke dashboard</h1>
         <p className="text-slate-500 mb-5">Kelola kolam, jadwal, dan siswa dalam satu tempat.</p>
 
         <Field
@@ -76,7 +76,7 @@ export default function Login({ onSuccess }: { onSuccess: (u: SessionUser) => vo
           />
           Ingat aku
         </label>
-        {formError ? <span className="block text-coral text-[13px] font-medium mb-2.5">{formError}</span> : null}
+        {formError ? <span className="block text-[#B3341F] text-[13px] font-medium mb-2.5">{formError}</span> : null}
 
         <Button type="submit" className="w-full py-2.5">
           Masuk
