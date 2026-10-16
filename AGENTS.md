@@ -27,4 +27,4 @@ No test runner, CI, or `.env` configured. Verify with `npm run lint && npm run b
 
 ## Planned (not yet installed)
 
-`README.md` specifies the target stack — React Router DOM (protected routes for Admin Pusat vs Pengelola Kolam), TanStack Query v5 (server state), Zustand (UI state: sidebar, theme, user) — but none are in `package.json`. `npm install` them before building those features; don't assume the imports exist.
+`README.md` specifies the target stack — React Router DOM (protected routes for Admin Pusat vs Pengelola Kolam), TanStack Query v5 (server state), Zustand (UI state: sidebar, theme, user). Installed: Zustand (`src/lib/ui-store.ts`, sidebar) and lucide-react (sidebar icons). React Router DOM and TanStack Query are not yet in `package.json`. `npm install` them before building those features; don't assume the imports exist.
