@@ -41,11 +41,8 @@ export default function Login({ onSuccess }: { onSuccess: (u: SessionUser) => vo
   return (
     <div className="min-h-screen grid place-items-center p-4 bg-basedash">
       <form onSubmit={submit} noValidate className="bg-white border border-gray-200 rounded-2xl p-8 w-full max-w-[400px]">
-        <div className="flex gap-2.5 items-center text-primary text-[17px] font-bold">
-          <img src="/logo-mark.svg" alt="Logo PT Tirya Lumba" width={40} height={40} draggable={false} className="w-10 h-10 object-contain" />
-          
-        </div>
-        <h1 className="text-[26px] leading-[34px] mt-3.5 mb-1">Masuk ke dashboard</h1>
+        <img src="/logo-mark.svg" alt="Logo PT Tirya Lumba" width={40} height={40} draggable={false} className="mx-auto w-10 h-10 object-contain" />
+        <h1 className="text-[26px] leading-[34px] mt-3.5 mb-1">Masuk ke Dashboard</h1>
         <p className="text-slate-500 mb-5">Kelola kolam, jadwal, dan siswa dalam satu tempat.</p>
 
         <Field
