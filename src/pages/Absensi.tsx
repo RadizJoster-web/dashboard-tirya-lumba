@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import DataTable from '../components/DataTable';
 import { Button } from '../components/ui';
 import { LOCATIONS } from '../lib/demo';
@@ -23,7 +24,7 @@ export default function Absensi({ user }: { user: SessionUser }) {
   const [fLokasi, setFLokasi] = useState('');
   const [fPeran, setFPeran] = useState('');
   const [draft, setDraft] = useState<Record<string, 'Hadir' | 'Tidak Hadir'>>({});
-  const [notice, setNotice] = useState('');
+  const [tampilSemua, setTampilSemua] = useState(false);
 
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 250);
@@ -31,7 +32,8 @@ export default function Absensi({ user }: { user: SessionUser }) {
   }, []);
 
   if (admin) {
-    const rows = absen.filter((a) => (!fLokasi || a.lokasi === fLokasi) && (!fPeran || a.peran === fPeran));
+    const allRows = absen.filter((a) => (!fLokasi || a.lokasi === fLokasi) && (!fPeran || a.peran === fPeran));
+    const rows = tampilSemua ? allRows : allRows.slice(0, 50);
     const selectClass = 'w-auto min-w-[150px] rounded-lg border border-gray-300 bg-white px-3 py-2';
     return (
       <div>
@@ -71,6 +73,13 @@ export default function Absensi({ user }: { user: SessionUser }) {
             ))}
           </DataTable>
         )}
+        {!tampilSemua && allRows.length > 50 ? (
+          <div className="mt-2.5 text-center">
+            <Button variant="ghost" className="px-3 py-1 text-[13px]" onClick={() => setTampilSemua(true)}>
+              Tampilkan semua ({allRows.length})
+            </Button>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -94,7 +103,7 @@ export default function Absensi({ user }: { user: SessionUser }) {
     }));
     pushAbsen(rows);
     setDraft({});
-    setNotice('Absensi hari ini tersimpan.');
+    toast.success('Absensi hari ini tersimpan.');
   }
 
   return (
@@ -106,11 +115,6 @@ export default function Absensi({ user }: { user: SessionUser }) {
         </div>
         <Button onClick={save}>Simpan absensi</Button>
       </div>
-      {notice ? (
-        <div role="status" className="mb-3.5 rounded-lg border border-gray-200 bg-azure px-3.5 py-2.5 text-primary">
-          {notice}
-        </div>
-      ) : null}
       {loading ? (
         <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat daftar hadir…</div>
       ) : (

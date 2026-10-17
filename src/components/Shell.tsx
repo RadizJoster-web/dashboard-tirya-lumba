@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import {
   CalendarDays,
   ClipboardCheck,
@@ -8,25 +8,29 @@ import {
   PanelLeftClose,
   ShieldCheck,
   Trophy,
+  UserCircle,
   UserPlus,
   Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import BrandLogo from './BrandLogo';
 import Topbar from './Topbar';
-import Absensi from '../pages/Absensi';
-import Jadwal from '../pages/Jadwal';
-import Lokasi from '../pages/Lokasi';
-import Overview from '../pages/Overview';
-import Paket from '../pages/Paket';
-import Pelatih from '../pages/Pelatih';
-import Pendaftaran from '../pages/Pendaftaran';
-import Pengelola from '../pages/Pengelola';
-import Siswa from '../pages/Siswa';
+const Absensi = lazy(() => import('../pages/Absensi'));
+const Jadwal = lazy(() => import('../pages/Jadwal'));
+const Lokasi = lazy(() => import('../pages/Lokasi'));
+const Overview = lazy(() => import('../pages/Overview'));
+const Pendaftaran = lazy(() => import('../pages/Pendaftaran'));
+const Paket = lazy(() => import('../pages/Paket'));
+const Pelatih = lazy(() => import('../pages/Pelatih'));
+const Pengelola = lazy(() => import('../pages/Pengelola'));
+const Siswa = lazy(() => import('../pages/Siswa'));
+const Profil = lazy(() => import('../pages/Profil'));
 import { NAV, logout, pathsFor } from '../lib/auth';
 import type { SessionUser } from '../lib/auth';
 import { initials } from '../lib/format';
 import { useAntrean } from '../lib/store';
 import { useUiStore } from '../lib/ui-store';
+import { useApiSync } from '../lib/api-sync';
 
 interface ShellProps {
   user: SessionUser;
@@ -45,14 +49,23 @@ const ICONS: Record<string, LucideIcon> = {
   '/siswa': GraduationCap,
   '/pelatih': Trophy,
   '/pengelola': ShieldCheck,
+  '/profil': UserCircle,
 };
+
+function PageFallback() {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat halaman…</div>
+  );
+}
 
 const GROUPS: Array<{ title: string; paths: string[] }> = [
   { title: 'Operasional', paths: ['/', '/pendaftaran', '/absen', '/siswa'] },
   { title: 'Master Data', paths: ['/jadwal', '/lokasi', '/paket', '/pelatih', '/pengelola'] },
+  { title: 'Akun', paths: ['/profil'] },
 ];
 
 export default function Shell({ user, activePath, onNavigate, onLogout }: ShellProps) {
+  useApiSync();
   const nav = pathsFor(user.role);
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
@@ -80,9 +93,9 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
           onClick={toggleSidebar}
           aria-label="Tampilkan sidebar"
           title="Tampilkan sidebar"
-          className="fixed top-4 left-4 z-30 hidden h-11 w-11 place-items-center rounded-xl bg-primary text-lg text-white shadow-lg transition-transform hover:scale-105 min-[861px]:grid"
+          className="fixed top-4 left-4 z-30 hidden h-11 w-11 place-items-center rounded-xl cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 focus-visible:outline-2 outline-offset-2 outline-aqua min-[861px]:grid"
         >
-          <span aria-hidden="true">🐬</span>
+          <BrandLogo sz={30} className="drop-shadow-[0_2px_6px_rgba(16,60,92,0.18)]" />
         </button>
       ) : null}
       <aside
@@ -90,9 +103,7 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
         className={`flex gap-1 border-gray-200 bg-white px-3 py-5 transition-transform duration-300 ease-in-out max-[860px]:static max-[860px]:h-auto max-[860px]:flex-row max-[860px]:overflow-x-auto max-[860px]:border-b max-[860px]:p-2.5 min-[861px]:fixed min-[861px]:inset-y-0 min-[861px]:left-0 min-[861px]:z-20 min-[861px]:h-dvh min-[861px]:w-[248px] min-[861px]:flex-col min-[861px]:border-r ${sidebarOpen ? 'min-[861px]:translate-x-0' : 'min-[861px]:-translate-x-full'}`}
       >
         <div className="flex items-center gap-2.5 px-2 pb-4 text-[17px] font-bold text-primary max-[860px]:px-2 max-[860px]:pb-0">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary text-white not-italic">
-            🐬
-          </span>
+          <BrandLogo sz={32} />
           <span className="font-display">Tirya Lumba</span>
           <button
             type="button"
@@ -167,6 +178,8 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
       <div className={`min-w-0 transition-[padding] duration-300 ease-in-out ${sidebarOpen ? 'min-[861px]:pl-[248px]' : ''}`}>
         <Topbar user={user} onNavigate={onNavigate} onLogout={handleLogout} />
         <main className="p-6 px-7 max-[860px]:p-4 min-w-0">
+          <div key={activePath} className="anim-route min-w-0">
+            <Suspense fallback={<PageFallback />}>
           {activePath === '/' ? (
             <Overview user={user} />
           ) : activePath === '/siswa' ? (
@@ -185,6 +198,8 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
             <Pengelola />
           ) : activePath === '/absen' ? (
             <Absensi user={user} />
+          ) : activePath === '/profil' ? (
+            <Profil user={user} />
           ) : (
             <div>
               <div className="mb-5">
@@ -196,6 +211,8 @@ export default function Shell({ user, activePath, onNavigate, onLogout }: ShellP
               </div>
             </div>
           )}
+            </Suspense>
+          </div>
         </main>
       </div>
     </div>

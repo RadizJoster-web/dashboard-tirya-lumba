@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
+import { toast } from 'sonner';
 import DataTable from './DataTable';
 import Modal from './Modal';
 import { Button, Field } from './ui';
@@ -58,7 +59,6 @@ function readForm(form: HTMLFormElement, fields: CrudField[]): { data: Record<st
 export default function CrudPage({ title, subtitle, addLabel, fields, columns, rows, initialOf, onAdd, onEdit, onDelete, extraActions }: CrudPageProps) {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<CrudModal>(null);
-  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 250);
@@ -74,10 +74,10 @@ export default function CrudPage({ title, subtitle, addLabel, fields, columns, r
     const { data, files } = readForm(e.currentTarget, fields);
     if (editingId !== null) {
       onEdit(editingId, data, files);
-      setNotice('Perubahan disimpan.');
+      toast.success('Perubahan disimpan.');
     } else {
       onAdd(data, files);
-      setNotice('Data ditambahkan.');
+      toast.success('Data ditambahkan.');
     }
     setModal(null);
   }
@@ -93,12 +93,6 @@ export default function CrudPage({ title, subtitle, addLabel, fields, columns, r
         </div>
         <Button onClick={() => setModal({ kind: 'add' })}>{addLabel}</Button>
       </div>
-
-      {notice ? (
-        <div role="status" className="mb-3.5 rounded-lg border border-gray-200 bg-azure px-3.5 py-2.5 text-primary">
-          {notice}
-        </div>
-      ) : null}
 
       {loading ? (
         <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat data…</div>
@@ -182,7 +176,7 @@ export default function CrudPage({ title, subtitle, addLabel, fields, columns, r
                 onClick={() => {
                   onDelete(deleting.id);
                   setModal(null);
-                  setNotice('Data dihapus.');
+                  toast.success('Data dihapus.');
                 }}
               >
                 Hapus

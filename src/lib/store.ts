@@ -169,6 +169,27 @@ export function useAbsen(): Absen[] {
   return useSyncExternalStore(subscribe, () => state.absen);
 }
 
+// Replace local demo rows with data pulled from the server. Only called when a request succeeds.
+export function hydrateLokasi(rows: Lokasi[]): void {
+  state.lokasi = rows;
+  emit();
+}
+
+export function hydratePaket(rows: Paket[]): void {
+  state.paket = rows;
+  emit();
+}
+
+export function hydratePelatih(rows: Pelatih[]): void {
+  state.pelatih = rows;
+  emit();
+}
+
+export function hydratePengelola(rows: Pengelola[]): void {
+  state.pengelola = rows;
+  emit();
+}
+
 export function updateSiswa(id: number, patch: Partial<Siswa>): void {
   state.siswa = state.siswa.map((r) => (r.id === id ? { ...r, ...patch } : r));
   emit();

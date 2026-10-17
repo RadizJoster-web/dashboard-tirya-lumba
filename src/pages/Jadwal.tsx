@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import { toast } from 'sonner';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { Button, Field } from '../components/ui';
@@ -29,7 +30,6 @@ export default function Jadwal() {
   const [fHari, setFHari] = useState('');
   const [fLokasi, setFLokasi] = useState('');
   const [fSesi, setFSesi] = useState('');
-  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 250);
@@ -49,10 +49,10 @@ export default function Jadwal() {
     if (!parsed) return;
     if (modal && modal.kind === 'edit') {
       updateSesi(modal.id, parsed);
-      setNotice('Sesi diperbarui.');
+      toast.success('Sesi diperbarui.');
     } else {
       addSesi(parsed);
-      setNotice('Sesi ditambahkan.');
+      toast.success('Sesi ditambahkan.');
     }
     setModal(null);
   }
@@ -69,12 +69,6 @@ export default function Jadwal() {
         </div>
         <Button onClick={() => setModal({ kind: 'add' })}>+ Tambah sesi</Button>
       </div>
-
-      {notice ? (
-        <div role="status" className="mb-3.5 rounded-lg border border-gray-200 bg-azure px-3.5 py-2.5 text-primary">
-          {notice}
-        </div>
-      ) : null}
 
       {loading ? (
         <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat jadwal…</div>
@@ -158,7 +152,7 @@ export default function Jadwal() {
                         className="px-2.5 py-1 text-[13px]"
                         onClick={() => {
                           resolveResched(r.id, true);
-                          setNotice('Jadwal dipindahkan.');
+                          toast.success('Jadwal dipindahkan.');
                         }}
                       >
                         Setujui
@@ -168,7 +162,9 @@ export default function Jadwal() {
                         className="px-2.5 py-1 text-[13px]"
                         onClick={() => {
                           resolveResched(r.id, false);
-                          setNotice('Permintaan ditolak.');
+                          toast.error('Permintaan ditolak.', {
+                            style: { color: '#B3341F' },
+                          });
                         }}
                       >
                         Tolak
@@ -242,7 +238,7 @@ export default function Jadwal() {
                 onClick={() => {
                   deleteSesi(deleting.id);
                   setModal(null);
-                  setNotice('Sesi dihapus.');
+                  toast.success('Sesi dihapus.');
                 }}
               >
                 Hapus

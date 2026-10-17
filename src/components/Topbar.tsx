@@ -3,6 +3,7 @@ import { Bell } from 'lucide-react';
 import { Button, RoleTag } from './ui';
 import Modal from './Modal';
 import { initials } from '../lib/format';
+import { useApiMode } from '../lib/api-mode';
 import { useAntrean, useResched } from '../lib/store';
 import type { SessionUser } from '../lib/auth';
 
@@ -14,6 +15,7 @@ interface TopbarProps {
 
 export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
   const admin = user.role === 'admin';
+  const apiMode = useApiMode((s) => s.mode);
   const antrean = useAntrean();
   const resched = useResched();
   const [open, setOpen] = useState(false);
@@ -109,6 +111,20 @@ export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
           </>
         ) : null}
       </div>
+      <span
+        title={
+          apiMode === 'live'
+            ? 'Terhubung ke server'
+            : apiMode === 'checking'
+              ? 'Menghubungkan ke server'
+              : 'Server tidak terjangkau, memakai data demo'
+        }
+        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+          apiMode === 'live' ? 'bg-azure text-primary' : 'bg-[#fdf1d6] text-[#8a5a00]'
+        }`}
+      >
+        {apiMode === 'live' ? 'Server aktif' : apiMode === 'checking' ? 'Menghubungkan…' : 'Mode demo'}
+      </span>
       <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-azure font-display text-sm font-bold text-primary">
         {initials(user.nama)}
       </span>
@@ -118,7 +134,7 @@ export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
         ref={logoutRef}
         type="button"
         onClick={() => setConfirmLogout(true)}
-        className="min-h-[44px] rounded-lg border border-gray-200 bg-transparent px-2.5 py-1 text-[13px] font-semibold text-ink inline-flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out hover:bg-azure"
+        className="min-h-[44px] rounded-lg border border-gray-200 bg-transparent px-2.5 py-1 text-[13px] font-semibold text-ink inline-flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out hover:border-[#B3341F] hover:bg-[#B3341F] hover:text-white focus-visible:border-[#B3341F] focus-visible:bg-[#B3341F] focus-visible:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B3341F]"
       >
         Log out
       </button>
