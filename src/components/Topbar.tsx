@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Button, RoleTag } from './ui';
+import Modal from './Modal';
 import { initials } from '../lib/format';
 import { useAntrean, useResched } from '../lib/store';
 import type { SessionUser } from '../lib/auth';
@@ -16,7 +17,10 @@ export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
   const antrean = useAntrean();
   const resched = useResched();
   const [open, setOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const bellRef = useRef<HTMLButtonElement>(null);
+  const logoutRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
 
   const pendingDaftar = admin ? antrean.length : antrean.filter((a) => a.lokasi === user.lokasi).length;
   const pendingJadwal = admin ? resched.length : 0;
@@ -39,6 +43,15 @@ export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
     onNavigate(path);
   }
 
+  function cancelLogout() {
+    setConfirmLogout(false);
+    logoutRef.current?.focus();
+  }
+
+  useEffect(() => {
+    if (confirmLogout) cancelRef.current?.focus();
+  }, [confirmLogout]);
+
   const items =
     total === 0
       ? []
@@ -52,6 +65,7 @@ export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
         ];
 
   return (
+    <>
     <header className="sticky top-0 z-10 flex items-center justify-end gap-2.5 border-b border-gray-200 bg-white/95 px-7 py-2 backdrop-blur max-[860px]:px-4">
       <div className="relative">
         <button
@@ -100,9 +114,38 @@ export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
       </span>
       <RoleTag>{admin ? 'Admin Pusat' : 'Pengelola Kolam'}</RoleTag>
       <span>{user.nama}</span>
-      <Button variant="ghost" onClick={onLogout} className="text-[13px] px-2.5 py-1">
+      <button
+        ref={logoutRef}
+        type="button"
+        onClick={() => setConfirmLogout(true)}
+        className="min-h-[44px] rounded-lg border border-gray-200 bg-transparent px-2.5 py-1 text-[13px] font-semibold text-ink inline-flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out hover:bg-azure"
+      >
         Log out
-      </Button>
+      </button>
     </header>
+    {confirmLogout ? (
+      <Modal
+        title="Keluar dari akun?"
+        onClose={cancelLogout}
+        footer={
+          <>
+            <button
+              ref={cancelRef}
+              type="button"
+              onClick={cancelLogout}
+              className="min-h-[44px] rounded-lg border border-gray-200 bg-transparent px-3.5 py-2 font-semibold text-ink inline-flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out hover:bg-azure"
+            >
+              Batal
+            </button>
+            <Button variant="danger" onClick={onLogout}>
+              Keluar
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-600">Kamu yakin ingin keluar dari sesi ini?</p>
+      </Modal>
+    ) : null}
+    </>
   );
 }
