@@ -1,51 +1,70 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { Button, Field } from '../components/ui';
-import { LOCATIONS } from '../lib/demo';
-import { updateSiswa, useSiswa } from '../lib/store';
-import type { SessionUser } from '../lib/auth';
+import { apiGetSiswa, apiSendSiswa } from '../lib/api';
+import type { SiswaPayload } from '../lib/api-types';
+import { useAuth } from '../lib/auth-context';
 
-const PAGE_SIZE = 6;
-
-type ModalState = { kind: 'detail' | 'edit'; id: number } | null;
-
-export default function Siswa({ user }: { user: SessionUser }) {
-  const admin = user.role === 'admin';
-  const rows = useSiswa();
+export default function Siswa() {
+  const { user } = useAuth();
+  const admin = user!.role === 'admin';
+  const queryClient = useQueryClient();
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('');
   const [lokasi, setLokasi] = useState('');
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<ModalState>(null);
 
-  useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), 250);
-    return () => window.clearTimeout(t);
-  }, []);
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ['siswa'],
+    queryFn: () => apiGetSiswa(),
+  });
 
   const filtered = useMemo(() => {
-    const scoped = admin ? rows : rows.filter((r) => r.lokasi === user.lokasi);
+    const scoped = admin ? rows : rows.filter((r) => r.lokasi === user!.lokasi);
     return scoped.filter(
       (r) =>
         r.nama.toLowerCase().includes(q.trim().toLowerCase()) &&
         (!status || (status === 'Aktif') === r.aktif) &&
         (!lokasi || r.lokasi === lokasi),
     );
-  }, [rows, q, status, lokasi, admin, user.lokasi]);
+  }, [rows, q, status, lokasi, admin, user]);
 
+  const PAGE_SIZE = 6;
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const [page, setPage] = useState(1);
   const safePage = Math.min(page, totalPages);
   const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-  const active = modal ? rows.find((r) => r.id === modal.id) ?? null : null;
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<SiswaPayload> }) =>
+      apiSendSiswa(`/siswa/${id}`, 'PUT', patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['siswa'] });
+      toast.success('Data siswa diperbarui.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Gagal memperbarui siswa.', { style: { color: '#B3341F' } }),
+  });
+
+  const addMutation = useMutation({
+    mutationFn: (payload: SiswaPayload) => apiSendSiswa('/siswa', 'POST', payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['siswa'] });
+      toast.success('Data siswa ditambahkan.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Gagal menambahkan siswa.', { style: { color: '#B3341F' } }),
+  });
+
+  const [modal, setModal] = useState<{ kind: 'detail' | 'edit' | 'add'; id?: string } | null>(null);
+  const active = modal?.id ? rows.find((r) => r.id === modal.id) ?? null : null;
 
   function closeModal() {
     setModal(null);
   }
 
-  function saveEdit(e: FormEvent<HTMLFormElement>, id: number) {
+  function saveEdit(e: FormEvent<HTMLFormElement>, id: string) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const nama = String(fd.get('nama') ?? '').trim();
@@ -55,23 +74,26 @@ export default function Siswa({ user }: { user: SessionUser }) {
     const nextLokasi = admin ? String(fd.get('lokasi') ?? '') : (active?.lokasi ?? '');
     if (!nama || !Number.isFinite(usia) || !berlakuSd || !nextLokasi) return;
     if (paket !== 'Reguler' && paket !== 'Privat') return;
-    updateSiswa(id, { nama, usia, berlakuSd, paket, lokasi: nextLokasi });
+    updateMutation.mutate({ id, patch: { nama, usia, berlakuSd, paket, lokasi: nextLokasi } });
     closeModal();
   }
 
-  function toggleActive(id: number) {
+  function toggleActive(id: string) {
     const target = rows.find((r) => r.id === id);
-    if (target) updateSiswa(id, { aktif: !target.aktif });
+    if (target) updateMutation.mutate({ id, patch: { aktif: !target.aktif } });
   }
+
+  const lokasiOptions = [...new Set(rows.map((r) => r.lokasi))].sort();
 
   return (
     <div>
       <div className="mb-5">
         <h2 className="text-2xl leading-8 font-bold">Manajemen Siswa</h2>
-        <p className="text-slate-500">{admin ? 'Seluruh cabang' : (user.lokasi ?? '')}</p>
+        <p className="text-slate-500">{admin ? 'Seluruh cabang' : (user!.lokasi ?? '')}</p>
       </div>
 
       <div className="mb-3.5 flex flex-wrap gap-2.5">
+        <Button onClick={() => setModal({ kind: 'add' })}>+ Tambah siswa</Button>
         <input
           placeholder="Cari nama siswa"
           value={q}
@@ -106,16 +128,14 @@ export default function Siswa({ user }: { user: SessionUser }) {
             className="w-auto min-w-[150px] rounded-lg border border-gray-300 bg-white px-3 py-2"
           >
             <option value="">Semua lokasi</option>
-            {LOCATIONS.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
+            {lokasiOptions.map((l) => (
+              <option key={l} value={l}>{l}</option>
             ))}
           </select>
         ) : null}
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat data siswa…</div>
       ) : (
         <>
@@ -172,15 +192,7 @@ export default function Siswa({ user }: { user: SessionUser }) {
 
       {modal && active ? (
         modal.kind === 'detail' ? (
-          <Modal
-            title="Detail siswa"
-            onClose={closeModal}
-            footer={
-              <Button variant="ghost" onClick={closeModal}>
-                Tutup
-              </Button>
-            }
-          >
+          <Modal title="Detail siswa" onClose={closeModal} footer={<Button variant="ghost" onClick={closeModal}>Tutup</Button>}>
             <dl className="mb-3.5 grid grid-cols-[110px_1fr] gap-2">
               <dt className="text-slate-500">Nama</dt>
               <dd className="m-0">{active.nama}</dd>
@@ -196,22 +208,17 @@ export default function Siswa({ user }: { user: SessionUser }) {
               <dd className="m-0">{active.aktif ? 'Aktif' : 'Non-Aktif'}</dd>
             </dl>
           </Modal>
-        ) : (
+        ) : modal.kind === 'edit' ? (
           <Modal title="Edit profil siswa" onClose={closeModal}>
-            <form
-              onSubmit={(e) => saveEdit(e, active.id)}
-              className="grid gap-1"
-            >
+            <form onSubmit={(e) => saveEdit(e, active.id)} className="grid gap-1">
               <Field label="Nama" name="nama" defaultValue={active.nama} required />
               <Field label="Usia (tahun)" name="usia" type="number" min={3} max={80} defaultValue={String(active.usia)} required />
               {admin ? (
                 <label className="mb-3 block font-semibold">
                   Lokasi
                   <select name="lokasi" defaultValue={active.lokasi} className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium">
-                    {LOCATIONS.map((l) => (
-                      <option key={l} value={l}>
-                        {l}
-                      </option>
+                    {lokasiOptions.map((l) => (
+                      <option key={l} value={l}>{l}</option>
                     ))}
                   </select>
                 </label>
@@ -225,10 +232,50 @@ export default function Siswa({ user }: { user: SessionUser }) {
                 </select>
               </label>
               <div className="mt-1.5 flex justify-end gap-2">
-                <Button variant="ghost" onClick={closeModal}>
-                  Batal
-                </Button>
+                <Button variant="ghost" onClick={closeModal}>Batal</Button>
                 <Button type="submit">Simpan perubahan</Button>
+              </div>
+            </form>
+          </Modal>
+        ) : (
+          <Modal title="Tambah siswa" onClose={closeModal}>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              const nama = String(fd.get('nama') ?? '').trim();
+              const usia = Number(fd.get('usia'));
+              const berlakuSd = String(fd.get('berlakuSd') ?? '');
+              const paket = String(fd.get('paket') ?? '');
+              const nextLokasi = admin ? String(fd.get('lokasi') ?? '') : (user!.lokasi ?? '');
+              const telp = String(fd.get('telp') ?? '');
+              if (!nama || !Number.isFinite(usia) || !berlakuSd || !nextLokasi || !paket) return;
+              addMutation.mutate({ nama, usia, lokasi: nextLokasi, paket: paket as 'Reguler' | 'Privat', berlakuSd, telp });
+              closeModal();
+            }} className="grid gap-1">
+              <Field label="Nama" name="nama" required />
+              <Field label="Usia (tahun)" name="usia" type="number" min={3} max={80} required />
+              <Field label="Telepon" name="telp" type="tel" required />
+              {admin ? (
+                <label className="mb-3 block font-semibold">
+                  Lokasi
+                  <select name="lokasi" defaultValue={lokasiOptions[0] ?? ''} className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium">
+                    {lokasiOptions.map((l) => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              <Field label="Berlaku s/d" name="berlakuSd" type="date" required />
+              <label className="mb-3 block font-semibold">
+                Paket
+                <select name="paket" defaultValue="Reguler" className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium">
+                  <option value="Reguler">Reguler</option>
+                  <option value="Privat">Privat</option>
+                </select>
+              </label>
+              <div className="mt-1.5 flex justify-end gap-2">
+                <Button variant="ghost" onClick={closeModal}>Batal</Button>
+                <Button type="submit">Simpan</Button>
               </div>
             </form>
           </Modal>

@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Field } from '../components/ui';
 import { authenticate } from '../lib/auth';
-import type { SessionUser } from '../lib/auth';
+import { useAuth } from '../lib/auth-context';
 
-export default function Login({ onSuccess }: { onSuccess: (u: SessionUser) => void }) {
+export default function Login() {
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
@@ -35,7 +38,8 @@ export default function Login({ onSuccess }: { onSuccess: (u: SessionUser) => vo
       setFormError(result.message);
       return;
     }
-    onSuccess(result.user);
+    setUser(result.user);
+    navigate('/');
   }
 
   return (

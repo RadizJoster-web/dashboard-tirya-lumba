@@ -1,23 +1,41 @@
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button, Card, RoleTag } from '../components/ui';
 import { initials } from '../lib/format';
-import type { SessionUser } from '../lib/auth';
+import { apiGetProfil, apiUploadAvatar } from '../lib/api';
+import type { ServerProfil } from '../lib/api-types';
+import { useAuth } from '../lib/auth-context';
 
-const AVATAR_KEY = 'tl_avatar';
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
-function loadAvatar(): string {
-  try {
-    return localStorage.getItem(AVATAR_KEY) ?? '';
-  } catch {
-    return '';
-  }
-}
+export default function Profil() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [localAvatar, setLocalAvatar] = useState<string>('');
 
-export default function Profil({ user }: { user: SessionUser }) {
-  const [avatar, setAvatar] = useState<string>(() => loadAvatar());
+  const { data: profil, isLoading } = useQuery<ServerProfil>({
+    queryKey: ['profil'],
+    queryFn: () => apiGetProfil(),
+    enabled: !!user,
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: (form: FormData) => apiUploadAvatar(form),
+    onSuccess: (res) => {
+      const url = (res as { profilePictureUrl?: string }).profilePictureUrl;
+      if (url) {
+        try { localStorage.setItem('tl_avatar', url); } catch { /* ignore */ }
+        setLocalAvatar(url);
+        queryClient.invalidateQueries({ queryKey: ['profil'] });
+        toast.success('Avatar diperbarui.');
+      }
+    },
+    onError: (err: Error) => toast.error(err.message || 'Gagal mengunggah avatar.', { style: { color: '#B3341F' } }),
+  });
+
+  const avatarUrl = profil?.avatarUrl || localAvatar || '';
 
   function onAvatar(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -32,38 +50,27 @@ export default function Profil({ user }: { user: SessionUser }) {
       e.target.value = '';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = typeof reader.result === 'string' ? reader.result : '';
-      try {
-        localStorage.setItem(AVATAR_KEY, dataUrl);
-      } catch {
-        toast.error('Perangkat ini menolak menyimpan avatar.', { style: { color: '#B3341F' } });
-        return;
-      }
-      setAvatar(dataUrl);
-      toast.success('Avatar tersimpan di perangkat ini.');
-    };
-    reader.readAsDataURL(f);
+    const form = new FormData();
+    form.append('profilePicture', f);
+    uploadMutation.mutate(form);
     e.target.value = '';
   }
 
   function removeAvatar() {
-    try {
-      localStorage.removeItem(AVATAR_KEY);
-    } catch {
-      // ignore
-    }
-    setAvatar('');
+    try { localStorage.removeItem('tl_avatar'); } catch { /* ignore */ }
+    setLocalAvatar('');
     toast.success('Avatar dihapus.');
   }
 
-  const rows: Array<[string, string]> = [
-    ['Nama', user.nama],
-    ['Username / email', user.email ?? user.username],
-    ['Peran', user.role === 'admin' ? 'Admin Pusat' : 'Pengelola Kolam'],
-    ['Lokasi', user.lokasi ?? 'Semua lokasi'],
-  ];
+  const displayName = profil?.nama ?? user!.nama;
+  const displayEmail = profil?.email ?? user!.email ?? user!.username;
+  const displayLokasi = profil?.lokasi ?? user!.lokasi ?? 'Semua lokasi';
+
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat profil…</div>
+    );
+  }
 
   return (
     <div>
@@ -74,42 +81,50 @@ export default function Profil({ user }: { user: SessionUser }) {
 
       <div className="grid items-start gap-3.5 [grid-template-columns:1fr] min-[960px]:[grid-template-columns:280px_1fr]">
         <Card className="flex flex-col items-center gap-3 py-6 text-center">
-          {avatar ? (
-            <img src={avatar} alt={`Avatar ${user.nama}`} className="h-24 w-24 rounded-full object-cover" />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={`Avatar ${displayName}`} className="h-24 w-24 rounded-full object-cover" />
           ) : (
             <span className="grid h-24 w-24 place-items-center rounded-full bg-azure font-display text-2xl font-bold text-primary">
-              {initials(user.nama)}
+              {initials(displayName)}
             </span>
           )}
           <div>
-            <p className="font-semibold">{user.nama}</p>
+            <p className="font-semibold">{displayName}</p>
             <div className="mt-1.5">
-              <RoleTag>{user.role === 'admin' ? 'Admin Pusat' : 'Pengelola Kolam'}</RoleTag>
+              <RoleTag>{user!.role === 'admin' ? 'Admin Pusat' : 'Pengelola Kolam'}</RoleTag>
             </div>
           </div>
           <label className="cursor-pointer rounded-lg border border-gray-200 px-3.5 py-2 font-semibold text-primary transition-colors hover:bg-azure">
             Ganti avatar
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onAvatar} className="hidden" />
           </label>
-          {avatar ? (
+          {avatarUrl ? (
             <Button variant="ghost" className="px-3 py-1 text-[13px]" onClick={removeAvatar}>
               Hapus avatar
             </Button>
           ) : null}
-          <p className="text-[13px] text-slate-500">
-            Disimpan lokal di browser ini. Endpoint profil/avatar admin belum tersedia di server.
-          </p>
+          <p className="text-[13px] text-slate-500">Maksimal 5 MB (JPG, PNG, WEBP).</p>
         </Card>
 
         <Card>
           <h3 className="mb-2.5 text-base">Detail akun</h3>
           <dl>
-            {rows.map(([k, val]) => (
-              <div key={k} className="flex border-b border-gray-200 py-2.5 last:border-0">
-                <dt className="w-44 shrink-0 text-slate-500">{k}</dt>
-                <dd className="font-semibold">{val}</dd>
-              </div>
-            ))}
+            <div className="flex border-b border-gray-200 py-2.5 last:border-0">
+              <dt className="w-44 shrink-0 text-slate-500">Nama</dt>
+              <dd className="font-semibold">{displayName}</dd>
+            </div>
+            <div className="flex border-b border-gray-200 py-2.5 last:border-0">
+              <dt className="w-44 shrink-0 text-slate-500">Username / email</dt>
+              <dd className="font-semibold">{displayEmail}</dd>
+            </div>
+            <div className="flex border-b border-gray-200 py-2.5 last:border-0">
+              <dt className="w-44 shrink-0 text-slate-500">Peran</dt>
+              <dd className="font-semibold">{user!.role === 'admin' ? 'Admin Pusat' : 'Pengelola Kolam'}</dd>
+            </div>
+            <div className="flex border-b border-gray-200 py-2.5 last:border-0">
+              <dt className="w-44 shrink-0 text-slate-500">Lokasi</dt>
+              <dd className="font-semibold">{displayLokasi}</dd>
+            </div>
           </dl>
         </Card>
       </div>

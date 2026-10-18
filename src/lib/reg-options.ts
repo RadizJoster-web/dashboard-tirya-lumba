@@ -1,6 +1,6 @@
 // Opsi pilihan untuk form pendaftaran: dari server bila ter-hydrate, fallback demo.
 import { useRefData } from './ref-data';
-import { HARI, LOCATIONS, SESI_NAMES } from './demo';
+import { HARI, LOCATIONS, SESI_NAMES } from './format';
 
 export interface Opt {
   id: string;

@@ -1,68 +1,82 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Shell from './components/Shell';
 import Login from './pages/Login';
-import { ROLE_PATHS, restoreSession } from './lib/auth';
-import type { SessionUser } from './lib/auth';
+import { AuthProvider, useAuth } from './lib/auth-context';
 
-function pathFromHash(): string {
-  const p = window.location.hash.slice(1) || '/';
-  return p.startsWith('/') ? p : '/';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
 }
 
+const Overview = lazy(() => import('./pages/Overview'));
+const Pendaftaran = lazy(() => import('./pages/Pendaftaran'));
+const Jadwal = lazy(() => import('./pages/Jadwal'));
+const Lokasi = lazy(() => import('./pages/Lokasi'));
+const Paket = lazy(() => import('./pages/Paket'));
+const Pelatih = lazy(() => import('./pages/Pelatih'));
+const Pengelola = lazy(() => import('./pages/Pengelola'));
+const Absensi = lazy(() => import('./pages/Absensi'));
+const Siswa = lazy(() => import('./pages/Siswa'));
+const Profil = lazy(() => import('./pages/Profil'));
+
 export default function App() {
-  const [user, setUser] = useState<SessionUser | null>(() => restoreSession());
-  const [path, setPath] = useState<string>(() => pathFromHash());
-
-  useEffect(() => {
-    const onHash = () => setPath(pathFromHash());
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
-  }, []);
-
-  const navigate = useCallback((p: string) => {
-    window.location.hash = p;
-    setPath(p);
-  }, []);
-
-  const allowed = user ? ROLE_PATHS[user.role].includes(path) : false;
-  const activePath = allowed ? path : '/';
-
   return (
-    <>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: '#ffffff',
-            color: '#1d3557',
-            border: '1px solid #e5e7eb',
-            borderRadius: '12px',
-            fontSize: '13px',
-            fontWeight: 500,
-            boxShadow: '0 8px 24px rgba(29, 53, 87, 0.12)',
-          },
-        }}
-      />
-      {!user ? (
-        <Login
-          onSuccess={(u) => {
-            setUser(u);
-            navigate('/');
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: '#ffffff',
+              color: '#1d3557',
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 500,
+              boxShadow: '0 8px 24px rgba(29, 53, 87, 0.12)',
+            },
           }}
         />
-      ) : (
-        <Shell
-          user={user}
-          activePath={activePath}
-          onNavigate={navigate}
-          onLogout={() => {
-            setUser(null);
-            window.location.hash = '/';
-            setPath('/');
-          }}
-        />
-      )}
-    </>
+        <HashRouter>
+          <Suspense fallback={<div className="min-h-screen p-6 text-center text-slate-500">Memuat halaman…</div>}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <Shell />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/overview" replace />} />
+                <Route path="overview" element={<Overview />} />
+                <Route path="pendaftaran" element={<Pendaftaran />} />
+                <Route path="jadwal" element={<Jadwal />} />
+                <Route path="lokasi" element={<Lokasi />} />
+                <Route path="paket" element={<Paket />} />
+                <Route path="pelatih" element={<Pelatih />} />
+                <Route path="pengelola" element={<Pengelola />} />
+                <Route path="absen" element={<Absensi />} />
+                <Route path="siswa" element={<Siswa />} />
+                <Route path="profil" element={<Profil />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </HashRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

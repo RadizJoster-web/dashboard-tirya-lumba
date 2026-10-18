@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import DataTable from '../components/DataTable';
 import { Button } from '../components/ui';
-import { LOCATIONS } from '../lib/demo';
-import { pushAbsen, useAbsen, usePelatih, useSiswa } from '../lib/store';
-import type { Absen } from '../lib/store';
-import type { SessionUser } from '../lib/auth';
+import { LOCATIONS } from '../lib/format';
+import { pushAbsen, useAbsen, usePelatih, useSiswa, hydrateAbsen } from '../lib/store';
+import { apiGetAbsensi, apiSendAbsensi } from '../lib/api';
+import type { AbsenPayload } from '../lib/api-types';
+import { useAuth } from '../lib/auth-context';
 
 function todayId(): string {
   return new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -15,8 +16,9 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function Absensi({ user }: { user: SessionUser }) {
-  const admin = user.role === 'admin';
+export default function Absensi() {
+  const { user } = useAuth();
+  const admin = user!.role === 'admin';
   const absen = useAbsen();
   const siswa = useSiswa();
   const pelatih = usePelatih();
@@ -27,8 +29,32 @@ export default function Absensi({ user }: { user: SessionUser }) {
   const [tampilSemua, setTampilSemua] = useState(false);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), 250);
-    return () => window.clearTimeout(t);
+    let cancelled = false;
+    async function load() {
+      try {
+        const rows = await apiGetAbsensi('/absensi');
+        if (!cancelled) {
+          hydrateAbsen(
+            rows.map((r) => ({
+              id: r.id ? Number(r.id) : Date.now(),
+              tgl: r.tgl,
+              nama: r.nama,
+              peran: r.peran,
+              lokasi: r.lokasi,
+              st: r.st,
+            })),
+          );
+        }
+      } catch {
+        // server offline: biarkan data demo di local store tetap tampil
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (admin) {
@@ -84,7 +110,7 @@ export default function Absensi({ user }: { user: SessionUser }) {
     );
   }
 
-  const lokasi = user.lokasi ?? '';
+  const lokasi = user!.lokasi ?? '';
   const people: Array<{ peran: 'Murid' | 'Pelatih'; nama: string }> = [
     ...pelatih.filter((p) => p.lokasi === lokasi).map((p) => ({ peran: 'Pelatih' as const, nama: p.nama })),
     ...siswa
@@ -93,17 +119,27 @@ export default function Absensi({ user }: { user: SessionUser }) {
       .map((s) => ({ peran: 'Murid' as const, nama: s.nama })),
   ];
 
-  function save() {
-    const rows: Absen[] = people.map((p) => ({
+  async function save() {
+    const rows: AbsenPayload[] = people.map((p) => ({
       tgl: todayIso(),
       nama: p.nama,
       peran: p.peran,
       lokasi,
       st: draft[`${p.peran}|${p.nama}`] ?? 'Tidak Hadir',
     }));
-    pushAbsen(rows);
-    setDraft({});
-    toast.success('Absensi hari ini tersimpan.');
+    try {
+      await apiSendAbsensi('/absensi', rows);
+      pushAbsen(
+        rows.map((r, i) => ({
+          ...r,
+          id: Date.now() + i,
+        })),
+      );
+      setDraft({});
+      toast.success('Absensi hari ini tersimpan.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menyimpan absensi.');
+    }
   }
 
   return (

@@ -1,5 +1,5 @@
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5000/api';
-import type { RegisterInstructorPayload, RegisterResult, RegisterStudentPayload, UploadOutcome } from './api-types';
+import type { RegisterInstructorPayload, RegisterResult, RegisterStudentPayload, UploadOutcome, ServerAbsen, AbsenPayload, AbsenResult, ServerSiswa, SiswaPayload, ServerPelatih, PelatihPayload, ServerPengelola, PengelolaPayload, ServerSesi, SesiPayload, ServerResched, ReschedPayload, ServerProfil } from './api-types';
 
 const TOKEN_KEY = 'tl_jwt';
 const TIMEOUT_MS = 8000;
@@ -125,4 +125,68 @@ export function registerStudent(payload: RegisterStudentPayload): Promise<Regist
 /** Kirim formulir pendaftaran pelatih + deklarasi jadwal (POST /register/instructor). */
 export function registerInstructor(payload: RegisterInstructorPayload): Promise<RegisterResult> {
   return apiSend<RegisterResult>('/register/instructor', 'POST', payload);
+}
+
+/** Ambil riwayat absensi dari server (GET /absensi). */
+export function apiGetAbsensi(path: string): Promise<ServerAbsen[]> {
+  return apiGet<ServerAbsen[]>(path);
+}
+
+/** Simpan absensi hari ini ke server (POST /absensi). */
+export function apiSendAbsensi(path: string, payload: AbsenPayload[]): Promise<AbsenResult> {
+  return apiSend<AbsenResult>(path, 'POST', payload);
+}
+
+/** ---------- Siswa ---------- */
+export function apiGetSiswa(): Promise<ServerSiswa[]> {
+  return apiGet<ServerSiswa[]>('/siswa');
+}
+
+export function apiSendSiswa(path: string, method: 'POST' | 'PUT' | 'DELETE', payload?: Partial<SiswaPayload>): Promise<ServerSiswa> {
+  return apiSend<ServerSiswa>(path, method, payload);
+}
+
+/** ---------- Pelatih ---------- */
+export function apiGetPelatih(): Promise<ServerPelatih[]> {
+  return apiGet<ServerPelatih[]>('/pelatih');
+}
+
+export function apiSendPelatih(path: string, method: 'POST' | 'PUT' | 'DELETE', payload?: PelatihPayload): Promise<ServerPelatih> {
+  return apiSend<ServerPelatih>(path, method, payload);
+}
+
+/** ---------- Pengelola ---------- */
+export function apiGetPengelola(): Promise<ServerPengelola[]> {
+  return apiGet<ServerPengelola[]>('/pool-managers');
+}
+
+export function apiSendPengelola(path: string, method: 'POST' | 'PUT' | 'DELETE', payload?: PengelolaPayload): Promise<ServerPengelola> {
+  return apiSend<ServerPengelola>(path, method, payload);
+}
+
+/** ---------- Jadwal / Sesi ---------- */
+export function apiGetSesi(): Promise<ServerSesi[]> {
+  return apiGet<ServerSesi[]>('/sessions');
+}
+
+export function apiSendSesi(path: string, method: 'POST' | 'PUT' | 'DELETE', payload?: SesiPayload): Promise<ServerSesi> {
+  return apiSend<ServerSesi>(path, method, payload);
+}
+
+/** ---------- Reschedule ---------- */
+export function apiGetResched(): Promise<ServerResched[]> {
+  return apiGet<ServerResched[]>('/resched');
+}
+
+export function apiSendResched(path: string, method: 'POST' | 'PUT' | 'DELETE', payload?: ReschedPayload): Promise<ServerResched> {
+  return apiSend<ServerResched>(path, method, payload);
+}
+
+/** ---------- Profil ---------- */
+export function apiGetProfil(): Promise<ServerProfil> {
+  return apiGet<ServerProfil>('/auth/me');
+}
+
+export function apiUploadAvatar(form: FormData): Promise<UploadOutcome> {
+  return uploadFile('/upload-file/admin/avatar', form);
 }

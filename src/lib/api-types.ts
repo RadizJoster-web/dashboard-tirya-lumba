@@ -62,6 +62,133 @@ export interface ServerLogin {
   user: ServerUser;
 }
 
+// ---------- Modul Absensi (belum ada di dokumentasi backend, disiapkan untuk sinkronisasi) ----------
+
+export interface ServerAbsen {
+  id?: string;
+  tgl: string;
+  nama: string;
+  peran: 'Murid' | 'Pelatih';
+  lokasi: string;
+  st: 'Hadir' | 'Tidak Hadir';
+}
+
+export interface AbsenPayload {
+  tgl: string;
+  nama: string;
+  peran: 'Murid' | 'Pelatih';
+  lokasi: string;
+  st: 'Hadir' | 'Tidak Hadir';
+}
+
+export interface AbsenResult {
+  success: boolean;
+  message?: string;
+  data?: ServerAbsen[];
+}
+
+// ---------- Siswa ----------
+export interface ServerSiswa {
+  id: string;
+  nama: string;
+  usia: number;
+  lokasi: string;
+  paket: string;
+  berlakuSd: string;
+  aktif: boolean;
+  telp: string;
+}
+
+export interface SiswaPayload {
+  nama: string;
+  usia: number;
+  lokasi: string;
+  paket: 'Reguler' | 'Privat';
+  berlakuSd: string;
+  telp: string;
+  aktif?: boolean;
+}
+
+// ---------- Pelatih ----------
+export interface ServerPelatih {
+  id: string;
+  nama: string;
+  lokasi: string;
+  lisensi?: string;
+  jadwal?: string;
+  riwayat?: string;
+}
+
+export interface PelatihPayload {
+  nama: string;
+  lokasi: string;
+  lisensi?: string;
+  jadwal?: string;
+  riwayat?: string;
+}
+
+// ---------- Pengelola ----------
+export interface ServerPengelola {
+  id: string;
+  nama: string;
+  telp: string;
+  lokasi: string;
+  fotoUrl?: string;
+}
+
+export interface PengelolaPayload {
+  nama: string;
+  telp: string;
+  lokasi: string;
+  fotoUrl?: string;
+}
+
+// ---------- Jadwal / Sesi ----------
+export interface ServerSesi {
+  id: string;
+  lokasi: string;
+  hari: string;
+  sesi: string;
+  jam: string;
+  pelatih: string;
+}
+
+export interface SesiPayload {
+  lokasi: string;
+  hari: string;
+  sesi: string;
+  jam: string;
+  pelatih: string;
+}
+
+// ---------- Reschedule ----------
+export interface ServerResched {
+  id: string;
+  pelatih: string;
+  sesiId: string;
+  hari: string;
+  jam: string;
+  alasan: string;
+}
+
+export interface ReschedPayload {
+  pelatih: string;
+  sesiId: string;
+  hari: string;
+  jam: string;
+  alasan: string;
+}
+
+// ---------- Profil ----------
+export interface ServerProfil {
+  userId: string;
+  nama: string;
+  email: string;
+  role: string;
+  lokasi?: string;
+  avatarUrl?: string;
+}
+
 // ---------- Modul Pendaftaran & Booking (§9, §10) ----------
 
 export interface RegisterStudentPayload {

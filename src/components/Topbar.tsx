@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import { Button, RoleTag } from './ui';
 import Modal from './Modal';
@@ -9,12 +10,12 @@ import type { SessionUser } from '../lib/auth';
 
 interface TopbarProps {
   user: SessionUser;
-  onNavigate: (path: string) => void;
   onLogout: () => void;
 }
 
-export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
+export default function Topbar({ user, onLogout }: TopbarProps) {
   const admin = user.role === 'admin';
+  const navigate = useNavigate();
   const apiMode = useApiMode((s) => s.mode);
   const antrean = useAntrean();
   const resched = useResched();
@@ -38,11 +39,11 @@ export default function Topbar({ user, onNavigate, onLogout }: TopbarProps) {
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open ]);
+  }, [open]);
 
   function go(path: string) {
     setOpen(false);
-    onNavigate(path);
+    navigate(path);
   }
 
   function cancelLogout() {

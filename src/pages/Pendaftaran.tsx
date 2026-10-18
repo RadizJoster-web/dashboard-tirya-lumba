@@ -5,14 +5,15 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { Button } from '../components/ui';
 import { approveAntrean, rejectAntrean, useAntrean } from '../lib/store';
-import type { SessionUser } from '../lib/auth';
+import { useAuth } from '../lib/auth-context';
 import FormMurid from './registrasi/FormMurid';
 import FormPelatih from './registrasi/FormPelatih';
 
 type Tab = 'antrean' | 'murid' | 'pelatih';
 
-export default function Pendaftaran({ user }: { user: SessionUser }) {
-  const admin = user.role === 'admin';
+export default function Pendaftaran() {
+  const { user } = useAuth();
+  const admin = user!.role === 'admin';
   const antrean = useAntrean();
   const [tab, setTab] = useState<Tab>('antrean');
   const [loading, setLoading] = useState(true);
@@ -27,7 +28,7 @@ export default function Pendaftaran({ user }: { user: SessionUser }) {
 
   const tipe = admin ? tipeAntrean : 'Murid';
   const rows = antrean.filter(
-    (a) => a.tipe === tipe && (!admin ? a.lokasi === user.lokasi : true),
+    (a) => a.tipe === tipe && (!admin ? a.lokasi === user!.lokasi : true),
   );
   const rejectTarget = rejectId !== null ? antrean.find((a) => a.id === rejectId) ?? null : null;
 
@@ -57,7 +58,7 @@ export default function Pendaftaran({ user }: { user: SessionUser }) {
     <div>
       <div className="mb-5">
         <h2 className="text-2xl leading-8 font-bold">Pendaftaran dan Antrean</h2>
-        <p className="text-slate-500">{admin ? 'Tinjau pendaftar yang menunggu persetujuan' : (user.lokasi ?? '')}</p>
+        <p className="text-slate-500">{admin ? 'Tinjau pendaftar yang menunggu persetujuan' : (user!.lokasi ?? '')}</p>
       </div>
 
       <div className="mb-3.5 flex flex-wrap gap-2.5">
