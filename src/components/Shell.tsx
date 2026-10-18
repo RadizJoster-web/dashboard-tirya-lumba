@@ -17,7 +17,7 @@ import type { LucideIcon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Topbar from './Topbar';
 import { useAuth } from '../lib/auth-context';
-import { logout } from '../lib/auth';
+import { logout, pathsFor } from '../lib/auth';
 import { useUiStore } from '../lib/ui-store';
 import { useApiSync } from '../lib/api-sync';
 import { useAntrean } from '../lib/store';
@@ -60,12 +60,10 @@ const LABELS: Record<string, string> = {
   '/profil': 'Profil',
 };
 
-function NavItem({ path }: { path: string }) {
+function NavItem({ path, pending }: { path: string; pending: number }) {
   const Icon = ICONS[path] ?? LayoutDashboard;
   const match = useMatch({ path, end: true });
   const isActive = !!match;
-  const antrean = useAntrean();
-  const pending = path === '/pendaftaran' ? (antrean.length > 0 ? antrean.length : 0) : 0;
   return (
     <Link
       to={path}
@@ -92,6 +90,10 @@ export default function Shell() {
   useApiSync();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const antrean = useAntrean();
+  const allowedPaths = pathsFor(user!.role);
+  const allowedSet = new Set(allowedPaths.map((n) => n.path));
+  const pending = user!.role === 'admin' ? antrean.length : antrean.filter((a) => a.lokasi === user!.lokasi).length;
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 861px)').matches);
 
   useEffect(() => {
@@ -137,16 +139,20 @@ export default function Shell() {
           </button>
         </div>
 
-        {GROUPS.map((g) => (
-          <div key={g.title} className="flex gap-1 max-[860px]:contents min-[861px]:flex-col">
-            <p className="px-3 pt-3 text-[11px] font-bold tracking-wider whitespace-nowrap text-slate-400 uppercase max-[860px]:hidden">
-              {g.title}
-            </p>
-            {g.paths.map((p) => (
-              <NavItem key={p} path={p} />
-            ))}
-          </div>
-        ))}
+        {GROUPS.map((g) => {
+          const groupPaths = g.paths.filter((p) => allowedSet.has(p));
+          if (groupPaths.length === 0) return null;
+          return (
+            <div key={g.title} className="flex gap-1 max-[860px]:contents min-[861px]:flex-col">
+              <p className="px-3 pt-3 text-[11px] font-bold tracking-wider whitespace-nowrap text-slate-400 uppercase max-[860px]:hidden">
+                {g.title}
+              </p>
+              {groupPaths.map((p) => (
+                <NavItem key={p} path={p} pending={pending} />
+              ))}
+            </div>
+          );
+        })}
 
         <div className="mt-auto hidden flex-col gap-2 pt-4 min-[861px]:flex">
           <div className="flex items-center gap-2.5 rounded-xl border border-gray-200 px-2.5 py-2">

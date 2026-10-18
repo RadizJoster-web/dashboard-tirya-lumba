@@ -146,7 +146,7 @@ export function logout(): void {
 }
 
 export const NAV: { path: string; label: string }[] = [
-  { path: '/', label: 'Overview' },
+  { path: '/overview', label: 'Overview' },
   { path: '/pendaftaran', label: 'Pendaftaran' },
   { path: '/jadwal', label: 'Jadwal & Sesi' },
   { path: '/lokasi', label: 'Lokasi' },
@@ -160,7 +160,7 @@ export const NAV: { path: string; label: string }[] = [
 
 export const ROLE_PATHS: Record<Role, string[]> = {
   admin: NAV.map((n) => n.path),
-  pengelola: ['/', '/pendaftaran', '/absen', '/siswa', '/profil'],
+  pengelola: ['/overview', '/pendaftaran', '/absen', '/siswa', '/profil'],
 };
 
 export function pathsFor(role: Role): { path: string; label: string }[] {
