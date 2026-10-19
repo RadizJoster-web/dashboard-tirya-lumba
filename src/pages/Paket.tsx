@@ -1,23 +1,18 @@
 import { useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import CrudPage from '../components/CrudPage';
+import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
 import { formatRp } from '../lib/format';
-import { apiGet, apiSend } from '../lib/api';
-import type { ServerPackage, ServerLocation } from '../lib/api-types';
+import { apiSend } from '../lib/api';
+import { API_KEYS, fetchLocations, fetchPackages } from '../lib/api-sync';
+import { useResource } from '../lib/data-cache';
+import type { ServerPackage } from '../lib/api-types';
 
 export default function Paket() {
-  const queryClient = useQueryClient();
-
-  const { data: packages = [], isLoading: packagesLoading } = useQuery({
-    queryKey: ['packages'],
-    queryFn: () => apiGet<ServerPackage[]>('/packages'),
-  });
-
-  const { data: locations = [], isLoading: locationsLoading } = useQuery({
-    queryKey: ['locations'],
-    queryFn: () => apiGet<ServerLocation[]>('/locations'),
-  });
+  const { data: packageData, loading: packagesLoading, reload: reloadPackages } = useResource(API_KEYS.packages, fetchPackages);
+  const { data: locationData, loading: locationsLoading } = useResource(API_KEYS.locations, fetchLocations);
+  const packages = useMemo(() => packageData ?? [], [packageData]);
+  const locations = useMemo(() => locationData ?? [], [locationData]);
 
   const isLoading = packagesLoading || locationsLoading;
 
@@ -34,38 +29,42 @@ export default function Paket() {
     })),
   [packages, locationNames]);
 
-  const addMutation = useMutation({
-    mutationFn: (payload: { locationId: string; type: string; price: number; meetCount?: number }) =>
-      apiSend<ServerPackage>('/packages', 'POST', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packages'] });
+  async function addPackage(payload: { locationId: string; type: string; price: number }) {
+    try {
+      await apiSend<ServerPackage>('/packages', 'POST', payload);
+      await reloadPackages();
       toast.success('Paket ditambahkan.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal menambahkan paket.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menambahkan paket.', { style: { color: '#B3341F' } });
+    }
+  }
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<ServerPackage> }) =>
-      apiSend<ServerPackage>(`/packages/${id}`, 'PUT', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packages'] });
+  async function updatePackage(id: string, payload: Partial<ServerPackage>) {
+    try {
+      await apiSend<ServerPackage>(`/packages/${id}`, 'PUT', payload);
+      await reloadPackages();
       toast.success('Paket diperbarui.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal memperbarui paket.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memperbarui paket.', { style: { color: '#B3341F' } });
+    }
+  }
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiSend<ServerPackage>(`/packages/${id}`, 'DELETE'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packages'] });
+  async function deletePackage(id: string) {
+    try {
+      await apiSend<ServerPackage>(`/packages/${id}`, 'DELETE');
+      await reloadPackages();
       toast.success('Paket dihapus.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal menghapus paket.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menghapus paket.', { style: { color: '#B3341F' } });
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat data paket…</div>
+      <SkeletonPage label="Memuat data harga dan paket">
+        <SkeletonHeader action />
+        <SkeletonTable rows={6} cols={4} />
+      </SkeletonPage>
     );
   }
 
@@ -91,16 +90,16 @@ export default function Paket() {
       }}
       onAdd={(d) => {
         const loc = locations.find((l) => l.name === d.locationId);
-        addMutation.mutate({ locationId: loc?.id ?? d.locationId, type: d.type, price: Number(d.harga) });
+        void addPackage({ locationId: loc?.id ?? d.locationId, type: d.type, price: Number(d.harga) });
       }}
       onEdit={(id, d) => {
         const r = rows.find((x) => x.id === id);
         const loc = locations.find((l) => l.name === d.locationId);
-        updateMutation.mutate({ id: r?.serverId ?? '', payload: { locationId: loc?.id ?? r?.locationId, type: d.type, price: Number(d.harga) } });
+        void updatePackage(r?.serverId ?? '', { locationId: loc?.id ?? r?.locationId, type: d.type, price: Number(d.harga) });
       }}
       onDelete={(id) => {
         const r = rows.find((x) => x.id === id);
-        deleteMutation.mutate(r?.serverId ?? '');
+        void deletePackage(r?.serverId ?? '');
       }}
     />
   );

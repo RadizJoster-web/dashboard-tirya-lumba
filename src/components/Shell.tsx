@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate, useMatch } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useMatch } from 'react-router-dom';
 import {
   CalendarDays,
   ClipboardCheck,
@@ -16,15 +16,20 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Topbar from './Topbar';
+import { SkeletonHeader, SkeletonPage, SkeletonStats, SkeletonTable } from './Skeleton';
 import { useAuth } from '../lib/auth-context';
 import { logout, pathsFor } from '../lib/auth';
 import { useUiStore } from '../lib/ui-store';
-import { useApiSync } from '../lib/api-sync';
+import { useBootstrapData } from '../lib/api-sync';
 import { useAntrean } from '../lib/store';
 
 function PageFallback() {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat halaman…</div>
+    <SkeletonPage label="Memuat halaman">
+      <SkeletonHeader />
+      <SkeletonStats />
+      <SkeletonTable rows={5} cols={5} />
+    </SkeletonPage>
   );
 }
 
@@ -86,8 +91,7 @@ function NavItem({ path, pending }: { path: string; pending: number }) {
 export default function Shell() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  useApiSync();
+  useBootstrapData();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const antrean = useAntrean();
@@ -178,7 +182,7 @@ export default function Shell() {
         <Topbar user={user!} onLogout={handleLogout} />
         <main className="p-6 px-7 max-[860px]:p-4 min-w-0">
           <Suspense fallback={<PageFallback />}>
-            <div key={location.pathname} className="anim-route min-w-0">
+            <div className="anim-route min-w-0">
               <Outlet />
             </div>
           </Suspense>

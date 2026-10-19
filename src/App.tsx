@@ -1,19 +1,10 @@
 import { Suspense, lazy } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Shell from './components/Shell';
+import { SkeletonHeader, SkeletonPage, SkeletonStats, SkeletonTable } from './components/Skeleton';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './lib/auth-context';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-    },
-  },
-});
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -34,49 +25,57 @@ const Profil = lazy(() => import('./pages/Profil'));
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: '#ffffff',
-              color: '#1d3557',
-              border: '1px solid #e5e7eb',
-              borderRadius: '12px',
-              fontSize: '13px',
-              fontWeight: 500,
-              boxShadow: '0 8px 24px rgba(29, 53, 87, 0.12)',
-            },
-          }}
-        />
-        <HashRouter>
-          <Suspense fallback={<div className="min-h-screen p-6 text-center text-slate-500">Memuat halaman…</div>}>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <Shell />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Navigate to="/overview" replace />} />
-                <Route path="overview" element={<Overview />} />
-                <Route path="pendaftaran" element={<Pendaftaran />} />
-                <Route path="jadwal" element={<Jadwal />} />
-                <Route path="lokasi" element={<Lokasi />} />
-                <Route path="paket" element={<Paket />} />
-                <Route path="pelatih" element={<Pelatih />} />
-                <Route path="pengelola" element={<Pengelola />} />
-                <Route path="absen" element={<Absensi />} />
-                <Route path="siswa" element={<Siswa />} />
-                <Route path="profil" element={<Profil />} />
-              </Route>
-            </Routes>
-          </Suspense>
-        </HashRouter>
-      </AuthProvider>
-    </QueryClientProvider>
+    <AuthProvider>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#ffffff',
+            color: '#1d3557',
+            border: '1px solid #e5e7eb',
+            borderRadius: '12px',
+            fontSize: '13px',
+            fontWeight: 500,
+            boxShadow: '0 8px 24px rgba(29, 53, 87, 0.12)',
+          },
+        }}
+      />
+      <HashRouter>
+        <Suspense
+          fallback={
+            <div className="p-6">
+              <SkeletonPage label="Memuat halaman">
+                <SkeletonHeader />
+                <SkeletonStats />
+                <SkeletonTable rows={5} cols={5} />
+              </SkeletonPage>
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Shell />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="/overview" replace />} />
+              <Route path="overview" element={<Overview />} />
+              <Route path="pendaftaran" element={<Pendaftaran />} />
+              <Route path="jadwal" element={<Jadwal />} />
+              <Route path="lokasi" element={<Lokasi />} />
+              <Route path="paket" element={<Paket />} />
+              <Route path="pelatih" element={<Pelatih />} />
+              <Route path="pengelola" element={<Pengelola />} />
+              <Route path="absen" element={<Absensi />} />
+              <Route path="siswa" element={<Siswa />} />
+              <Route path="profil" element={<Profil />} />
+            </Route>
+          </Routes>
+        </Suspense>
+      </HashRouter>
+    </AuthProvider>
   );
 }

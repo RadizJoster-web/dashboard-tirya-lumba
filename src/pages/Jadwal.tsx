@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
+import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
 import { Button, Field } from '../components/ui';
 import { HARI, SESI_NAMES } from '../lib/format';
-import { apiGet, apiSend } from '../lib/api';
-import type { ServerSession } from '../lib/api-types';
+import { apiSend } from '../lib/api';
+import { API_KEYS, fetchSessions } from '../lib/api-sync';
+import { useResource } from '../lib/data-cache';
 
 type SesiModal = { kind: 'add' } | { kind: 'edit'; id: string } | { kind: 'delete'; id: string } | null;
 
@@ -22,18 +23,14 @@ function readSesiForm(form: HTMLFormElement): { lokasi: string; hari: string; se
 }
 
 export default function Jadwal() {
-  const queryClient = useQueryClient();
   const [modal, setModal] = useState<SesiModal>(null);
   const [fHari, setFHari] = useState('');
   const [fLokasi, setFLokasi] = useState('');
   const [fSesi, setFSesi] = useState('');
 
-  const { data: sesi = [], isLoading: sesiLoading } = useQuery({
-    queryKey: ['sesi'],
-    queryFn: () => apiGet<ServerSession[]>('/sessions'),
-  });
+  const { data, loading: isLoading, reload } = useResource(API_KEYS.sessions, fetchSessions);
+  const sesi = data ?? [];
 
-  const isLoading = sesiLoading;
   const locations = [...new Set(sesi.map((s) => s.locationId ?? 'Global'))];
 
   const editing = modal && modal.kind === 'edit' ? sesi.find((s) => s.id === modal.id) ?? null : null;
@@ -42,34 +39,35 @@ export default function Jadwal() {
     (s) => (!fHari || s.dayOfWeek === fHari) && (!fLokasi || (s.locationId ?? '') === fLokasi) && (!fSesi || s.sessionName === fSesi),
   );
 
-  const addMutation = useMutation({
-    mutationFn: (payload: { sessionName: string; dayOfWeek: string; startTime: string; endTime: string; locationId: string | null }) =>
-      apiSend<ServerSession>('/sessions', 'POST', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sesi'] });
+  async function addSession(payload: { sessionName: string; dayOfWeek: string; startTime: string; endTime: string; locationId: string | null }) {
+    try {
+      await apiSend('/sessions', 'POST', payload);
+      await reload();
       toast.success('Sesi ditambahkan.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal menambahkan sesi.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menambahkan sesi.', { style: { color: '#B3341F' } });
+    }
+  }
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: { sessionName?: string; dayOfWeek?: string; startTime?: string; endTime?: string; locationId?: string | null } }) =>
-      apiSend<ServerSession>(`/sessions/${id}`, 'PUT', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sesi'] });
+  async function updateSession(id: string, payload: { sessionName?: string; dayOfWeek?: string; startTime?: string; endTime?: string; locationId?: string | null }) {
+    try {
+      await apiSend(`/sessions/${id}`, 'PUT', payload);
+      await reload();
       toast.success('Sesi diperbarui.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal memperbarui sesi.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memperbarui sesi.', { style: { color: '#B3341F' } });
+    }
+  }
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiSend<ServerSession>(`/sessions/${id}`, 'DELETE'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sesi'] });
+  async function deleteSession(id: string) {
+    try {
+      await apiSend(`/sessions/${id}`, 'DELETE');
+      await reload();
       toast.success('Sesi dihapus.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal menghapus sesi.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menghapus sesi.', { style: { color: '#B3341F' } });
+    }
+  }
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -83,9 +81,9 @@ export default function Jadwal() {
       locationId: parsed.lokasi || null,
     };
     if (modal && modal.kind === 'edit') {
-      updateMutation.mutate({ id: modal.id, payload });
+      void updateSession(modal.id, payload);
     } else {
-      addMutation.mutate(payload);
+      void addSession(payload);
     }
     setModal(null);
   }
@@ -95,7 +93,15 @@ export default function Jadwal() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat jadwal…</div>
+      <SkeletonPage label="Memuat jadwal dan sesi">
+        <SkeletonHeader action />
+        <SkeletonTable rows={6} cols={5} />
+        <div className="mt-3.5 rounded-lg border border-gray-200 bg-white p-4">
+          <div className="mb-2.5 h-4 w-40 animate-pulse rounded-md bg-slate-200 motion-reduce:animate-none" aria-hidden="true" />
+          <SkeletonFilters fields={3} />
+          <SkeletonTable rows={3} cols={4} />
+        </div>
+      </SkeletonPage>
     );
   }
 
@@ -205,7 +211,7 @@ export default function Jadwal() {
         <Modal title="Hapus sesi?" onClose={() => setModal(null)} footer={
           <>
             <Button variant="ghost" onClick={() => setModal(null)}>Batal</Button>
-            <Button variant="danger" onClick={() => { deleteMutation.mutate(deleting.id); setModal(null); toast.success('Sesi dihapus.'); }}>Hapus</Button>
+            <Button variant="danger" onClick={() => { void deleteSession(deleting.id); setModal(null); }}>Hapus</Button>
           </>
         }>
           <p className="mb-3.5">Data yang dihapus tidak bisa dikembalikan.</p>

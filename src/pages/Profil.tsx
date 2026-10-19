@@ -1,41 +1,38 @@
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { SkeletonHeader, SkeletonPage, SkeletonProfile } from '../components/Skeleton';
 import { Button, Card, RoleTag } from '../components/ui';
 import { initials } from '../lib/format';
-import { apiGetProfil, apiUploadAvatar } from '../lib/api';
-import type { ServerProfil } from '../lib/api-types';
+import { apiUploadAvatar } from '../lib/api';
+import { API_KEYS, fetchProfile } from '../lib/api-sync';
+import { useResource } from '../lib/data-cache';
 import { useAuth } from '../lib/auth-context';
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 export default function Profil() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [localAvatar, setLocalAvatar] = useState<string>('');
 
-  const { data: profil, isLoading } = useQuery<ServerProfil>({
-    queryKey: ['profil'],
-    queryFn: () => apiGetProfil(),
-    enabled: !!user,
-  });
+  const { data: profil, loading: isLoading, reload } = useResource(API_KEYS.profile, fetchProfile);
 
-  const uploadMutation = useMutation({
-    mutationFn: (form: FormData) => apiUploadAvatar(form),
-    onSuccess: (res) => {
-      const url = (res as { profilePictureUrl?: string }).profilePictureUrl;
+  const avatarUrl = profil?.avatarUrl || localAvatar || '';
+
+  async function uploadAvatar(form: FormData) {
+    try {
+      const res = await apiUploadAvatar(form);
+      const url = res.profilePictureUrl;
       if (url) {
         try { localStorage.setItem('tl_avatar', url); } catch { /* ignore */ }
         setLocalAvatar(url);
-        queryClient.invalidateQueries({ queryKey: ['profil'] });
+        await reload();
         toast.success('Avatar diperbarui.');
       }
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal mengunggah avatar.', { style: { color: '#B3341F' } }),
-  });
-
-  const avatarUrl = profil?.avatarUrl || localAvatar || '';
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah avatar.', { style: { color: '#B3341F' } });
+    }
+  }
 
   function onAvatar(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -52,7 +49,7 @@ export default function Profil() {
     }
     const form = new FormData();
     form.append('profilePicture', f);
-    uploadMutation.mutate(form);
+    void uploadAvatar(form);
     e.target.value = '';
   }
 
@@ -68,7 +65,10 @@ export default function Profil() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat profil…</div>
+      <SkeletonPage label="Memuat profil akun">
+        <SkeletonHeader />
+        <SkeletonProfile />
+      </SkeletonPage>
     );
   }
 

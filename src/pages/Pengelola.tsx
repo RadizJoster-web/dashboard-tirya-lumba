@@ -1,51 +1,51 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import CrudPage from '../components/CrudPage';
 import Modal from '../components/Modal';
+import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
 import { Button } from '../components/ui';
-import { apiGet, apiSend } from '../lib/api';
+import { apiSend } from '../lib/api';
+import { API_KEYS, fetchManagers } from '../lib/api-sync';
+import { useResource } from '../lib/data-cache';
 import type { ServerPoolManager } from '../lib/api-types';
 
 export default function Pengelola() {
-  const queryClient = useQueryClient();
   const [detailId, setDetailId] = useState<string | null>(null);
 
-  const { data: rows = [], isLoading } = useQuery({
-    queryKey: ['pengelola'],
-    queryFn: () => apiGet<ServerPoolManager[]>('/pool-managers'),
-  });
+  const { data, loading: isLoading, reload } = useResource(API_KEYS.managers, fetchManagers);
+  const rows = data ?? [];
 
   const detail = detailId !== null ? rows.find((r) => r.id === detailId) ?? null : null;
 
-  const addMutation = useMutation({
-    mutationFn: (payload: { fullName: string; email: string; password: string; phone: string; locationId: string; isActive?: boolean }) =>
-      apiSend<ServerPoolManager>('/pool-managers', 'POST', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pengelola'] });
+  async function addManager(payload: { fullName: string; email: string; password: string; phone: string; locationId: string; isActive?: boolean }) {
+    try {
+      await apiSend<ServerPoolManager>('/pool-managers', 'POST', payload);
+      await reload();
       toast.success('Pengelola ditambahkan.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal menambahkan pengelola.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menambahkan pengelola.', { style: { color: '#B3341F' } });
+    }
+  }
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<ServerPoolManager> }) =>
-      apiSend<ServerPoolManager>(`/pool-managers/${id}`, 'PUT', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pengelola'] });
+  async function updateManager(id: string, payload: Partial<ServerPoolManager>) {
+    try {
+      await apiSend<ServerPoolManager>(`/pool-managers/${id}`, 'PUT', payload);
+      await reload();
       toast.success('Pengelola diperbarui.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal memperbarui pengelola.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memperbarui pengelola.', { style: { color: '#B3341F' } });
+    }
+  }
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiSend<ServerPoolManager>(`/pool-managers/${id}`, 'DELETE'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pengelola'] });
+  async function deleteManager(id: string) {
+    try {
+      await apiSend<ServerPoolManager>(`/pool-managers/${id}`, 'DELETE');
+      await reload();
       toast.success('Pengelola dihapus.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Gagal menghapus pengelola.', { style: { color: '#B3341F' } }),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menghapus pengelola.', { style: { color: '#B3341F' } });
+    }
+  }
 
   const crudRows = rows.map((r, i) => ({
     id: i + 1,
@@ -57,7 +57,10 @@ export default function Pengelola() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat data pengelola…</div>
+      <SkeletonPage label="Memuat data pengelola">
+        <SkeletonHeader action />
+        <SkeletonTable rows={6} cols={4} />
+      </SkeletonPage>
     );
   }
 
@@ -85,20 +88,23 @@ export default function Pengelola() {
           const server = rows.find((x) => x.id === r?.serverId);
           return { fullName: r?.nama ?? '', email: server?.email ?? '', password: '', phone: r?.telp ?? '', locationId: server?.locationId ?? '' };
         }}
-        onAdd={(d) => addMutation.mutate({ fullName: d.fullName, email: d.email, password: d.password, phone: d.phone, locationId: d.locationId, isActive: true })}
+        onAdd={(d) => void addManager({ fullName: d.fullName, email: d.email, password: d.password, phone: d.phone, locationId: d.locationId, isActive: true })}
         onEdit={(id, d) => {
           const r = crudRows.find((x) => x.id === id);
-          updateMutation.mutate({ id: r?.serverId ?? '', payload: { fullName: d.fullName, phone: d.phone } });
+          void updateManager(r?.serverId ?? '', { fullName: d.fullName, phone: d.phone });
         }}
         onDelete={(id) => {
           const r = crudRows.find((x) => x.id === id);
-          deleteMutation.mutate(r?.serverId ?? '');
+          void deleteManager(r?.serverId ?? '');
         }}
-        extraActions={(id) => (
-          <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(String(id))}>
-            Detail
-          </Button>
-        )}
+        extraActions={(id) => {
+          const row = crudRows.find((x) => x.id === id);
+          return (
+            <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(row?.serverId ?? '')}>
+              Detail
+            </Button>
+          );
+        }}
       />
 
       {detail ? (

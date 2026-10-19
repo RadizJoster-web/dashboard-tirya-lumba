@@ -23,8 +23,6 @@ export const HARI = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ming
 
 export const SESI_NAMES = ['Sesi 1', 'Sesi 2', 'Sesi 3'];
 
-export const LOCATIONS = ['Kolam Tirta Jaya', 'Kolam Samudra', 'Kolam Bahari'] as const;
-
 export function formatRp(n: number): string {
   return `Rp ${n.toLocaleString('id-ID')}`;
 }

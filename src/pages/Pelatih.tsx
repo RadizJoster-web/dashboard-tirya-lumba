@@ -1,20 +1,27 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
+import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
 import { Button } from '../components/ui';
-import { apiGet } from '../lib/api';
-import type { ServerInstructor } from '../lib/api-types';
+import { API_KEYS, fetchInstructors } from '../lib/api-sync';
+import { useResource } from '../lib/data-cache';
 
 export default function Pelatih() {
   const [detailId, setDetailId] = useState<string | null>(null);
 
-  const { data: rows = [], isLoading } = useQuery({
-    queryKey: ['instructors'],
-    queryFn: () => apiGet<ServerInstructor[]>('/instructor/management?page=1&limit=100'),
-  });
+  const { data, loading: isLoading } = useResource(API_KEYS.instructors, fetchInstructors);
+  const rows = data ?? [];
 
   const detail = detailId !== null ? rows.find((r) => r.id === detailId) ?? null : null;
+
+  if (isLoading) {
+    return (
+      <SkeletonPage label="Memuat data pelatih">
+        <SkeletonHeader />
+        <SkeletonTable rows={6} cols={3} />
+      </SkeletonPage>
+    );
+  }
 
   return (
     <div>
@@ -23,23 +30,19 @@ export default function Pelatih() {
         <p className="text-slate-500">Profil, lokasi mengajar, dan riwayat</p>
       </div>
 
-      {isLoading ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat data pelatih…</div>
-      ) : (
-        <DataTable headers={['Nama', 'Status', 'Aksi']} isEmpty={rows.length === 0}>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-b border-gray-200 last:border-0">
-              <td className="px-3.5 py-2.5">{r.fullName}</td>
-              <td className="px-3.5 py-2.5">{r.isActive ? 'Aktif' : 'Non-Aktif'}</td>
-              <td className="px-3.5 py-2.5">
-                <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(r.id)}>
-                  Detail
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </DataTable>
-      )}
+      <DataTable headers={['Nama', 'Status', 'Aksi']} isEmpty={rows.length === 0}>
+        {rows.map((r) => (
+          <tr key={r.id} className="border-b border-gray-200 last:border-0">
+            <td className="px-3.5 py-2.5">{r.fullName}</td>
+            <td className="px-3.5 py-2.5">{r.isActive ? 'Aktif' : 'Non-Aktif'}</td>
+            <td className="px-3.5 py-2.5">
+              <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(r.id)}>
+                Detail
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </DataTable>
 
       {detail ? (
         <Modal title="Detail pelatih" onClose={() => setDetailId(null)} footer={<Button variant="ghost" onClick={() => setDetailId(null)}>Tutup</Button>}>

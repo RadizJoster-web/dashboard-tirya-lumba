@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import Stat from '../components/Stat';
 import ChartBar from '../components/ChartBar';
+import { SkeletonChart, SkeletonHeader, SkeletonPage, SkeletonStats } from '../components/Skeleton';
 import { MONTHS_SHORT } from '../lib/format';
-import { apiGetSiswa, apiGetPelatih } from '../lib/api';
+import { useResource } from '../lib/data-cache';
+import { API_KEYS, fetchInstructors, fetchStudents } from '../lib/api-sync';
 import type { ServerSiswa } from '../lib/api-types';
 import { useAuth } from '../lib/auth-context';
 
@@ -23,38 +24,27 @@ export default function Overview() {
   const scoped = user!.role === 'pengelola';
   const lokasi = user!.lokasi ?? '';
 
-  const { data: siswa = [], isLoading: siswaLoading } = useQuery({
-    queryKey: ['siswa'],
-    queryFn: () => apiGetSiswa(),
-  });
-
-  const { data: pelatih = [], isLoading: pelatihLoading } = useQuery({
-    queryKey: ['pelatih'],
-    queryFn: () => apiGetPelatih(),
-  });
+  const { data: siswa, loading: siswaLoading } = useResource(API_KEYS.students, fetchStudents);
+  const { data: pelatih, loading: pelatihLoading } = useResource(API_KEYS.instructors, fetchInstructors);
 
   const loading = siswaLoading || pelatihLoading;
+  const siswaRows = siswa ?? [];
+  const pelatihRows = pelatih ?? [];
 
-  const totalSiswa = scoped
-    ? siswa.filter((s) => s.lokasi === lokasi).length
-    : siswa.length;
-  const totalGuru = scoped
-    ? pelatih.filter((p) => p.lokasi === lokasi).length
-    : pelatih.length;
+  const totalSiswa = scoped ? siswaRows.filter((s) => s.lokasi === lokasi).length : siswaRows.length;
+  const totalGuru = pelatihRows.length;
 
-  const data = useMemo(() => seedFromData(siswa, 2026, scoped, lokasi), [siswa, scoped, lokasi]);
+  const data = useMemo(() => seedFromData(siswa ?? [], 2026, scoped, lokasi), [siswa, scoped, lokasi]);
   const total = data.reduce((a, b) => a + b, 0);
   const labels = MONTHS_SHORT;
 
   if (loading) {
     return (
-      <div>
-        <div className="mb-5">
-          <h2 className="text-2xl leading-8 font-bold">Overview</h2>
-          <p className="text-slate-500">{user!.role === 'admin' ? 'Statistik seluruh cabang' : `Statistik ${user!.lokasi ?? ''}`}</p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat statistik…</div>
-      </div>
+      <SkeletonPage label="Memuat statistik overview">
+        <SkeletonHeader />
+        <SkeletonStats />
+        <SkeletonChart />
+      </SkeletonPage>
     );
   }
 

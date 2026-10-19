@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { toast } from 'sonner';
 import DataTable from './DataTable';
 import Modal from './Modal';
 import { Button, Field } from './ui';
@@ -57,13 +56,7 @@ function readForm(form: HTMLFormElement, fields: CrudField[]): { data: Record<st
 }
 
 export default function CrudPage({ title, subtitle, addLabel, fields, columns, rows, initialOf, onAdd, onEdit, onDelete, extraActions }: CrudPageProps) {
-  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<CrudModal>(null);
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), 250);
-    return () => window.clearTimeout(t);
-  }, []);
 
   const editingId = modal && modal.kind === 'edit' ? modal.id : null;
   const deleting = modal && modal.kind === 'delete' ? rows.find((r) => r.id === modal.id) ?? null : null;
@@ -74,10 +67,8 @@ export default function CrudPage({ title, subtitle, addLabel, fields, columns, r
     const { data, files } = readForm(e.currentTarget, fields);
     if (editingId !== null) {
       onEdit(editingId, data, files);
-      toast.success('Perubahan disimpan.');
     } else {
       onAdd(data, files);
-      toast.success('Data ditambahkan.');
     }
     setModal(null);
   }
@@ -94,32 +85,28 @@ export default function CrudPage({ title, subtitle, addLabel, fields, columns, r
         <Button onClick={() => setModal({ kind: 'add' })}>{addLabel}</Button>
       </div>
 
-      {loading ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat data…</div>
-      ) : (
-        <DataTable headers={[...columns.map((c) => c.header), 'Aksi']} isEmpty={rows.length === 0}>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-b border-gray-200 last:border-0">
-              {columns.map((c) => (
-                <td key={c.header} className="px-3.5 py-2.5">
-                  {c.render ? c.render((r as Record<string, unknown>)[c.key]) : String((r as Record<string, unknown>)[c.key] ?? '-')}
-                </td>
-              ))}
-              <td className="px-3.5 py-2.5">
-                <div className="flex gap-1.5">
-                  {extraActions ? extraActions(r.id) : null}
-                  <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'edit', id: r.id })}>
-                    Edit
-                  </Button>
-                  <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'delete', id: r.id })}>
-                    Hapus
-                  </Button>
-                </div>
+      <DataTable headers={[...columns.map((c) => c.header), 'Aksi']} isEmpty={rows.length === 0}>
+        {rows.map((r) => (
+          <tr key={r.id} className="border-b border-gray-200 last:border-0">
+            {columns.map((c) => (
+              <td key={c.header} className="px-3.5 py-2.5">
+                {c.render ? c.render((r as Record<string, unknown>)[c.key]) : String((r as Record<string, unknown>)[c.key] ?? '-')}
               </td>
-            </tr>
-          ))}
-        </DataTable>
-      )}
+            ))}
+            <td className="px-3.5 py-2.5">
+              <div className="flex gap-1.5">
+                {extraActions ? extraActions(r.id) : null}
+                <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'edit', id: r.id })}>
+                  Edit
+                </Button>
+                <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'delete', id: r.id })}>
+                  Hapus
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </DataTable>
 
       {modal && (modal.kind === 'add' || editingId !== null) ? (
         <Modal title={modal.kind === 'add' ? `${addLabel} ${title}` : `Edit ${title}`} onClose={() => setModal(null)}>
@@ -176,7 +163,6 @@ export default function CrudPage({ title, subtitle, addLabel, fields, columns, r
                 onClick={() => {
                   onDelete(deleting.id);
                   setModal(null);
-                  toast.success('Data dihapus.');
                 }}
               >
                 Hapus

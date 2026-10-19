@@ -1,6 +1,6 @@
-// Opsi pilihan untuk form pendaftaran: dari server bila ter-hydrate, fallback demo.
+// Opsi pilihan form pendaftaran, hanya dari data server yang sudah ter-hydrate.
 import { useRefData } from './ref-data';
-import { HARI, LOCATIONS, SESI_NAMES } from './format';
+import { HARI, SESI_NAMES } from './format';
 
 export interface Opt {
   id: string;
@@ -13,9 +13,7 @@ export const PAYMENT_OPTIONS: string[] = ['BANK_TRANSFER', 'CASH', 'QRIS'];
 
 export function useLocationOptions(): Opt[] {
   const locations = useRefData((s) => s.locations);
-  return locations.length
-    ? locations.map((l) => ({ id: l.id, label: l.name }))
-    : LOCATIONS.map((name) => ({ id: name, label: name }));
+  return locations.map((l) => ({ id: l.id, label: l.name }));
 }
 
 export function useInstructorOptions(): Opt[] {

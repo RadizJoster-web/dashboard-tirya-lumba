@@ -8,7 +8,7 @@ import { useAuth } from '../lib/auth-context';
 export default function Login() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [userError, setUserError] = useState('');
@@ -16,21 +16,13 @@ export default function Login() {
   const [formError, setFormError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  function fillDemo(u: string, p: string) {
-    setUsername(u);
-    setPassword(p);
-    setUserError('');
-    setPassError('');
-    setFormError('');
-  }
-
   async function submit(e: FormEvent) {
     e.preventDefault();
-    const u = username.trim();
-    setUserError(u ? '' : 'Username atau email wajib diisi.');
+    const u = email.trim();
+    setUserError(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(u) ? '' : 'Masukkan alamat email yang valid.');
     setPassError(password.length >= 6 ? '' : 'Password minimal 6 karakter.');
     setFormError('');
-    if (!u || password.length < 6) return;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(u) || password.length < 6) return;
     setBusy(true);
     const result = await authenticate(u, password, remember);
     setBusy(false);
@@ -50,12 +42,13 @@ export default function Login() {
         <p className="text-slate-500 mb-5">Kelola kolam, jadwal, dan siswa dalam satu tempat.</p>
 
         <Field
-          id="username"
-          label="Username atau email"
-          name="username"
-          autoComplete="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          id="email"
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           error={userError}
         />
         <Field
@@ -83,19 +76,6 @@ export default function Login() {
         <Button type="submit" className="w-full py-2.5" disabled={busy}>
           {busy ? 'Memproses…' : 'Masuk'}
         </Button>
-
-        <div className="mt-4 p-3 rounded-lg bg-azure text-[13px]">
-          Akun demo:
-          <br />
-          <button type="button" onClick={() => fillDemo('admin', 'admin123')} className="bg-transparent border-0 text-primary font-semibold cursor-pointer p-0 underline">
-            Admin Pusat
-          </button>
-          {' · '}
-          <button type="button" onClick={() => fillDemo('pengelola', 'kolam123')} className="bg-transparent border-0 text-primary font-semibold cursor-pointer p-0 underline">
-            Pengelola Kolam
-          </button>
-          <p className="mt-2 mb-0 text-slate-500">Masuk dengan email akun server untuk memakai data asli.</p>
-        </div>
       </form>
     </div>
   );

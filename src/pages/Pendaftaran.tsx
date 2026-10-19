@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
 import DataTable from '../components/DataTable';
@@ -16,15 +16,9 @@ export default function Pendaftaran() {
   const admin = user!.role === 'admin';
   const antrean = useAntrean();
   const [tab, setTab] = useState<Tab>('antrean');
-  const [loading, setLoading] = useState(true);
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectError, setRejectError] = useState('');
   const [tipeAntrean, setTipeAntrean] = useState<'Murid' | 'Pelatih'>('Murid');
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), 250);
-    return () => window.clearTimeout(t);
-  }, []);
 
   const tipe = admin ? tipeAntrean : 'Murid';
   const rows = antrean.filter(
@@ -81,36 +75,32 @@ export default function Pendaftaran() {
               </Button>
             </div>
           ) : null}
-          {loading ? (
-            <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">Memuat antrean…</div>
-          ) : (
-            <DataTable headers={['Nama', 'Lokasi', 'Tanggal daftar', 'Aksi']} isEmpty={rows.length === 0}>
-              {rows.map((a) => (
-                <tr key={a.id} className="border-b border-gray-200 last:border-0">
-                  <td className="px-3.5 py-2.5">{a.nama}</td>
-                  <td className="px-3.5 py-2.5">{a.lokasi}</td>
-                  <td className="px-3.5 py-2.5">{a.tgl}</td>
-                  <td className="px-3.5 py-2.5">
-                    <div className="flex gap-1.5">
-                      <Button className="px-2.5 py-1 text-[13px]" onClick={() => onApprove(a.id)}>
-                        Approve
-                      </Button>
-                      <Button
-                        variant="danger"
-                        className="px-2.5 py-1 text-[13px]"
-                        onClick={() => {
-                          setRejectId(a.id);
-                          setRejectError('');
-                        }}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </DataTable>
-          )}
+          <DataTable headers={['Nama', 'Lokasi', 'Tanggal daftar', 'Aksi']} isEmpty={rows.length === 0}>
+            {rows.map((a) => (
+              <tr key={a.id} className="border-b border-gray-200 last:border-0">
+                <td className="px-3.5 py-2.5">{a.nama}</td>
+                <td className="px-3.5 py-2.5">{a.lokasi}</td>
+                <td className="px-3.5 py-2.5">{a.tgl}</td>
+                <td className="px-3.5 py-2.5">
+                  <div className="flex gap-1.5">
+                    <Button className="px-2.5 py-1 text-[13px]" onClick={() => onApprove(a.id)}>
+                      Approve
+                    </Button>
+                    <Button
+                      variant="danger"
+                      className="px-2.5 py-1 text-[13px]"
+                      onClick={() => {
+                        setRejectId(a.id);
+                        setRejectError('');
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </DataTable>
         </div>
       ) : tab === 'murid' ? (
         <FormMurid />
