@@ -1,8 +1,8 @@
 import { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import Shell from './components/Shell';
-import { SkeletonHeader, SkeletonPage, SkeletonStats, SkeletonTable } from './components/Skeleton';
+import Shell from './components/layout/Shell';
+import { SkeletonHeader, SkeletonPage, SkeletonStats, SkeletonTable } from './components/ui/Skeleton';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './lib/auth-context';
 

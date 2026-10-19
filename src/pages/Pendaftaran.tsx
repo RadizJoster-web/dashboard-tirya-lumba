@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
+import DataTable from '../components/ui/DataTable';
+import Modal from '../components/ui/Modal';
 import { Button } from '../components/ui';
-import { approveAntrean, rejectAntrean, useAntrean } from '../lib/store';
+import { approveAntrean, rejectAntrean, useAntrean } from '../lib/local/registration-queue';
 import { useAuth } from '../lib/auth-context';
 
 export default function Pendaftaran() {

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, UserCircle } from 'lucide-react';
-import { Button } from './ui';
-import Modal from './Modal';
-import { initials } from '../lib/format';
-import { useAntrean, useResched } from '../lib/store';
-import type { SessionUser } from '../lib/auth';
+import { Button } from '../ui';
+import Modal from '../ui/Modal';
+import { initials } from '../../lib/format';
+import { useAntrean } from '../../lib/local/registration-queue';
+import { useResched } from '../../lib/local/reschedule-requests';
+import type { SessionUser } from '../../lib/auth';
 
 interface TopbarProps {
   user: SessionUser;

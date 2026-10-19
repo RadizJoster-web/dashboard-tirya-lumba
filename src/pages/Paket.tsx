@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import DataTable from '../components/DataTable';
-import { SkeletonForm, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
+import DataTable from '../components/ui/DataTable';
+import { SkeletonForm, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
 import { Button } from '../components/ui';
 import { formatRp } from '../lib/format';
-import { apiSend } from '../lib/api';
-import { API_KEYS, fetchLocations, fetchPackages } from '../lib/api-sync';
-import type { ServerPackage } from '../lib/api-types';
-import { useResource } from '../lib/data-cache';
+import { apiSend } from '../lib/api/client';
+import { API_KEYS, fetchLocations, fetchPackages } from '../lib/api/resources';
+import type { ServerPackage } from '../lib/api/types';
+import { useResource } from '../lib/api/cache';
 
 const PACKAGE_TYPES = ['Reguler', 'Privat', 'Atlit', 'Beasiswa'] as const;
 type PackageType = (typeof PACKAGE_TYPES)[number];

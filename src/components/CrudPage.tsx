@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import DataTable from './DataTable';
-import Modal from './Modal';
+import DataTable from './ui/DataTable';
+import Modal from './ui/Modal';
 import { Button, Field } from './ui';
 
 export interface CrudOption {

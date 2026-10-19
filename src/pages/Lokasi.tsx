@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
-import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
+import DataTable from '../components/ui/DataTable';
+import Modal from '../components/ui/Modal';
+import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
 import { Button, Field } from '../components/ui';
-import { apiSend } from '../lib/api';
-import { API_KEYS, fetchAreas, fetchLocations } from '../lib/api-sync';
-import type { ServerLocation } from '../lib/api-types';
-import { useResource } from '../lib/data-cache';
+import { apiSend } from '../lib/api/client';
+import { API_KEYS, fetchAreas, fetchLocations } from '../lib/api/resources';
+import type { ServerLocation } from '../lib/api/types';
+import { useResource } from '../lib/api/cache';
 
 type LocationForm = { kind: 'add' } | { kind: 'edit'; row: ServerLocation } | null;
 

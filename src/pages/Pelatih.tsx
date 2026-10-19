@@ -1,15 +1,15 @@
 import { useCallback, useMemo, useState } from 'react';
-import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
-import { SkeletonDetail, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
-import StatusBadge from '../components/StatusBadge';
+import DataTable from '../components/ui/DataTable';
+import Modal from '../components/ui/Modal';
+import { SkeletonDetail, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import StatusBadge from '../components/ui/StatusBadge';
 import { Button } from '../components/ui';
-import { apiGet, assetUrl } from '../lib/api';
-import { API_KEYS, fetchInstructors } from '../lib/api-sync';
-import type { ServerInstructorDetail } from '../lib/api-types';
-import { useResource } from '../lib/data-cache';
+import { apiGet, assetUrl } from '../lib/api/client';
+import { API_KEYS, fetchInstructors } from '../lib/api/resources';
+import type { ServerInstructorDetail } from '../lib/api/types';
+import { useResource } from '../lib/api/cache';
 import { initials } from '../lib/format';
-import { useDebouncedValue } from '../lib/use-debounced';
+import { useDebouncedValue } from '../lib/hooks/use-debounced';
 
 const PAGE_SIZE = 8;
 const filterClass = 'w-auto min-w-[150px] rounded-lg border border-gray-300 bg-white px-3 py-2';

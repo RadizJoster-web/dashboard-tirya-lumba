@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import Stat from '../components/Stat';
 import ChartBar from '../components/ChartBar';
-import { SkeletonChart, SkeletonHeader, SkeletonPage, SkeletonStats } from '../components/Skeleton';
+import { SkeletonChart, SkeletonHeader, SkeletonPage, SkeletonStats } from '../components/ui/Skeleton';
 import { MONTHS_SHORT } from '../lib/format';
-import { useResource } from '../lib/data-cache';
-import { API_KEYS, fetchInstructors, fetchStudents } from '../lib/api-sync';
-import type { ServerSiswa } from '../lib/api-types';
+import { useResource } from '../lib/api/cache';
+import { API_KEYS, fetchInstructors, fetchStudents } from '../lib/api/resources';
+import type { ServerSiswa } from '../lib/api/types';
 import { useAuth } from '../lib/auth-context';
 
 function seedFromData(siswa: ServerSiswa[], year: number, scoped: boolean, lokasi?: string): number[] {

@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { apiGet, apiGetAbsensi, apiGetProfil, apiGetSiswa } from './api';
-import { loadResource } from './data-cache';
-import type { ServerArea, ServerInstructor, ServerLocation, ServerPackage, ServerPoolManager, ServerSession } from './api-types';
-import { HARI } from './format';
+import { apiGet, apiGetAbsensi, apiGetProfil, apiGetSiswa } from './client';
+import { loadResource } from './cache';
+import type { ServerArea, ServerInstructor, ServerLocation, ServerPackage, ServerPoolManager, ServerSession } from './types';
+import { HARI } from '../format';
 
 export const API_KEYS = {
   areas: '/areas',

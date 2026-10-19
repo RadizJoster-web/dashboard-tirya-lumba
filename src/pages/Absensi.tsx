@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import DataTable from '../components/DataTable';
-import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
+import DataTable from '../components/ui/DataTable';
+import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
 import { Button } from '../components/ui';
-import { apiSendAbsensi } from '../lib/api';
-import { API_KEYS, fetchAttendance, fetchInstructors, fetchLocations, fetchStudents } from '../lib/api-sync';
-import { useResource } from '../lib/data-cache';
-import type { AbsenPayload } from '../lib/api-types';
+import { apiSendAbsensi } from '../lib/api/client';
+import { API_KEYS, fetchAttendance, fetchInstructors, fetchLocations, fetchStudents } from '../lib/api/resources';
+import { useResource } from '../lib/api/cache';
+import type { AbsenPayload } from '../lib/api/types';
 import { useAuth } from '../lib/auth-context';
 
 function todayId(): string {

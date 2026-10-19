@@ -1,9 +1,9 @@
-import { SkeletonHeader, SkeletonPage, SkeletonProfile } from '../components/Skeleton';
+import { SkeletonHeader, SkeletonPage, SkeletonProfile } from '../components/ui/Skeleton';
 import { Card, RoleTag } from '../components/ui';
-import { assetUrl } from '../lib/api';
+import { assetUrl } from '../lib/api/client';
 import { initials } from '../lib/format';
-import { API_KEYS, fetchProfile } from '../lib/api-sync';
-import { useResource } from '../lib/data-cache';
+import { API_KEYS, fetchProfile } from '../lib/api/resources';
+import { useResource } from '../lib/api/cache';
 import { useAuth } from '../lib/auth-context';
 
 export default function Profil() {

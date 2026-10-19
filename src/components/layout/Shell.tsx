@@ -16,12 +16,12 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Topbar from './Topbar';
-import { SkeletonHeader, SkeletonPage, SkeletonStats, SkeletonTable } from './Skeleton';
-import { useAuth } from '../lib/auth-context';
-import { logout, pathsFor } from '../lib/auth';
-import { useUiStore } from '../lib/ui-store';
-import { useBootstrapData } from '../lib/api-sync';
-import { useAntrean } from '../lib/store';
+import { SkeletonHeader, SkeletonPage, SkeletonStats, SkeletonTable } from '../ui/Skeleton';
+import { useAuth } from '../../lib/auth-context';
+import { logout, pathsFor } from '../../lib/auth';
+import { useUiStore } from '../../lib/ui-store';
+import { useBootstrapData } from '../../lib/api/resources';
+import { useAntrean } from '../../lib/local/registration-queue';
 
 function PageFallback() {
   return (

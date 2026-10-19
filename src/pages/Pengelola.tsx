@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import CrudPage from '../components/CrudPage';
-import Modal from '../components/Modal';
-import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
+import Modal from '../components/ui/Modal';
+import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
 import { Button } from '../components/ui';
-import { apiSend } from '../lib/api';
-import { API_KEYS, fetchLocations, fetchManagers } from '../lib/api-sync';
-import { useResource } from '../lib/data-cache';
+import { apiSend } from '../lib/api/client';
+import { API_KEYS, fetchLocations, fetchManagers } from '../lib/api/resources';
+import { useResource } from '../lib/api/cache';
 import { initials } from '../lib/format';
-import type { ServerPoolManager } from '../lib/api-types';
+import type { ServerPoolManager } from '../lib/api/types';
 
 export default function Pengelola() {
   const [detailId, setDetailId] = useState<string | null>(null);

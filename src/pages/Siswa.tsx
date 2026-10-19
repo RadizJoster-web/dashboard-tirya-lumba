@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react';
-import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
-import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
-import StatusBadge from '../components/StatusBadge';
+import DataTable from '../components/ui/DataTable';
+import Modal from '../components/ui/Modal';
+import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import StatusBadge from '../components/ui/StatusBadge';
 import { Button } from '../components/ui';
-import { assetUrl } from '../lib/api';
-import { API_KEYS, fetchLocations, fetchStudents } from '../lib/api-sync';
-import { useResource } from '../lib/data-cache';
+import { assetUrl } from '../lib/api/client';
+import { API_KEYS, fetchLocations, fetchStudents } from '../lib/api/resources';
+import { useResource } from '../lib/api/cache';
 import { initials } from '../lib/format';
 import { useAuth } from '../lib/auth-context';
-import { useDebouncedValue } from '../lib/use-debounced';
+import { useDebouncedValue } from '../lib/hooks/use-debounced';
 
 const AGE_RANGES = [
   { value: '<10', label: 'Di bawah 10 tahun' },

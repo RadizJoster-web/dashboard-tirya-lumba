@@ -1,16 +1,16 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
-import { SkeletonForm, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
+import DataTable from '../components/ui/DataTable';
+import Modal from '../components/ui/Modal';
+import { SkeletonForm, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
 import { Button, Field } from '../components/ui';
-import { apiSend } from '../lib/api';
-import { API_KEYS, fetchLocations, fetchSessionsForLocation, sessionsKey } from '../lib/api-sync';
-import type { ServerSession } from '../lib/api-types';
-import { useResource } from '../lib/data-cache';
+import { apiSend } from '../lib/api/client';
+import { API_KEYS, fetchLocations, fetchSessionsForLocation, sessionsKey } from '../lib/api/resources';
+import type { ServerSession } from '../lib/api/types';
+import { useResource } from '../lib/api/cache';
 import { HARI } from '../lib/format';
-import { resolveResched, useResched } from '../lib/store';
+import { resolveResched, useResched } from '../lib/local/reschedule-requests';
 
 interface SessionTemplate {
   id: string;
@@ -244,7 +244,7 @@ export default function Jadwal() {
   }
 
   function decideReschedule(id: number, approved: boolean) {
-    resolveResched(id, approved);
+    resolveResched(id);
     toast.success(approved ? 'Perubahan jadwal disetujui.' : 'Permintaan perubahan ditolak.');
   }
 

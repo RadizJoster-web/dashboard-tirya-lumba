@@ -1,6 +1,6 @@
-import { ApiError, apiSend, clearToken, getToken, setToken } from './api';
-import { clearResources } from './data-cache';
-import type { ServerLogin } from './api-types';
+import { ApiError, apiSend, clearToken, getToken, setToken } from './api/client';
+import { clearResources } from './api/cache';
+import type { ServerLogin } from './api/types';
 
 export type Role = 'admin' | 'pengelola';
 

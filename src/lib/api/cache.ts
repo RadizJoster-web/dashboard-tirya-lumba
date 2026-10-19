@@ -70,10 +70,6 @@ export function loadResource<T>(key: string, fetcher?: () => Promise<T>, force =
   return request as Promise<T>;
 }
 
-export function refreshResource<T>(key: string): Promise<T> {
-  return loadResource<T>(key, undefined, true);
-}
-
 // Logout must not leave another account reading the previous account's data.
 export function clearResources(): void {
   states.clear();
