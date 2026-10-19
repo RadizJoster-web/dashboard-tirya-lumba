@@ -75,7 +75,6 @@ export default function Overview() {
         <h3 className="text-base">Tren pendaftaran 2026</h3>
         <p className="text-slate-500">{total} pendaftar baru</p>
         <ChartBar data={data} labels={labels} caption={`Pendaftaran per bulan tahun 2026, total ${total}`} />
-        <p className="mt-2 text-xs text-slate-500">Data dari server via API.</p>
       </div>
     </div>
   );
