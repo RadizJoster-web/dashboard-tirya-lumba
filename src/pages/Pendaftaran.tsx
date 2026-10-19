@@ -6,16 +6,11 @@ import Modal from '../components/Modal';
 import { Button } from '../components/ui';
 import { approveAntrean, rejectAntrean, useAntrean } from '../lib/store';
 import { useAuth } from '../lib/auth-context';
-import FormMurid from './registrasi/FormMurid';
-import FormPelatih from './registrasi/FormPelatih';
-
-type Tab = 'antrean' | 'murid' | 'pelatih';
 
 export default function Pendaftaran() {
   const { user } = useAuth();
   const admin = user!.role === 'admin';
   const antrean = useAntrean();
-  const [tab, setTab] = useState<Tab>('antrean');
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectError, setRejectError] = useState('');
   const [tipeAntrean, setTipeAntrean] = useState<'Murid' | 'Pelatih'>('Murid');
@@ -45,9 +40,6 @@ export default function Pendaftaran() {
     if (item) toast.error(`${item.nama} ditolak. Alasan: ${alasan}`, { style: { color: '#B3341F' } });
   }
 
-  const tabLabel = (t: Tab) =>
-    t === 'antrean' ? 'Antrean' : t === 'murid' ? 'Form Murid' : 'Form Pelatih';
-
   return (
     <div>
       <div className="mb-5">
@@ -55,58 +47,43 @@ export default function Pendaftaran() {
         <p className="text-slate-500">{admin ? 'Tinjau pendaftar yang menunggu persetujuan' : (user!.lokasi ?? '')}</p>
       </div>
 
-      <div className="mb-3.5 flex flex-wrap gap-2.5">
-        {(['antrean', 'murid', 'pelatih'] as Tab[]).map((t) => (
-          <Button key={t} variant={tab === t ? 'primary' : 'ghost'} onClick={() => setTab(t)}>
-            {tabLabel(t)}
+      {admin ? (
+        <div className="mb-3.5 flex flex-wrap gap-2.5">
+          <Button variant={tipeAntrean === 'Murid' ? 'primary' : 'ghost'} onClick={() => setTipeAntrean('Murid')}>
+            Murid
           </Button>
-        ))}
-      </div>
-
-      {tab === 'antrean' ? (
-        <div>
-          {admin ? (
-            <div className="mb-3.5 flex flex-wrap gap-2.5">
-              <Button variant={tipeAntrean === 'Murid' ? 'primary' : 'ghost'} onClick={() => setTipeAntrean('Murid')}>
-                Murid
-              </Button>
-              <Button variant={tipeAntrean === 'Pelatih' ? 'primary' : 'ghost'} onClick={() => setTipeAntrean('Pelatih')}>
-                Pelatih
-              </Button>
-            </div>
-          ) : null}
-          <DataTable headers={['Nama', 'Lokasi', 'Tanggal daftar', 'Aksi']} isEmpty={rows.length === 0}>
-            {rows.map((a) => (
-              <tr key={a.id} className="border-b border-gray-200 last:border-0">
-                <td className="px-3.5 py-2.5">{a.nama}</td>
-                <td className="px-3.5 py-2.5">{a.lokasi}</td>
-                <td className="px-3.5 py-2.5">{a.tgl}</td>
-                <td className="px-3.5 py-2.5">
-                  <div className="flex gap-1.5">
-                    <Button className="px-2.5 py-1 text-[13px]" onClick={() => onApprove(a.id)}>
-                      Approve
-                    </Button>
-                    <Button
-                      variant="danger"
-                      className="px-2.5 py-1 text-[13px]"
-                      onClick={() => {
-                        setRejectId(a.id);
-                        setRejectError('');
-                      }}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </DataTable>
+          <Button variant={tipeAntrean === 'Pelatih' ? 'primary' : 'ghost'} onClick={() => setTipeAntrean('Pelatih')}>
+            Pelatih
+          </Button>
         </div>
-      ) : tab === 'murid' ? (
-        <FormMurid />
-      ) : (
-        <FormPelatih />
-      )}
+      ) : null}
+
+      <DataTable headers={['Nama', 'Lokasi', 'Tanggal daftar', 'Aksi']} isEmpty={rows.length === 0}>
+        {rows.map((a) => (
+          <tr key={a.id} className="border-b border-gray-200 last:border-0">
+            <td className="px-3.5 py-2.5">{a.nama}</td>
+            <td className="px-3.5 py-2.5">{a.lokasi}</td>
+            <td className="px-3.5 py-2.5">{a.tgl}</td>
+            <td className="px-3.5 py-2.5">
+              <div className="flex gap-1.5">
+                <Button className="px-2.5 py-1 text-[13px]" onClick={() => onApprove(a.id)}>
+                  Approve
+                </Button>
+                <Button
+                  variant="danger"
+                  className="px-2.5 py-1 text-[13px]"
+                  onClick={() => {
+                    setRejectId(a.id);
+                    setRejectError('');
+                  }}
+                >
+                  Reject
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </DataTable>
 
       {rejectTarget ? (
         <Modal title={`Tolak ${rejectTarget.nama}`} onClose={() => setRejectId(null)}>

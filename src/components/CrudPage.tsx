@@ -4,11 +4,16 @@ import DataTable from './DataTable';
 import Modal from './Modal';
 import { Button, Field } from './ui';
 
+export interface CrudOption {
+  value: string;
+  label: string;
+}
+
 export interface CrudField {
   key: string;
   label: string;
-  type?: 'text' | 'number' | 'tel' | 'time' | 'select' | 'file';
-  options?: readonly string[];
+  type?: 'text' | 'number' | 'tel' | 'time' | 'email' | 'password' | 'url' | 'select' | 'file';
+  options?: readonly (string | CrudOption)[];
   accept?: string;
   required?: boolean;
 }
@@ -30,6 +35,7 @@ interface CrudPageProps {
   subtitle: string;
   addLabel: string;
   fields: CrudField[];
+  editFields?: CrudField[];
   columns: CrudColumn[];
   rows: Array<{ id: number } & object>;
   initialOf: (id: number) => Record<string, string>;
@@ -37,6 +43,14 @@ interface CrudPageProps {
   onEdit: (id: number, data: Record<string, string>, files: CrudFiles) => void;
   onDelete: (id: number) => void;
   extraActions?: (id: number) => ReactNode;
+}
+
+function optionValue(option: string | CrudOption): string {
+  return typeof option === 'string' ? option : option.value;
+}
+
+function optionLabel(option: string | CrudOption): string {
+  return typeof option === 'string' ? option : option.label;
 }
 
 function readForm(form: HTMLFormElement, fields: CrudField[]): { data: Record<string, string>; files: CrudFiles } {
@@ -55,16 +69,17 @@ function readForm(form: HTMLFormElement, fields: CrudField[]): { data: Record<st
   return { data, files };
 }
 
-export default function CrudPage({ title, subtitle, addLabel, fields, columns, rows, initialOf, onAdd, onEdit, onDelete, extraActions }: CrudPageProps) {
+export default function CrudPage({ title, subtitle, addLabel, fields, editFields, columns, rows, initialOf, onAdd, onEdit, onDelete, extraActions }: CrudPageProps) {
   const [modal, setModal] = useState<CrudModal>(null);
 
   const editingId = modal && modal.kind === 'edit' ? modal.id : null;
+  const activeFields = editingId !== null ? (editFields ?? fields) : fields;
   const deleting = modal && modal.kind === 'delete' ? rows.find((r) => r.id === modal.id) ?? null : null;
   const initial = editingId !== null ? initialOf(editingId) : {};
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const { data, files } = readForm(e.currentTarget, fields);
+    const { data, files } = readForm(e.currentTarget, activeFields);
     if (editingId !== null) {
       onEdit(editingId, data, files);
     } else {
@@ -111,13 +126,13 @@ export default function CrudPage({ title, subtitle, addLabel, fields, columns, r
       {modal && (modal.kind === 'add' || editingId !== null) ? (
         <Modal title={modal.kind === 'add' ? `${addLabel} ${title}` : `Edit ${title}`} onClose={() => setModal(null)}>
           <form onSubmit={onSubmit} className="grid gap-1">
-            {fields.map((f) =>
+            {activeFields.map((f) =>
               f.type === 'select' ? (
                 <label key={f.key} className="mb-3 block font-semibold">
                   {f.label}
-                  <select name={f.key} defaultValue={initial[f.key] ?? f.options?.[0] ?? ''} required={f.required !== false} className={inputClass}>
+                  <select name={f.key} defaultValue={initial[f.key] ?? optionValue(f.options?.[0] ?? '')} required={f.required !== false} className={inputClass}>
                     {(f.options ?? []).map((o) => (
-                      <option key={o} value={o}>{o}</option>
+                      <option key={optionValue(o)} value={optionValue(o)}>{optionLabel(o)}</option>
                     ))}
                   </select>
                 </label>

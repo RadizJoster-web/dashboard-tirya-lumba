@@ -1,4 +1,10 @@
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5000/api';
+
+export function assetUrl(path?: string): string {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE.replace(/\/api\/?$/, '')}/${path.replace(/^\/+/, '')}`;
+}
 import type { RegisterInstructorPayload, RegisterResult, RegisterStudentPayload, UploadOutcome, ServerAbsen, AbsenPayload, AbsenResult, ServerSiswa, SiswaPayload, ServerPelatih, PelatihPayload, ServerPengelola, PengelolaPayload, ServerSesi, SesiPayload, ServerResched, ReschedPayload, ServerProfil } from './api-types';
 
 const TOKEN_KEY = 'tl_jwt';
@@ -95,10 +101,13 @@ export async function apiRequest<T>(path: string, init?: RequestInit, timeoutMs:
     body = null;
   }
 
-  if (!res.ok || !body || body.success === false || body.data === undefined) {
+  if (!res.ok || !body || body.success === false) {
     throw new ApiError(body?.message ?? `Permintaan gagal (${res.status}).`, res.status);
   }
-  return body.data;
+  if (body.data === undefined && init?.method !== 'DELETE') {
+    throw new ApiError(body.message ?? `Permintaan gagal (${res.status}).`, res.status);
+  }
+  return body.data as T;
 }
 
 export function apiGet<T>(path: string): Promise<T> {
@@ -185,8 +194,4 @@ export function apiSendResched(path: string, method: 'POST' | 'PUT' | 'DELETE', 
 /** ---------- Profil ---------- */
 export function apiGetProfil(): Promise<ServerProfil> {
   return apiGet<ServerProfil>('/auth/me');
-}
-
-export function apiUploadAvatar(form: FormData): Promise<UploadOutcome> {
-  return uploadFile('/upload-file/admin/avatar', form);
 }

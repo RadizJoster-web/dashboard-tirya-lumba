@@ -20,19 +20,20 @@ No test runner, CI, or `.env` configured. Verify with `npm run lint && npm run b
 - `src/lib/api-types.ts` — server DTOs. Note the server model differs from the local demo shapes (locations use `{name, category, mapUrl, areaId}`, no address/coordinate fields).
 - `src/lib/auth.ts` — `authenticate()` hanya memanggil `POST /auth/login` dengan email + password server; tidak ada akun demo. Hanya `ADMIN`/`POOL_MANAGER` yang boleh masuk. Not documented: `logout`, `/auth/me`.
 - `src/lib/data-cache.ts` — cache data per key (`useResource`, `loadResource`, `refreshResource`, `clearResources`). Request hanya terjadi saat resource pertama kali dipakai atau di-`reload()` setelah mutasi; tidak ada refetch saat pindah route/tab. Pakai `useResource(API_KEYS.x, fetchX)` dari `src/lib/api-sync.ts`.
-- `src/lib/api-sync.ts` — `useBootstrapData()` (dipanggil sekali di `Shell`) memuat `/areas`, `/locations`, `/packages`, `/instructor/management`, `/pool-managers` ke cache. Tidak ada fallback data demo; kegagalan ditampilkan sebagai empty/error state.
+- `src/lib/api-sync.ts` — `useBootstrapData()` (dipanggil sekali di `Shell`) memuat `/areas`, `/locations`, `/packages`, `/instructor/management`, `/pool-managers` ke cache. `GET /sessions` wajib `locationId` + `dayOfWeek`, jadi `fetchSessionsForLocation()` menggabungkan 7 request harian dan menyimpannya per lokasi (`sessionsKey`). Tidak ada fallback data demo; kegagalan ditampilkan sebagai empty/error state.
 - **sonner terpasang**: `<Toaster />` dipasang di `App.tsx` (top-right). Setiap sukses → `toast.success`, gagal → `toast.error` warna `#B3341F`. Jangan tambahkan banner `notice` inline — pakai toast.
 - **Logo**: `public/logo.svg` (asli, 442 path, hasil VTracer — punya `viewBox`), `public/logo-mark.svg` (subset 11 shape besar, dibuat `scripts/logo-mark.mjs`; jalankan ulang bila logo berganti). Komponen `src/components/BrandLogo.tsx` dipakai di sidebar & tombol sidebar mengambang; Login memakai logo asli via `<img src="/logo.svg">`. Jangan kembalikan ke emoji 🐬.
 - **Animasi**: keyframes `route-in`/`modal-in`/`fade-in` + class `anim-route`/`anim-modal`/`anim-overlay` di `src/index.css`, semua dalam `@media (prefers-reduced-motion: no-preference)`. `main` di Shell memakai `anim-route` tanpa `key` per path agar halaman tidak remount; Modal pakai `anim-overlay` + `anim-modal`.
-- `src/lib/ref-data.ts` — raw master data dari server (locations/packages/instructors) untuk opsi `<select>`, diisi fetcher di `api-sync.ts`.
-- `src/lib/reg-options.ts` — opsi form pendaftaran, hanya dari data server (tanpa fallback demo).
-- `src/components/Stepper.tsx` + `src/pages/registrasi/FormMurid.tsx` / `FormPelatih.tsx` — wizard pendaftaran 3 langkah di tab `/pendaftaran` (Antrean • Form Murid • Form Pelatih, see `Pendaftaran.tsx`). Submit: `registerStudent`/`registerInstructor`, upload: `uploadFile` (multipart, 30s timeout, maks file 5 MB). catatan: endpoint `/api/register/*` di backend masih role STUDENT/INSTRUCTOR — minta backend menerima ADMIN/POOL_MANAGER (error 403 ditampilkan di toast).
+- `src/lib/use-debounced.ts` — `useDebouncedValue` untuk search Siswa/Pelatih (300 ms).
+- `src/components/StatusBadge.tsx` — badge status aktif/non-aktif yang dipakai Siswa/Pelatih.
+- `/pendaftaran` hanya berisi antrean approve/reject; wizard Form Murid/Form Pelatih sudah dihapus. Endpoint approve/reject tetap belum ada di docs sehingga masih memakai `src/lib/store.ts`.
 
-- Endpoints missing from the docs (still local-only): approve/reject registration, attendance, Overview statistics, admin avatar upload, profile, signup.
+- Endpoints missing from the docs (still local-only): approve/reject registration, attendance, Overview statistics, profile, signup, `GET /siswa`.
+- `POST /packages` docs baru menunjukkan `Reguler`/`Privat`; UI mengirim juga `Atlit`/`Beasiswa` sesuai revisi, kegagalan validasi backend ditampilkan lewat toast.
 
 ## Profil, SEO & Performa (Tahap C)
 
-- **Profil** (`/profil`, menu grup "Akun", semua role): `src/pages/Profil.tsx`. Avatar masih demo-lokal (base64 di localStorage, key `tl_avatar`, maks 5 MB) karena endpoint profil/avatar admin belum ada di docs — jangan anggap live API.
+- **Profil** (`/profil`, menu grup "Akun", semua role): `src/pages/Profil.tsx`. Hanya menampilkan data akun; tidak ada ganti avatar karena endpoint avatar admin belum ada di docs.
 - **SEO** di `index.html`: `lang="id"`, title/meta description, favicon + OG image `=/logo-mark.svg`, Open Graph/twitter card, `preconnect` Google Fonts.
 - **Performa**: semua rute halaman lazy (`React.lazy` + `Suspense` di `src/components/Shell.tsx` fallback `PageFallback`), data server di-cache `data-cache.ts` sehingga pindah route tidak memicu request ulang. Riwayat Absensi admin dibatasi 50 baris + tombol "Tampilkan semua". Jangan kembalikan ke import statis halaman di Shell.
 

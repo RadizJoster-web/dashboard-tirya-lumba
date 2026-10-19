@@ -82,7 +82,7 @@ export function clearResources(): void {
   listeners.forEach((group) => group.forEach((listener) => listener()));
 }
 
-export function useResource<T>(key: string, fetcher: () => Promise<T>): ResourceState<T> & { reload: () => void } {
+export function useResource<T>(key: string, fetcher: () => Promise<T>): ResourceState<T> & { reload: () => Promise<void> } {
   const subscribe = useCallback((listener: () => void) => subscribeTo(key, listener), [key]);
   const snapshot = useSyncExternalStore(subscribe, () => stateOf(key) as ResourceState<T>);
 
@@ -92,9 +92,10 @@ export function useResource<T>(key: string, fetcher: () => Promise<T>): Resource
     }
   }, [key, fetcher]);
 
-  const reload = () => {
-    loadResource(key, fetcher, true).catch(() => {});
-  };
+  const reload = useCallback(
+    () => loadResource(key, fetcher, true).then(() => undefined).catch(() => undefined),
+    [key, fetcher],
+  );
 
   return { ...snapshot, reload };
 }

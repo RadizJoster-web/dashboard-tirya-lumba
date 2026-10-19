@@ -51,6 +51,17 @@ export interface ServerInstructor {
   isActive: boolean;
 }
 
+export interface ServerInstructorDetail extends ServerInstructor {
+  email?: string;
+  isVerified?: boolean;
+  instructorProfile?: {
+    shortBio?: string;
+    license?: string;
+    experience?: string;
+    locations?: Array<{ id: string; name: string; area?: { name?: string } }>;
+  };
+}
+
 export interface ServerUser {
   userId: string;
   email: string;
@@ -97,6 +108,8 @@ export interface ServerSiswa {
   berlakuSd: string;
   aktif: boolean;
   telp: string;
+  fotoUrl?: string;
+  profilePictureUrl?: string;
 }
 
 export interface SiswaPayload {
@@ -258,11 +271,4 @@ export function pickUrl(value: unknown, keys: string[]): string | undefined {
     }
   }
   return undefined;
-}
-
-/** Referensi master data mentah dari server untuk opsi <select> form pendaftaran. */
-export interface RefStore {
-  locations: ServerLocation[];
-  packages: ServerPackage[];
-  instructors: ServerInstructor[];
 }

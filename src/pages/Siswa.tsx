@@ -1,96 +1,86 @@
 import { useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
-import { toast } from 'sonner';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/Skeleton';
-import { Button, Field } from '../components/ui';
-import { apiSendSiswa } from '../lib/api';
-import { API_KEYS, fetchStudents } from '../lib/api-sync';
+import StatusBadge from '../components/StatusBadge';
+import { Button } from '../components/ui';
+import { assetUrl } from '../lib/api';
+import { API_KEYS, fetchLocations, fetchStudents } from '../lib/api-sync';
 import { useResource } from '../lib/data-cache';
-import type { SiswaPayload } from '../lib/api-types';
+import { initials } from '../lib/format';
 import { useAuth } from '../lib/auth-context';
+import { useDebouncedValue } from '../lib/use-debounced';
+
+const AGE_RANGES = [
+  { value: '<10', label: 'Di bawah 10 tahun' },
+  { value: '10-14', label: '10 - 14 tahun' },
+  { value: '15-19', label: '15 - 19 tahun' },
+  { value: '20+', label: '20 tahun ke atas' },
+];
+
+function matchesAge(age: number, range: string): boolean {
+  if (!range) return true;
+  if (range === '<10') return age < 10;
+  if (range === '10-14') return age >= 10 && age <= 14;
+  if (range === '15-19') return age >= 15 && age <= 19;
+  return age >= 20;
+}
+
+const filterClass = 'w-auto min-w-[150px] rounded-lg border border-gray-300 bg-white px-3 py-2';
 
 export default function Siswa() {
   const { user } = useAuth();
   const admin = user!.role === 'admin';
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [status, setStatus] = useState('');
   const [lokasi, setLokasi] = useState('');
+  const [usia, setUsia] = useState('');
+  const [page, setPage] = useState(1);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
-  const { data, loading: isLoading, reload } = useResource(API_KEYS.students, fetchStudents);
+  const { data, loading: isLoading } = useResource(API_KEYS.students, fetchStudents);
+  const { data: locationData } = useResource(API_KEYS.locations, fetchLocations);
   const rows = useMemo(() => data ?? [], [data]);
+  const locations = useMemo(() => locationData ?? [], [locationData]);
 
   const filtered = useMemo(() => {
-    const scoped = admin ? rows : rows.filter((r) => r.lokasi === user!.lokasi);
+    const scoped = admin || !user!.lokasi ? rows : rows.filter((r) => r.lokasi === user!.lokasi);
+    const query = debouncedQ.trim().toLowerCase();
     return scoped.filter(
       (r) =>
-        r.nama.toLowerCase().includes(q.trim().toLowerCase()) &&
-        (!status || (status === 'Aktif') === r.aktif) &&
-        (!lokasi || r.lokasi === lokasi),
+        r.nama.toLowerCase().includes(query) &&
+        (!status || (status === 'aktif') === r.aktif) &&
+        (!lokasi || r.lokasi === lokasi) &&
+        matchesAge(r.usia, usia),
     );
-  }, [rows, q, status, lokasi, admin, user]);
+  }, [rows, debouncedQ, status, lokasi, usia, admin, user]);
 
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 8;
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const [page, setPage] = useState(1);
   const safePage = Math.min(page, totalPages);
   const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  const [modal, setModal] = useState<{ kind: 'detail' | 'edit' | 'add'; id?: string } | null>(null);
-  const active = modal?.id ? rows.find((r) => r.id === modal.id) ?? null : null;
+  const detail = detailId !== null ? rows.find((r) => r.id === detailId) ?? null : null;
+  const photo = detail ? assetUrl(detail.profilePictureUrl ?? detail.fotoUrl) : '';
 
-  async function saveUpdate(id: string, patch: Partial<SiswaPayload>) {
-    try {
-      await apiSendSiswa(`/siswa/${id}`, 'PUT', patch);
-      await reload();
-      toast.success('Data siswa diperbarui.');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal memperbarui siswa.', { style: { color: '#B3341F' } });
-    }
-  }
+  const locationOptions = useMemo(
+    () =>
+      [...new Set([
+        ...locations.map((l) => l.name),
+        ...rows.map((r) => r.lokasi),
+      ])].filter(Boolean).sort((a, b) => a.localeCompare(b, 'id')),
+    [locations, rows],
+  );
 
-  async function saveNew(payload: SiswaPayload) {
-    try {
-      await apiSendSiswa('/siswa', 'POST', payload);
-      await reload();
-      toast.success('Data siswa ditambahkan.');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal menambahkan siswa.', { style: { color: '#B3341F' } });
-    }
-  }
-
-  function closeModal() {
-    setModal(null);
-  }
-
-  function saveEdit(e: FormEvent<HTMLFormElement>, id: string) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const nama = String(fd.get('nama') ?? '').trim();
-    const usia = Number(fd.get('usia'));
-    const berlakuSd = String(fd.get('berlakuSd') ?? '');
-    const paket = String(fd.get('paket') ?? '');
-    const nextLokasi = admin ? String(fd.get('lokasi') ?? '') : (active?.lokasi ?? '');
-    if (!nama || !Number.isFinite(usia) || !berlakuSd || !nextLokasi) return;
-    if (paket !== 'Reguler' && paket !== 'Privat') return;
-    void saveUpdate(id, { nama, usia, berlakuSd, paket, lokasi: nextLokasi });
-    closeModal();
-  }
-
-  function toggleActive(id: string) {
-    const target = rows.find((r) => r.id === id);
-    if (target) void saveUpdate(id, { aktif: !target.aktif });
-  }
-
-  const lokasiOptions = [...new Set(rows.map((r) => r.lokasi))].sort();
+  const resetPage = () => setPage(1);
 
   if (isLoading) {
     return (
       <SkeletonPage label="Memuat data siswa">
         <SkeletonHeader />
         <SkeletonFilters fields={admin ? 4 : 3} />
-        <SkeletonTable rows={6} cols={7} />
+        <SkeletonTable rows={8} cols={6} />
       </SkeletonPage>
     );
   }
@@ -103,83 +93,79 @@ export default function Siswa() {
       </div>
 
       <div className="mb-3.5 flex flex-wrap gap-2.5">
-        <Button onClick={() => setModal({ kind: 'add' })}>+ Tambah siswa</Button>
         <input
           placeholder="Cari nama siswa"
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
-            setPage(1);
+            resetPage();
           }}
           aria-label="Cari nama siswa"
-          className="min-w-[150px] flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2"
+          className="min-w-[180px] flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2"
         />
+        <select
+          value={usia}
+          onChange={(e) => {
+            setUsia(e.target.value);
+            resetPage();
+          }}
+          aria-label="Filter usia"
+          className={filterClass}
+        >
+          <option value="">Semua usia</option>
+          {AGE_RANGES.map((r) => (
+            <option key={r.value} value={r.value}>{r.label}</option>
+          ))}
+        </select>
         <select
           value={status}
           onChange={(e) => {
             setStatus(e.target.value);
-            setPage(1);
+            resetPage();
           }}
           aria-label="Filter status"
-          className="w-auto min-w-[150px] rounded-lg border border-gray-300 bg-white px-3 py-2"
+          className={filterClass}
         >
           <option value="">Semua status</option>
-          <option value="Aktif">Aktif</option>
-          <option value="Non-Aktif">Non-Aktif</option>
+          <option value="aktif">Aktif</option>
+          <option value="nonaktif">Non-Aktif</option>
         </select>
         {admin ? (
           <select
             value={lokasi}
             onChange={(e) => {
               setLokasi(e.target.value);
-              setPage(1);
+              resetPage();
             }}
             aria-label="Filter lokasi"
-            className="w-auto min-w-[150px] rounded-lg border border-gray-300 bg-white px-3 py-2"
+            className={filterClass}
           >
             <option value="">Semua lokasi</option>
-            {lokasiOptions.map((l) => (
+            {locationOptions.map((l) => (
               <option key={l} value={l}>{l}</option>
             ))}
           </select>
         ) : null}
       </div>
 
-      <DataTable headers={['Nama', 'Usia', 'Lokasi', 'Paket', 'Berlaku s/d', 'Status', 'Aksi']} isEmpty={pageRows.length === 0}>
+      <DataTable headers={['Nama', 'Usia', 'Lokasi', 'Berlaku s/d', 'Status', 'Aksi']} isEmpty={pageRows.length === 0}>
         {pageRows.map((r) => (
           <tr key={r.id} className="border-b border-gray-200 last:border-0">
             <td className="px-3.5 py-2.5">{r.nama}</td>
             <td className="px-3.5 py-2.5">{r.usia} thn</td>
             <td className="px-3.5 py-2.5">{r.lokasi}</td>
-            <td className="px-3.5 py-2.5">{r.paket}</td>
             <td className="px-3.5 py-2.5">{r.berlakuSd}</td>
+            <td className="px-3.5 py-2.5"><StatusBadge active={r.aktif} /></td>
             <td className="px-3.5 py-2.5">
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${r.aktif ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FFE4DF] text-[#B3341F]'}`}>
-                {r.aktif ? 'Aktif' : 'Non-Aktif'}
-              </span>
-            </td>
-            <td className="px-3.5 py-2.5">
-              <div className="flex gap-1.5">
-                <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'detail', id: r.id })}>
-                  Detail
-                </Button>
-                <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'edit', id: r.id })}>
-                  Edit
-                </Button>
-                <Button
-                  variant={r.aktif ? 'danger' : 'outline'}
-                  className="px-2.5 py-1 text-[13px]"
-                  onClick={() => toggleActive(r.id)}
-                >
-                  {r.aktif ? 'Nonaktifkan' : 'Aktifkan'}
-                </Button>
-              </div>
+              <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(r.id)}>
+                Detail
+              </Button>
             </td>
           </tr>
         ))}
       </DataTable>
 
-      <div className="mt-3 flex items-center justify-between text-slate-500">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-slate-500">
         <span>{filtered.length} siswa</span>
         <div className="flex items-center gap-1.5">
           <Button variant="ghost" className="px-2.5 py-1 text-[13px]" disabled={safePage < 2} onClick={() => setPage(safePage - 1)}>
@@ -194,96 +180,36 @@ export default function Siswa() {
         </div>
       </div>
 
-      {modal && active ? (
-        modal.kind === 'detail' ? (
-          <Modal title="Detail siswa" onClose={closeModal} footer={<Button variant="ghost" onClick={closeModal}>Tutup</Button>}>
-            <dl className="mb-3.5 grid grid-cols-[110px_1fr] gap-2">
-              <dt className="text-slate-500">Nama</dt>
-              <dd className="m-0">{active.nama}</dd>
-              <dt className="text-slate-500">Usia</dt>
-              <dd className="m-0">{active.usia} tahun</dd>
-              <dt className="text-slate-500">Lokasi</dt>
-              <dd className="m-0">{active.lokasi}</dd>
-              <dt className="text-slate-500">Paket</dt>
-              <dd className="m-0">{active.paket}</dd>
-              <dt className="text-slate-500">Berlaku s/d</dt>
-              <dd className="m-0">{active.berlakuSd}</dd>
-              <dt className="text-slate-500">Status</dt>
-              <dd className="m-0">{active.aktif ? 'Aktif' : 'Non-Aktif'}</dd>
-            </dl>
-          </Modal>
-        ) : modal.kind === 'edit' ? (
-          <Modal title="Edit profil siswa" onClose={closeModal}>
-            <form onSubmit={(e) => saveEdit(e, active.id)} className="grid gap-1">
-              <Field label="Nama" name="nama" defaultValue={active.nama} required />
-              <Field label="Usia (tahun)" name="usia" type="number" min={3} max={80} defaultValue={String(active.usia)} required />
-              {admin ? (
-                <label className="mb-3 block font-semibold">
-                  Lokasi
-                  <select name="lokasi" defaultValue={active.lokasi} className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium">
-                    {lokasiOptions.map((l) => (
-                      <option key={l} value={l}>{l}</option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-              <Field label="Berlaku s/d" name="berlakuSd" type="date" defaultValue={active.berlakuSd} required />
-              <label className="mb-3 block font-semibold">
-                Paket
-                <select name="paket" defaultValue={active.paket} className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium">
-                  <option value="Reguler">Reguler</option>
-                  <option value="Privat">Privat</option>
-                </select>
-              </label>
-              <div className="mt-1.5 flex justify-end gap-2">
-                <Button variant="ghost" onClick={closeModal}>Batal</Button>
-                <Button type="submit">Simpan perubahan</Button>
-              </div>
-            </form>
-          </Modal>
-        ) : (
-          <Modal title="Tambah siswa" onClose={closeModal}>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const fd = new FormData(e.currentTarget);
-              const nama = String(fd.get('nama') ?? '').trim();
-              const usia = Number(fd.get('usia'));
-              const berlakuSd = String(fd.get('berlakuSd') ?? '');
-              const paket = String(fd.get('paket') ?? '');
-              const nextLokasi = admin ? String(fd.get('lokasi') ?? '') : (user!.lokasi ?? '');
-              const telp = String(fd.get('telp') ?? '');
-              if (!nama || !Number.isFinite(usia) || !berlakuSd || !nextLokasi || !paket) return;
-              void saveNew({ nama, usia, lokasi: nextLokasi, paket: paket as 'Reguler' | 'Privat', berlakuSd, telp });
-              closeModal();
-            }} className="grid gap-1">
-              <Field label="Nama" name="nama" required />
-              <Field label="Usia (tahun)" name="usia" type="number" min={3} max={80} required />
-              <Field label="Telepon" name="telp" type="tel" required />
-              {admin ? (
-                <label className="mb-3 block font-semibold">
-                  Lokasi
-                  <select name="lokasi" defaultValue={lokasiOptions[0] ?? ''} className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium">
-                    {lokasiOptions.map((l) => (
-                      <option key={l} value={l}>{l}</option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-              <Field label="Berlaku s/d" name="berlakuSd" type="date" required />
-              <label className="mb-3 block font-semibold">
-                Paket
-                <select name="paket" defaultValue="Reguler" className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium">
-                  <option value="Reguler">Reguler</option>
-                  <option value="Privat">Privat</option>
-                </select>
-              </label>
-              <div className="mt-1.5 flex justify-end gap-2">
-                <Button variant="ghost" onClick={closeModal}>Batal</Button>
-                <Button type="submit">Simpan</Button>
-              </div>
-            </form>
-          </Modal>
-        )
+      {detail ? (
+        <Modal title="Detail siswa" onClose={() => setDetailId(null)} footer={<Button variant="ghost" onClick={() => setDetailId(null)}>Tutup</Button>}>
+          <div className="mb-4 flex items-center gap-3">
+            {photo ? (
+              <img src={photo} alt={`Foto ${detail.nama}`} className="h-16 w-16 rounded-full object-cover" />
+            ) : (
+              <span aria-hidden="true" className="grid h-16 w-16 place-items-center rounded-full bg-azure font-display text-lg font-bold text-primary">
+                {initials(detail.nama)}
+              </span>
+            )}
+            <div className="min-w-0">
+              <b className="block truncate">{detail.nama}</b>
+              <p className="m-0 truncate text-slate-500">{detail.lokasi}</p>
+            </div>
+          </div>
+          <dl className="grid grid-cols-[100px_1fr] gap-x-3 gap-y-2 sm:grid-cols-[120px_1fr]">
+            <dt className="text-slate-500">Usia</dt>
+            <dd className="m-0">{detail.usia} tahun</dd>
+            <dt className="text-slate-500">Telepon</dt>
+            <dd className="m-0">{detail.telp || '-'}</dd>
+            <dt className="text-slate-500">Lokasi</dt>
+            <dd className="m-0">{detail.lokasi}</dd>
+            <dt className="text-slate-500">Paket</dt>
+            <dd className="m-0">{detail.paket}</dd>
+            <dt className="text-slate-500">Berlaku s/d</dt>
+            <dd className="m-0">{detail.berlakuSd}</dd>
+            <dt className="text-slate-500">Status</dt>
+            <dd className="m-0"><StatusBadge active={detail.aktif} /></dd>
+          </dl>
+        </Modal>
       ) : null}
     </div>
   );

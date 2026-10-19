@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { apiGet, apiGetAbsensi, apiGetProfil, apiGetSiswa } from './api';
 import { loadResource } from './data-cache';
 import type { ServerArea, ServerInstructor, ServerLocation, ServerPackage, ServerPoolManager, ServerSession } from './api-types';
-import { setRefInstructors, setRefLocations, setRefPackages } from './ref-data';
+import { HARI } from './format';
 
 export const API_KEYS = {
   areas: '/areas',
@@ -11,36 +11,32 @@ export const API_KEYS = {
   instructors: '/instructor/management?page=1&limit=100',
   managers: '/pool-managers',
   students: '/siswa',
-  sessions: '/sessions',
   attendance: '/absensi',
   profile: '/auth/me',
 } as const;
 
+export const sessionsKey = (locationId: string): string => `sessions:${locationId}`;
+
 export const fetchAreas = (): Promise<ServerArea[]> => apiGet<ServerArea[]>(API_KEYS.areas);
 
-export const fetchLocations = async (): Promise<ServerLocation[]> => {
-  const rows = await apiGet<ServerLocation[]>(API_KEYS.locations);
-  setRefLocations(rows);
-  return rows;
-};
+export const fetchLocations = (): Promise<ServerLocation[]> => apiGet<ServerLocation[]>(API_KEYS.locations);
 
-export const fetchPackages = async (): Promise<ServerPackage[]> => {
-  const rows = await apiGet<ServerPackage[]>(API_KEYS.packages);
-  setRefPackages(rows);
-  return rows;
-};
+export const fetchPackages = (): Promise<ServerPackage[]> => apiGet<ServerPackage[]>(API_KEYS.packages);
 
-export const fetchInstructors = async (): Promise<ServerInstructor[]> => {
-  const rows = await apiGet<ServerInstructor[]>(API_KEYS.instructors);
-  setRefInstructors(rows);
-  return rows;
-};
+export const fetchInstructors = (): Promise<ServerInstructor[]> => apiGet<ServerInstructor[]>(API_KEYS.instructors);
 
 export const fetchManagers = (): Promise<ServerPoolManager[]> => apiGet<ServerPoolManager[]>(API_KEYS.managers);
 
 export const fetchStudents = () => apiGetSiswa();
 
-export const fetchSessions = (): Promise<ServerSession[]> => apiGet<ServerSession[]>(API_KEYS.sessions);
+// GET /sessions requires both locationId and dayOfWeek, so a location's weekly
+// schedule is assembled from seven requests and cached under one key.
+export async function fetchSessionsForLocation(locationId: string): Promise<ServerSession[]> {
+  const days = await Promise.all(
+    HARI.map((day) => apiGet<ServerSession[]>(`/sessions?locationId=${encodeURIComponent(locationId)}&dayOfWeek=${encodeURIComponent(day)}`)),
+  );
+  return days.flat();
+}
 
 export const fetchAttendance = () => apiGetAbsensi(API_KEYS.attendance);
 
