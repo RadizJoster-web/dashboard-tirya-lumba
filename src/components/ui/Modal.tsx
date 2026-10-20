@@ -6,9 +6,10 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  wide?: boolean;
 }
 
-export default function Modal({ title, onClose, children, footer }: ModalProps) {
+export default function Modal({ title, onClose, children, footer, wide = false }: ModalProps) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -24,7 +25,7 @@ export default function Modal({ title, onClose, children, footer }: ModalProps) 
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div role="dialog" aria-modal="true" aria-label={title} className="anim-modal w-full max-w-[440px] max-h-[90vh] overflow-auto rounded-lg bg-white p-[22px] shadow-xl">
+      <div role="dialog" aria-modal="true" aria-label={title} className={`anim-modal max-h-[90vh] w-full overflow-auto rounded-lg bg-white p-[22px] shadow-xl ${wide ? 'max-w-[720px]' : 'max-w-[440px]'}`}>
         <h3 className="mb-3.5 text-lg">{title}</h3>
         {children}
         {footer ? <div className="mt-1.5 flex justify-end gap-2">{footer}</div> : null}

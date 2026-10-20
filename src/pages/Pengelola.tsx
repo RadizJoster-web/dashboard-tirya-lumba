@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import CrudPage from '../components/CrudPage';
 import Modal from '../components/ui/Modal';
-import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import { PengelolaLoading } from '../components/loading';
 import { Button } from '../components/ui';
 import { apiSend } from '../lib/api/client';
 import { API_KEYS, fetchLocations, fetchManagers } from '../lib/api/resources';
@@ -64,12 +64,7 @@ export default function Pengelola() {
   const locationOptions = locations.map((l) => ({ value: l.id, label: l.name }));
 
   if (isLoading || locationsLoading) {
-    return (
-      <SkeletonPage label="Memuat data pengelola">
-        <SkeletonHeader action />
-        <SkeletonTable rows={6} cols={4} />
-      </SkeletonPage>
-    );
+    return <PengelolaLoading />;
   }
 
   return (
@@ -91,10 +86,11 @@ export default function Pengelola() {
           { key: 'locationId', label: 'Lokasi kolam renang', type: 'select', options: locationOptions, required: true },
         ]}
         columns={[
-          { key: 'nama', header: 'Nama' },
-          { key: 'telp', header: 'No. telepon' },
-          { key: 'lokasi', header: 'Lokasi' },
+          { key: 'nama', header: 'Nama', width: '34%', primary: true },
+          { key: 'telp', header: 'No. telepon', width: '24%' },
+          { key: 'lokasi', header: 'Lokasi', width: '26%' },
         ]}
+        actionsWidth="16%"
         rows={crudRows}
         initialOf={(id) => {
           const r = crudRows.find((x) => x.id === id);

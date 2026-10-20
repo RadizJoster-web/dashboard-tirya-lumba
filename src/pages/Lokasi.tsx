@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
 import DataTable from '../components/ui/DataTable';
+import type { DataTableColumn } from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
-import { SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import { LokasiLoading } from '../components/loading';
 import { Button, Field } from '../components/ui';
 import { apiSend } from '../lib/api/client';
 import { API_KEYS, fetchAreas, fetchLocations } from '../lib/api/resources';
@@ -91,13 +92,48 @@ export default function Lokasi() {
   }
 
   if (isLoading) {
-    return (
-      <SkeletonPage label="Memuat data lokasi">
-        <SkeletonHeader action />
-        <SkeletonTable rows={6} cols={4} />
-      </SkeletonPage>
-    );
+    return <LokasiLoading />;
   }
+
+  const columns: DataTableColumn<ServerLocation>[] = [
+    { key: 'name', header: 'Nama', width: '28%', primary: true },
+    { key: 'category', header: 'Kategori', width: '16%' },
+    {
+      key: 'mapUrl',
+      header: 'Map URL',
+      width: '34%',
+      render: (location) =>
+        location.mapUrl ? (
+          <a
+            href={location.mapUrl}
+            target="_blank"
+            rel="noreferrer"
+            title={location.mapUrl}
+            className="block max-w-full truncate text-primary underline underline-offset-2"
+          >
+            {location.mapUrl}
+          </a>
+        ) : (
+          '-'
+        ),
+    },
+    {
+      key: 'aksi',
+      header: 'Aksi',
+      width: '22%',
+      asActions: true,
+      render: (location) => (
+        <div className="flex flex-wrap gap-1.5">
+          <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setForm({ kind: 'edit', row: location })}>
+            Edit
+          </Button>
+          <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => setDeleteTarget(location)}>
+            Hapus
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -110,9 +146,7 @@ export default function Lokasi() {
       </div>
 
       {groups.length === 0 ? (
-        <DataTable headers={['Nama', 'Kategori', 'Map URL', 'Aksi']} isEmpty>
-          <></>
-        </DataTable>
+        <DataTable columns={columns} rows={[]} rowKey={(l) => l.id} emptyText="Belum ada lokasi kolam terdaftar." />
       ) : (
         <div className="grid gap-5">
           {groups.map((group) => (
@@ -121,37 +155,7 @@ export default function Lokasi() {
                 <h3 className="m-0 text-lg font-bold">{group.name}</h3>
                 <span className="text-sm text-slate-500">{group.items.length} lokasi</span>
               </div>
-              <DataTable headers={['Nama', 'Kategori', 'Map URL', 'Aksi']} isEmpty={false}>
-                {group.items.map((location) => (
-                  <tr key={location.id} className="border-b border-gray-200 last:border-0">
-                    <td className="px-3.5 py-2.5">{location.name}</td>
-                    <td className="px-3.5 py-2.5">{location.category ?? '-'}</td>
-                    <td className="px-3.5 py-2.5">
-                      {location.mapUrl ? (
-                        <a
-                          href={location.mapUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          title={location.mapUrl}
-                          className="block max-w-[260px] truncate text-primary underline underline-offset-2"
-                        >
-                          {location.mapUrl}
-                        </a>
-                      ) : '-'}
-                    </td>
-                    <td className="px-3.5 py-2.5">
-                      <div className="flex gap-1.5">
-                        <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setForm({ kind: 'edit', row: location })}>
-                          Edit
-                        </Button>
-                        <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => setDeleteTarget(location)}>
-                          Hapus
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </DataTable>
+              <DataTable columns={columns} rows={group.items} rowKey={(l) => l.id} />
             </section>
           ))}
         </div>

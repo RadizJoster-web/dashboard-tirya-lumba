@@ -3,7 +3,10 @@
 Vite + React 19 + TypeScript + Tailwind CSS v4 single-package app. Source is split into `components/`, `lib/`, and `pages/`; entry files remain `main.tsx`, `App.tsx`, and `index.css`.
 
 - `src/components/layout/` — Shell, Topbar, BrandLogo.
-- `src/components/ui/` — Button, Card, Field, RoleTag (via `index.ts`), plus DataTable, Modal, Skeleton, StatusBadge.
+- `src/components/ui/` — Button, Card, Field, RoleTag (via `index.ts`), plus DataTable, Modal, StatusBadge, Stat, ChartBar.
+- `src/components/loading/` — skeleton primitives (`primitives.tsx`) + satu komponen per halaman (`pages.tsx`), dipakai di setiap route dan di `Suspense` fallback. Folder ini menggantikan `ui/Skeleton.tsx` yang sudah dihapus.
+- `src/components/CrudPage.tsx` — scaffold CRUD tingkat atas (form + tabel + modal); bukan primitif, dipakai `Pengelola`.
+- `src/components/jadwal/` — TemplateSection, WeeklyMatrix, SavedSessionsModal, ReschedulePanel, SessionDialogs, and `session-templates.ts` helpers. Section "Ketersediaan sesi" sudah dihapus; daftar sesi tersimpan kini dibuka dari tombol "Edit jadwal" di WeeklyMatrix.
 - `src/lib/api/` — `client.ts` (fetch), `types.ts` (DTO), `cache.ts` (server-state cache), `resources.ts` (keys, fetchers, bootstrap).
 - `src/lib/local/` — local-only `registration-queue.ts` and `reschedule-requests.ts` until endpoints exist.
 - `src/lib/hooks/` — reusable hooks (e.g. `use-debounced.ts`).
@@ -32,6 +35,8 @@ No test runner, CI, or `.env` configured. Verify with `npm run lint && npm run b
 - **Animasi**: keyframes `route-in`/`modal-in`/`fade-in` + class `anim-route`/`anim-modal`/`anim-overlay` di `src/index.css`, semua dalam `@media (prefers-reduced-motion: no-preference)`. `main` di Shell memakai `anim-route` tanpa `key` per path agar halaman tidak remount; Modal pakai `anim-overlay` + `anim-modal`.
 - `src/lib/hooks/use-debounced.ts` — `useDebouncedValue` untuk search Siswa/Pelatih (300 ms).
 - `src/components/ui/StatusBadge.tsx` — badge status aktif/non-aktif yang dipakai Siswa/Pelatih.
+- **`src/components/ui/DataTable.tsx` (API baru)**: `columns: DataTableColumn<T>[]` + `rows` + `rowKey` + `actions`. Setiap kolom wajib punya `width` (persen) supaya jarak antar kolom fix; `primary` menandai kolom yang jadi judul kartu, `asActions` menandai kolom aksi yang dirender sebagai baris tombol di kartu mobile. Tabel dirender sebagai tabel fixed-layout di `sm+` dan sebagai daftar kartu di bawah `sm`, jadi tidak ada scroll horizontal di halaman.
+- **Responsive**: `main` di Shell memakai `overflow-x-clip`; tabel yang memang lebar (matriks jadwal mingguan) scroll di dalam wrapper-nya, bukan halaman.
 - `/pendaftaran` hanya berisi antrean approve/reject; wizard Form Murid/Form Pelatih sudah dihapus. Endpoint approve/reject tetap belum ada di docs sehingga `src/lib/local/registration-queue.ts` dan `src/lib/local/reschedule-requests.ts` menyimpan workflow lokal tanpa data master/demo.
 
 - Endpoints missing from the docs (still local-only): approve/reject registration, attendance, Overview statistics, profile, signup, `GET /siswa`.
@@ -41,7 +46,7 @@ No test runner, CI, or `.env` configured. Verify with `npm run lint && npm run b
 
 - **Profil** (`/profil`, menu grup "Akun", semua role): `src/pages/Profil.tsx`. Hanya menampilkan data akun; tidak ada ganti avatar karena endpoint avatar admin belum ada di docs.
 - **SEO** di `index.html`: `lang="id"`, title/meta description, favicon + OG image `=/logo-mark.svg`, Open Graph/twitter card, `preconnect` Google Fonts.
-- **Performa**: semua rute halaman lazy (`React.lazy` + `Suspense` di `src/components/layout/Shell.tsx` fallback `PageFallback`), data server di-cache `src/lib/api/cache.ts` sehingga pindah route tidak memicu request ulang. Riwayat Absensi admin dibatasi 50 baris + tombol "Tampilkan semua". Jangan kembalikan ke import statis halaman di Shell.
+- **Performa**: semua rute halaman lazy (`React.lazy` + `Suspense` di `src/components/layout/Shell.tsx` fallback `RouteLoading`), data server di-cache `src/lib/api/cache.ts` sehingga pindah route tidak memicu request ulang. Riwayat Absensi admin dibatasi 50 baris + tombol "Tampilkan semua". Jangan kembalikan ke import statis halaman di Shell.
 
 ## TypeScript strictness (`tsconfig.app.json`)
 

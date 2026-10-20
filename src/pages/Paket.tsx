@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
 import DataTable from '../components/ui/DataTable';
-import { SkeletonForm, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import { PaketLoading } from '../components/loading';
 import { Button } from '../components/ui';
 import { formatRp } from '../lib/format';
 import { apiSend } from '../lib/api/client';
@@ -108,15 +108,7 @@ export default function Paket() {
   }
 
   if (packagesLoading || locationsLoading) {
-    return (
-      <SkeletonPage label="Memuat data harga dan paket">
-        <SkeletonHeader />
-        <SkeletonForm fields={5} />
-        <div className="mt-3.5">
-          <SkeletonTable rows={4} cols={3} />
-        </div>
-      </SkeletonPage>
-    );
+    return <PaketLoading />;
   }
 
   return (
@@ -168,14 +160,15 @@ export default function Paket() {
 
       <section className="mt-5">
         <h3 className="mb-2.5 text-lg font-bold">Paket terdaftar</h3>
-        <DataTable headers={['Tipe', 'Harga']} isEmpty={currentPackages.length === 0}>
-          {currentPackages.map((item) => (
-            <tr key={item.id} className="border-b border-gray-200 last:border-0">
-              <td className="px-3.5 py-2.5">{item.type}</td>
-              <td className="px-3.5 py-2.5">{formatRp(item.price)}</td>
-            </tr>
-          ))}
-        </DataTable>
+        <DataTable
+          columns={[
+            { key: 'type', header: 'Tipe', width: '40%', primary: true },
+            { key: 'price', header: 'Harga', width: '60%', render: (item) => formatRp(item.price) },
+          ]}
+          rows={currentPackages}
+          rowKey={(item) => item.id}
+          emptyText="Belum ada paket terdaftar untuk lokasi ini."
+        />
       </section>
     </div>
   );

@@ -1,4 +1,4 @@
-import { SkeletonHeader, SkeletonPage, SkeletonProfile } from '../components/ui/Skeleton';
+import { ProfilLoading } from '../components/loading';
 import { Card, RoleTag } from '../components/ui';
 import { assetUrl } from '../lib/api/client';
 import { initials } from '../lib/format';
@@ -16,12 +16,7 @@ export default function Profil() {
   const avatarUrl = assetUrl(profil?.avatarUrl);
 
   if (isLoading) {
-    return (
-      <SkeletonPage label="Memuat profil akun">
-        <SkeletonHeader />
-        <SkeletonProfile />
-      </SkeletonPage>
-    );
+    return <ProfilLoading />;
   }
 
   return (

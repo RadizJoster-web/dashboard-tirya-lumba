@@ -58,14 +58,18 @@ export default function Pendaftaran() {
         </div>
       ) : null}
 
-      <DataTable headers={['Nama', 'Lokasi', 'Tanggal daftar', 'Aksi']} isEmpty={rows.length === 0}>
-        {rows.map((a) => (
-          <tr key={a.id} className="border-b border-gray-200 last:border-0">
-            <td className="px-3.5 py-2.5">{a.nama}</td>
-            <td className="px-3.5 py-2.5">{a.lokasi}</td>
-            <td className="px-3.5 py-2.5">{a.tgl}</td>
-            <td className="px-3.5 py-2.5">
-              <div className="flex gap-1.5">
+      <DataTable
+        columns={[
+          { key: 'nama', header: 'Nama', width: '30%', primary: true },
+          { key: 'lokasi', header: 'Lokasi', width: '30%' },
+          { key: 'tgl', header: 'Tanggal daftar', width: '20%' },
+          {
+            key: 'aksi',
+            header: 'Aksi',
+            width: '20%',
+            asActions: true,
+            render: (a) => (
+              <div className="flex flex-wrap gap-1.5">
                 <Button className="px-2.5 py-1 text-[13px]" onClick={() => onApprove(a.id)}>
                   Approve
                 </Button>
@@ -80,10 +84,13 @@ export default function Pendaftaran() {
                   Reject
                 </Button>
               </div>
-            </td>
-          </tr>
-        ))}
-      </DataTable>
+            ),
+          },
+        ]}
+        rows={rows}
+        rowKey={(a) => String(a.id)}
+        emptyText="Belum ada pendaftar yang menunggu persetujuan."
+      />
 
       {rejectTarget ? (
         <Modal title={`Tolak ${rejectTarget.nama}`} onClose={() => setRejectId(null)}>

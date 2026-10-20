@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import DataTable from '../components/ui/DataTable';
-import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import { AbsensiLoading } from '../components/loading';
 import { Button } from '../components/ui';
 import { apiSendAbsensi } from '../lib/api/client';
 import { API_KEYS, fetchAttendance, fetchInstructors, fetchLocations, fetchStudents } from '../lib/api/resources';
@@ -36,13 +36,7 @@ export default function Absensi() {
   const locations = (locationData ?? []).map((l) => l.name);
 
   if (historyLoading || studentsLoading || instructorsLoading) {
-    return (
-      <SkeletonPage label={admin ? 'Memuat riwayat absensi' : 'Memuat daftar hadir'}>
-        <SkeletonHeader action={!admin} />
-        <SkeletonFilters fields={admin ? 2 : 1} />
-        <SkeletonTable rows={6} cols={admin ? 5 : 3} />
-      </SkeletonPage>
-    );
+    return <AbsensiLoading admin={admin} />;
   }
 
   if (admin) {
@@ -68,21 +62,27 @@ export default function Absensi() {
             <option value="Pelatih">Pelatih</option>
           </select>
         </div>
-        <DataTable headers={['Tanggal', 'Nama', 'Peran', 'Lokasi', 'Status']} isEmpty={rows.length === 0}>
-          {rows.map((a, i) => (
-            <tr key={`${a.tgl}-${a.nama}-${i}`} className="border-b border-gray-200 last:border-0">
-              <td className="px-3.5 py-2.5">{a.tgl}</td>
-              <td className="px-3.5 py-2.5">{a.nama}</td>
-              <td className="px-3.5 py-2.5">{a.peran}</td>
-              <td className="px-3.5 py-2.5">{a.lokasi}</td>
-              <td className="px-3.5 py-2.5">
+        <DataTable
+          columns={[
+            { key: 'tgl', header: 'Tanggal', width: '20%', primary: true },
+            { key: 'nama', header: 'Nama', width: '28%' },
+            { key: 'peran', header: 'Peran', width: '14%' },
+            { key: 'lokasi', header: 'Lokasi', width: '22%' },
+            {
+              key: 'st',
+              header: 'Status',
+              width: '16%',
+              render: (a) => (
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${a.st === 'Hadir' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FFE4DF] text-[#B3341F]'}`}>
                   {a.st}
                 </span>
-              </td>
-            </tr>
-          ))}
-        </DataTable>
+              ),
+            },
+          ]}
+          rows={rows}
+          rowKey={(a, i) => `${a.tgl}-${a.nama}-${i}`}
+          emptyText="Belum ada riwayat absensi yang cocok."
+        />
         {!tampilSemua && allRows.length > 50 ? (
           <div className="mt-2.5 text-center">
             <Button variant="ghost" className="px-3 py-1 text-[13px]" onClick={() => setTampilSemua(true)}>
@@ -130,15 +130,18 @@ export default function Absensi() {
         </div>
         <Button onClick={() => void save()}>Simpan absensi</Button>
       </div>
-      <DataTable headers={['Nama', 'Peran', 'Kehadiran']} isEmpty={people.length === 0}>
-        {people.map((p) => {
-          const key = `${p.peran}|${p.nama}`;
-          const v = draft[key] ?? 'Tidak Hadir';
-          return (
-            <tr key={key} className="border-b border-gray-200 last:border-0">
-              <td className="px-3.5 py-2.5">{p.nama}</td>
-              <td className="px-3.5 py-2.5">{p.peran}</td>
-              <td className="px-3.5 py-2.5">
+      <DataTable
+        columns={[
+          { key: 'nama', header: 'Nama', width: '40%', primary: true },
+          { key: 'peran', header: 'Peran', width: '24%' },
+          {
+            key: 'kehadiran',
+            header: 'Kehadiran',
+            width: '36%',
+            render: (p) => {
+              const key = `${p.peran}|${p.nama}`;
+              const v = draft[key] ?? 'Tidak Hadir';
+              return (
                 <select
                   value={v}
                   onChange={(e) => setDraft((prev) => ({ ...prev, [key]: e.target.value as 'Hadir' | 'Tidak Hadir' }))}
@@ -149,11 +152,14 @@ export default function Absensi() {
                   <option value="Hadir">Hadir</option>
                   <option value="Tidak Hadir">Tidak Hadir</option>
                 </select>
-              </td>
-            </tr>
-          );
-        })}
-      </DataTable>
+              );
+            },
+          },
+        ]}
+        rows={people}
+        rowKey={(p) => `${p.peran}|${p.nama}`}
+        emptyText="Belum ada murid atau pelatih di lokasi ini."
+      />
     </div>
   );
 }

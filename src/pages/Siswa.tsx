@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
-import { SkeletonFilters, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import { SiswaLoading } from '../components/loading';
 import StatusBadge from '../components/ui/StatusBadge';
 import { Button } from '../components/ui';
 import { assetUrl } from '../lib/api/client';
@@ -76,13 +76,7 @@ export default function Siswa() {
   const resetPage = () => setPage(1);
 
   if (isLoading) {
-    return (
-      <SkeletonPage label="Memuat data siswa">
-        <SkeletonHeader />
-        <SkeletonFilters fields={admin ? 4 : 3} />
-        <SkeletonTable rows={8} cols={6} />
-      </SkeletonPage>
-    );
+    return <SiswaLoading admin={admin} />;
   }
 
   return (
@@ -148,22 +142,29 @@ export default function Siswa() {
         ) : null}
       </div>
 
-      <DataTable headers={['Nama', 'Usia', 'Lokasi', 'Berlaku s/d', 'Status', 'Aksi']} isEmpty={pageRows.length === 0}>
-        {pageRows.map((r) => (
-          <tr key={r.id} className="border-b border-gray-200 last:border-0">
-            <td className="px-3.5 py-2.5">{r.nama}</td>
-            <td className="px-3.5 py-2.5">{r.usia} thn</td>
-            <td className="px-3.5 py-2.5">{r.lokasi}</td>
-            <td className="px-3.5 py-2.5">{r.berlakuSd}</td>
-            <td className="px-3.5 py-2.5"><StatusBadge active={r.aktif} /></td>
-            <td className="px-3.5 py-2.5">
+      <DataTable
+        columns={[
+          { key: 'nama', header: 'Nama', width: '26%', primary: true },
+          { key: 'usia', header: 'Usia', width: '10%', render: (r) => `${r.usia} thn` },
+          { key: 'lokasi', header: 'Lokasi', width: '22%' },
+          { key: 'berlakuSd', header: 'Berlaku s/d', width: '16%' },
+          { key: 'aktif', header: 'Status', width: '12%', render: (r) => <StatusBadge active={r.aktif} /> },
+          {
+            key: 'aksi',
+            header: 'Aksi',
+            width: '14%',
+            asActions: true,
+            render: (r) => (
               <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(r.id)}>
                 Detail
               </Button>
-            </td>
-          </tr>
-        ))}
-      </DataTable>
+            ),
+          },
+        ]}
+        rows={pageRows}
+        rowKey={(r) => r.id}
+        emptyText="Belum ada siswa yang cocok dengan filter."
+      />
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-slate-500">
         <span>{filtered.length} siswa</span>

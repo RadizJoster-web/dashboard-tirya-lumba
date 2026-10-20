@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import Stat from '../components/Stat';
-import ChartBar from '../components/ChartBar';
-import { SkeletonChart, SkeletonHeader, SkeletonPage, SkeletonStats } from '../components/ui/Skeleton';
+import Stat from '../components/ui/Stat';
+import ChartBar from '../components/ui/ChartBar';
+import { OverviewLoading } from '../components/loading';
 import { MONTHS_SHORT } from '../lib/format';
 import { useResource } from '../lib/api/cache';
 import { API_KEYS, fetchInstructors, fetchStudents } from '../lib/api/resources';
@@ -39,13 +39,7 @@ export default function Overview() {
   const labels = MONTHS_SHORT;
 
   if (loading) {
-    return (
-      <SkeletonPage label="Memuat statistik overview">
-        <SkeletonHeader />
-        <SkeletonStats />
-        <SkeletonChart />
-      </SkeletonPage>
-    );
+    return <OverviewLoading />;
   }
 
   return (

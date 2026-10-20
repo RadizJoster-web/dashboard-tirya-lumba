@@ -21,6 +21,8 @@ export interface CrudField {
 export interface CrudColumn {
   key: string;
   header: string;
+  width?: string;
+  primary?: boolean;
   render?: (value: unknown) => ReactNode;
 }
 
@@ -37,7 +39,8 @@ interface CrudPageProps {
   fields: CrudField[];
   editFields?: CrudField[];
   columns: CrudColumn[];
-  rows: Array<{ id: number } & object>;
+  rows: Array<{ id: number } & Record<string, unknown>>;
+  actionsWidth?: string;
   initialOf: (id: number) => Record<string, string>;
   onAdd: (data: Record<string, string>, files: CrudFiles) => void;
   onEdit: (id: number, data: Record<string, string>, files: CrudFiles) => void;
@@ -69,7 +72,7 @@ function readForm(form: HTMLFormElement, fields: CrudField[]): { data: Record<st
   return { data, files };
 }
 
-export default function CrudPage({ title, subtitle, addLabel, fields, editFields, columns, rows, initialOf, onAdd, onEdit, onDelete, extraActions }: CrudPageProps) {
+export default function CrudPage({ title, subtitle, addLabel, fields, editFields, columns, rows, actionsWidth = '20%', initialOf, onAdd, onEdit, onDelete, extraActions }: CrudPageProps) {
   const [modal, setModal] = useState<CrudModal>(null);
 
   const editingId = modal && modal.kind === 'edit' ? modal.id : null;
@@ -100,28 +103,33 @@ export default function CrudPage({ title, subtitle, addLabel, fields, editFields
         <Button onClick={() => setModal({ kind: 'add' })}>{addLabel}</Button>
       </div>
 
-      <DataTable headers={[...columns.map((c) => c.header), 'Aksi']} isEmpty={rows.length === 0}>
-        {rows.map((r) => (
-          <tr key={r.id} className="border-b border-gray-200 last:border-0">
-            {columns.map((c) => (
-              <td key={c.header} className="px-3.5 py-2.5">
-                {c.render ? c.render((r as Record<string, unknown>)[c.key]) : String((r as Record<string, unknown>)[c.key] ?? '-')}
-              </td>
-            ))}
-            <td className="px-3.5 py-2.5">
-              <div className="flex gap-1.5">
-                {extraActions ? extraActions(r.id) : null}
-                <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'edit', id: r.id })}>
-                  Edit
-                </Button>
-                <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'delete', id: r.id })}>
-                  Hapus
-                </Button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </DataTable>
+      <DataTable
+        columns={[
+          ...columns.map((c) => ({
+            key: c.key,
+            header: c.header,
+            width: c.width,
+            primary: c.primary,
+            render: (row: Record<string, unknown>) =>
+              c.render ? c.render(row[c.key]) : String(row[c.key] ?? '-'),
+          })),
+        ]}
+        rows={rows}
+        rowKey={(r) => String(r.id)}
+        actionsWidth={actionsWidth}
+        actions={(r) => (
+          <div className="flex flex-wrap gap-1.5">
+            {extraActions ? extraActions(r.id) : null}
+            <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'edit', id: r.id })}>
+              Edit
+            </Button>
+            <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'delete', id: r.id })}>
+              Hapus
+            </Button>
+          </div>
+        )}
+        emptyText="Belum ada data yang cocok."
+      />
 
       {modal && (modal.kind === 'add' || editingId !== null) ? (
         <Modal title={modal.kind === 'add' ? `${addLabel} ${title}` : `Edit ${title}`} onClose={() => setModal(null)}>

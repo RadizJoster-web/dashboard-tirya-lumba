@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
-import { SkeletonDetail, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
+import { PelatihLoading, SkeletonDetail } from '../components/loading';
 import StatusBadge from '../components/ui/StatusBadge';
 import { Button } from '../components/ui';
 import { apiGet, assetUrl } from '../lib/api/client';
@@ -57,12 +57,7 @@ export default function Pelatih() {
   }
 
   if (isLoading) {
-    return (
-      <SkeletonPage label="Memuat data pelatih">
-        <SkeletonHeader />
-        <SkeletonTable rows={8} cols={4} />
-      </SkeletonPage>
-    );
+    return <PelatihLoading />;
   }
 
   return (
@@ -98,12 +93,16 @@ export default function Pelatih() {
         </select>
       </div>
 
-      <DataTable headers={['Nama', 'Telepon', 'Status', 'Aksi']} isEmpty={pageRows.length === 0}>
-        {pageRows.map((r) => {
-          const photo = assetUrl(r.profilePictureUrl);
-          return (
-            <tr key={r.id} className="border-b border-gray-200 last:border-0">
-              <td className="px-3.5 py-2.5">
+      <DataTable
+        columns={[
+          {
+            key: 'fullName',
+            header: 'Nama',
+            width: '40%',
+            primary: true,
+            render: (r) => {
+              const photo = assetUrl(r.profilePictureUrl);
+              return (
                 <div className="flex items-center gap-2.5">
                   {photo ? (
                     <img src={photo} alt="" className="h-8 w-8 rounded-full object-cover" />
@@ -112,20 +111,29 @@ export default function Pelatih() {
                       {initials(r.fullName)}
                     </span>
                   )}
-                  <span>{r.fullName}</span>
+                  <span className="min-w-0 truncate">{r.fullName}</span>
                 </div>
-              </td>
-              <td className="px-3.5 py-2.5">{r.phone ?? '-'}</td>
-              <td className="px-3.5 py-2.5"><StatusBadge active={r.isActive} /></td>
-              <td className="px-3.5 py-2.5">
-                <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(r.id)}>
-                  Detail
-                </Button>
-              </td>
-            </tr>
-          );
-        })}
-      </DataTable>
+              );
+            },
+          },
+          { key: 'phone', header: 'Telepon', width: '22%', render: (r) => r.phone ?? '-' },
+          { key: 'isActive', header: 'Status', width: '18%', render: (r) => <StatusBadge active={r.isActive} /> },
+          {
+            key: 'aksi',
+            header: 'Aksi',
+            width: '20%',
+            asActions: true,
+            render: (r) => (
+              <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setDetailId(r.id)}>
+                Detail
+              </Button>
+            ),
+          },
+        ]}
+        rows={pageRows}
+        rowKey={(r) => r.id}
+        emptyText="Belum ada pelatih yang cocok."
+      />
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-slate-500">
         <span>{filtered.length} pelatih</span>

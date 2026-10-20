@@ -1,69 +1,21 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import DataTable from '../components/ui/DataTable';
-import Modal from '../components/ui/Modal';
-import { SkeletonForm, SkeletonHeader, SkeletonPage, SkeletonTable } from '../components/ui/Skeleton';
-import { Button, Field } from '../components/ui';
+import { JadwalLoading } from '../components/loading';
+import { Button } from '../components/ui';
 import { apiSend } from '../lib/api/client';
 import { API_KEYS, fetchLocations, fetchSessionsForLocation, sessionsKey } from '../lib/api/resources';
 import type { ServerSession } from '../lib/api/types';
 import { useResource } from '../lib/api/cache';
 import { HARI } from '../lib/format';
 import { resolveResched, useResched } from '../lib/local/reschedule-requests';
-
-interface SessionTemplate {
-  id: string;
-  name: string;
-  startTime: string;
-  endTime: string;
-}
-
-const TEMPLATE_KEY = 'tl_session_templates';
-const DAY_SHORT = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-const inputClass = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium';
-const filterClass = 'w-auto min-w-[150px] rounded-lg border border-gray-300 bg-white px-3 py-2';
-
-function plusHour(time: string): string {
-  const [hours, minutes] = time.split(':').map(Number);
-  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return '';
-  const total = (hours * 60 + minutes + 60) % (24 * 60);
-  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
-}
-
-function slotKey(name: string, day: string): string {
-  return `${name}|${day}`;
-}
-
-function isTemplate(value: unknown): value is SessionTemplate {
-  if (!value || typeof value !== 'object') return false;
-  const row = value as Record<string, unknown>;
-  return (
-    typeof row.id === 'string' &&
-    typeof row.name === 'string' &&
-    typeof row.startTime === 'string' &&
-    typeof row.endTime === 'string'
-  );
-}
-
-function readTemplates(): SessionTemplate[] {
-  try {
-    const raw = localStorage.getItem(TEMPLATE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? parsed.filter(isTemplate) : [];
-  } catch {
-    return [];
-  }
-}
-
-function persistTemplates(rows: SessionTemplate[]): void {
-  try {
-    localStorage.setItem(TEMPLATE_KEY, JSON.stringify(rows));
-  } catch {
-    // storage unavailable; the list still lives in component state
-  }
-}
+import TemplateSection from '../components/jadwal/TemplateSection';
+import WeeklyMatrix from '../components/jadwal/WeeklyMatrix';
+import ReschedulePanel from '../components/jadwal/ReschedulePanel';
+import SavedSessionsModal from '../components/jadwal/SavedSessionsModal';
+import SessionDialogs from '../components/jadwal/SessionDialogs';
+import { persistTemplates, plusHour, readTemplates, slotKey } from '../components/jadwal/session-templates';
+import type { SessionTemplate } from '../components/jadwal/session-templates';
 
 export default function Jadwal() {
   const resched = useResched();
@@ -72,8 +24,7 @@ export default function Jadwal() {
   const [startTime, setStartTime] = useState('09:00');
   const [locationId, setLocationId] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [fHari, setFHari] = useState('');
-  const [fSesi, setFSesi] = useState('');
+  const [savedOpen, setSavedOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ServerSession | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ServerSession | null>(null);
   const [saving, setSaving] = useState(false);
@@ -97,24 +48,13 @@ export default function Jadwal() {
     () => new Set(sessions.map((s) => slotKey(s.sessionName, s.dayOfWeek))),
     [sessions],
   );
-  const dayOptions = useMemo(() => HARI.filter((day) => sessions.some((s) => s.dayOfWeek === day)), [sessions]);
-  const sessionOptions = useMemo(
-    () => [...new Set(sessions.map((s) => s.sessionName))].sort((a, b) => a.localeCompare(b, 'id')),
-    [sessions],
-  );
-  const available = useMemo(
-    () => sessions.filter((s) => (!fHari || s.dayOfWeek === fHari) && (!fSesi || s.sessionName === fSesi)),
-    [sessions, fHari, fSesi],
-  );
-
   const locationName = locations.find((l) => l.id === activeLocationId)?.name ?? '';
   const nextEnd = plusHour(startTime);
 
   function changeLocation(id: string) {
     setLocationId(id);
     setSelected(new Set());
-    setFHari('');
-    setFSesi('');
+    setSavedOpen(false);
   }
 
   function addTemplate(e: FormEvent<HTMLFormElement>) {
@@ -161,6 +101,20 @@ export default function Jadwal() {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
+      return next;
+    });
+  }
+
+  function toggleRow(template: SessionTemplate) {
+    const editable = HARI.map((day) => slotKey(template.name, day)).filter((key) => !existing.has(key));
+    if (editable.length === 0) return;
+    const clear = editable.every((key) => selected.has(key));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const key of editable) {
+        if (clear) next.delete(key);
+        else next.add(key);
+      }
       return next;
     });
   }
@@ -249,15 +203,7 @@ export default function Jadwal() {
   }
 
   if (locationsLoading || (activeLocationId && !sessionData && !sessionsError)) {
-    return (
-      <SkeletonPage label="Memuat jadwal dan sesi">
-        <SkeletonHeader />
-        <SkeletonForm fields={3} />
-        <div className="mt-3.5">
-          <SkeletonTable rows={4} cols={4} />
-        </div>
-      </SkeletonPage>
-    );
+    return <JadwalLoading />;
   }
 
   return (
@@ -278,249 +224,61 @@ export default function Jadwal() {
 
       <div className="grid items-start gap-3.5 min-[1100px]:grid-cols-[1fr_320px]">
         <div className="grid gap-3.5">
-          <section className="rounded-lg border border-gray-200 bg-white">
-            <div className="p-4">
-              <h3 className="m-0 text-lg font-bold">Sesi</h3>
-              <p className="mt-1 mb-0 text-sm text-slate-500">Buat nama sesi dan jam mulai. Jam selesai otomatis +1 jam.</p>
-              <form onSubmit={addTemplate} className="mt-3 grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_140px_140px_auto]">
-                <label className="block font-semibold">
-                  Nama sesi
-                  <input
-                    value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    placeholder="Contoh: Sesi 1"
-                    required
-                    className={inputClass}
-                  />
-                </label>
-                <label className="block font-semibold">
-                  Jam mulai
-                  <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required className={inputClass} />
-                </label>
-                <div>
-                  <span className="block font-semibold">Jam selesai</span>
-                  <span className="mt-1 flex min-h-[42px] items-center rounded-lg bg-basedash px-3 py-2 font-medium text-slate-600">
-                    {nextEnd || '-'}
-                  </span>
-                </div>
-                <Button type="submit">Tambah sesi</Button>
-              </form>
-            </div>
-            {templates.length === 0 ? (
-              <p className="m-0 border-t border-gray-200 px-4 py-5 text-sm text-slate-500">
-                Belum ada sesi. Tambahkan sesi pertama di atas.
-              </p>
-            ) : (
-              <ul className="m-0 list-none divide-y divide-gray-200 border-t border-gray-200 p-0">
-                {templates.map((template) => (
-                  <li key={template.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
-                    <span>
-                      <b>{template.name}</b>
-                      <span className="ml-2 text-sm text-slate-500">{template.startTime} - {template.endTime}</span>
-                    </span>
-                    <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => removeTemplate(template.id)}>
-                      Hapus
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          <TemplateSection
+            templates={templates}
+            templateName={templateName}
+            startTime={startTime}
+            nextEnd={nextEnd}
+            onNameChange={setTemplateName}
+            onStartTimeChange={setStartTime}
+            onSubmit={addTemplate}
+            onRemove={removeTemplate}
+          />
 
-          <section className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 className="m-0 text-lg font-bold">Jadwal mingguan</h3>
-                <p className="mt-1 mb-0 text-sm text-slate-500">Centang hari untuk setiap sesi yang akan dikirim.</p>
-              </div>
-              <label className="block min-w-[220px] font-semibold">
-                Lokasi
-                <select value={activeLocationId} onChange={(e) => changeLocation(e.target.value)} className={inputClass}>
-                  <option value="">Pilih lokasi</option>
-                  {locations.map((location) => (
-                    <option key={location.id} value={location.id}>{location.name}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {locations.length === 0 ? (
-              <p className="mt-3 mb-0 rounded-lg bg-basedash p-3 text-sm text-slate-500">
-                Belum ada lokasi terdaftar. Tambahkan lokasi terlebih dahulu.
-              </p>
-            ) : templates.length === 0 ? (
-              <p className="mt-3 mb-0 rounded-lg bg-basedash p-3 text-sm text-slate-500">
-                Tambahkan sesi di atas untuk mulai menyusun jadwal.
-              </p>
-            ) : (
-              <>
-                <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200">
-                  <table className="w-full min-w-[720px] border-collapse">
-                    <thead>
-                      <tr>
-                        <th className="border-b border-gray-200 bg-basedash px-3 py-2.5 text-left font-semibold text-slate-500">Sesi</th>
-                        {HARI.map((day, index) => (
-                          <th key={day} title={day} className="border-b border-gray-200 bg-basedash px-3 py-2.5 text-center font-semibold text-slate-500">
-                            {DAY_SHORT[index]}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {templates.map((template) => (
-                        <tr key={template.id} className="border-b border-gray-200 last:border-0">
-                          <td className="px-3 py-2.5">
-                            <b className="block">{template.name}</b>
-                            <span className="text-xs text-slate-500">{template.startTime} - {template.endTime}</span>
-                          </td>
-                          {HARI.map((day) => {
-                            const key = slotKey(template.name, day);
-                            const saved = existing.has(key);
-                            return (
-                              <td key={day} className="px-3 py-2.5 text-center">
-                                <input
-                                  type="checkbox"
-                                  checked={saved || selected.has(key)}
-                                  disabled={saved || saving}
-                                  onChange={() => toggleSlot(key)}
-                                  aria-label={`${template.name} hari ${day}`}
-                                  className="h-5 w-5 accent-primary"
-                                />
-                                {saved ? <span className="mt-0.5 block text-[11px] text-slate-500">tersimpan</span> : null}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="m-0 text-sm text-slate-500">
-                    {locationName ? `Lokasi: ${locationName}. ` : ''}Sesi bertanda tersimpan tidak bisa dicentang ulang.
-                  </p>
-                  <Button onClick={() => void submitSchedule()} disabled={saving}>
-                    {saving ? 'Mengirim…' : 'Kirim jadwal'}
-                  </Button>
-                </div>
-              </>
-            )}
-          </section>
-
-          <section className="rounded-lg border border-gray-200 bg-white">
-            <div className="border-b border-gray-200 p-4">
-              <h3 className="m-0 text-lg font-bold">Ketersediaan sesi</h3>
-              <p className="mt-1 mb-0 text-sm text-slate-500">Jadwal tersimpan untuk lokasi terpilih.</p>
-              <div className="mt-3 flex flex-wrap gap-2.5">
-                <select value={fHari} onChange={(e) => setFHari(e.target.value)} aria-label="Filter hari" className={filterClass}>
-                  <option value="">Semua hari</option>
-                  {dayOptions.map((day) => (
-                    <option key={day} value={day}>{day}</option>
-                  ))}
-                </select>
-                <select value={fSesi} onChange={(e) => setFSesi(e.target.value)} aria-label="Filter sesi" className={filterClass}>
-                  <option value="">Semua sesi</option>
-                  {sessionOptions.map((name) => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="p-4">
-              <DataTable headers={['Hari', 'Sesi', 'Jam', 'Aksi']} isEmpty={available.length === 0} emptyText="Belum ada jadwal tersimpan untuk lokasi ini.">
-                {available.map((session) => (
-                  <tr key={session.id} className="border-b border-gray-200 last:border-0">
-                    <td className="px-3.5 py-2.5">{session.dayOfWeek}</td>
-                    <td className="px-3.5 py-2.5">{session.sessionName}</td>
-                    <td className="px-3.5 py-2.5">{session.startTime} - {session.endTime}</td>
-                    <td className="px-3.5 py-2.5">
-                      <div className="flex gap-1.5">
-                        <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setEditTarget(session)}>
-                          Edit
-                        </Button>
-                        <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => setDeleteTarget(session)}>
-                          Hapus
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </DataTable>
-            </div>
-          </section>
+          <WeeklyMatrix
+            locations={locations}
+            activeLocationId={activeLocationId}
+            locationName={locationName}
+            templates={templates}
+            existing={existing}
+            selected={selected}
+            saving={saving}
+            onLocationChange={changeLocation}
+            onToggle={toggleSlot}
+            onToggleRow={toggleRow}
+            onOpenSaved={() => setSavedOpen(true)}
+            onSubmit={() => void submitSchedule()}
+          />
         </div>
 
-        <aside className="rounded-lg border border-gray-200 bg-white p-4">
-          <h3 className="m-0 text-lg font-bold">Perubahan jadwal</h3>
-          <p className="mt-1 mb-0 text-sm text-slate-500">Laporan guru yang menunggu keputusan.</p>
-          {resched.length === 0 ? (
-            <p className="mt-3 mb-0 rounded-lg bg-basedash p-3 text-sm text-slate-500">
-              Belum ada laporan perubahan jadwal.
-            </p>
-          ) : (
-            <ul className="m-0 mt-3 list-none divide-y divide-gray-200 p-0">
-              {resched.map((request) => (
-                <li key={request.id} className="py-3">
-                  <b className="block">{request.pelatih}</b>
-                  <span className="text-sm text-slate-500">{request.hari} · {request.jam}</span>
-                  <p className="my-1 text-sm">{request.alasan}</p>
-                  <div className="mt-2 flex gap-2">
-                    <Button className="px-2.5 py-1 text-[13px]" onClick={() => decideReschedule(request.id, true)}>
-                      Setujui
-                    </Button>
-                    <Button variant="danger" className="px-2.5 py-1 text-[13px]" onClick={() => decideReschedule(request.id, false)}>
-                      Tolak
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </aside>
+        <ReschedulePanel requests={resched} onDecide={decideReschedule} />
       </div>
 
-      {editTarget ? (
-        <Modal title="Edit sesi" onClose={() => setEditTarget(null)}>
-          <form onSubmit={saveEdit} className="grid gap-1">
-            <Field label="Nama sesi" name="sessionName" defaultValue={editTarget.sessionName} required />
-            <label className="mb-3 block font-semibold">
-              Hari
-              <select name="dayOfWeek" defaultValue={editTarget.dayOfWeek} className={inputClass}>
-                {HARI.map((day) => (
-                  <option key={day} value={day}>{day}</option>
-                ))}
-              </select>
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Jam mulai" name="startTime" type="time" defaultValue={editTarget.startTime} required />
-              <Field label="Jam selesai" name="endTime" type="time" defaultValue={editTarget.endTime} required />
-            </div>
-            <div className="mt-1.5 flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setEditTarget(null)}>Batal</Button>
-              <Button type="submit" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan'}</Button>
-            </div>
-          </form>
-        </Modal>
+      {savedOpen ? (
+        <SavedSessionsModal
+          locationName={locationName}
+          sessions={sessions}
+          onClose={() => setSavedOpen(false)}
+          onEdit={(session) => {
+            setSavedOpen(false);
+            setEditTarget(session);
+          }}
+          onDelete={(session) => {
+            setSavedOpen(false);
+            setDeleteTarget(session);
+          }}
+        />
       ) : null}
 
-      {deleteTarget ? (
-        <Modal
-          title="Hapus sesi?"
-          onClose={() => setDeleteTarget(null)}
-          footer={
-            <>
-              <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Batal</Button>
-              <Button variant="danger" onClick={() => void deleteSession()} disabled={saving}>
-                {saving ? 'Menghapus…' : 'Hapus'}
-              </Button>
-            </>
-          }
-        >
-          <p className="mb-3.5">
-            Sesi <b>{deleteTarget.sessionName}</b> hari <b>{deleteTarget.dayOfWeek}</b> ({deleteTarget.startTime} - {deleteTarget.endTime}) akan dihapus.
-          </p>
-        </Modal>
-      ) : null}
+      <SessionDialogs
+        editTarget={editTarget}
+        deleteTarget={deleteTarget}
+        saving={saving}
+        onCloseEdit={() => setEditTarget(null)}
+        onCloseDelete={() => setDeleteTarget(null)}
+        onSaveEdit={saveEdit}
+        onDelete={() => void deleteSession()}
+      />
     </div>
   );
 }

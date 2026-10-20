@@ -16,22 +16,12 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Topbar from './Topbar';
-import { SkeletonHeader, SkeletonPage, SkeletonStats, SkeletonTable } from '../ui/Skeleton';
+import { RouteLoading } from '../loading';
 import { useAuth } from '../../lib/auth-context';
 import { logout, pathsFor } from '../../lib/auth';
 import { useUiStore } from '../../lib/ui-store';
 import { useBootstrapData } from '../../lib/api/resources';
 import { useAntrean } from '../../lib/local/registration-queue';
-
-function PageFallback() {
-  return (
-    <SkeletonPage label="Memuat halaman">
-      <SkeletonHeader />
-      <SkeletonStats />
-      <SkeletonTable rows={5} cols={5} />
-    </SkeletonPage>
-  );
-}
 
 const GROUPS: Array<{ title: string; paths: string[] }> = [
   { title: 'Operasional', paths: ['/overview', '/pendaftaran', '/absen', '/siswa'] },
@@ -180,8 +170,8 @@ export default function Shell() {
 
       <div className={`min-w-0 transition-[padding] duration-300 ease-in-out ${sidebarOpen ? 'min-[861px]:pl-[248px]' : ''}`}>
         <Topbar user={user!} onLogout={handleLogout} />
-        <main className="p-6 px-7 max-[860px]:p-4 min-w-0">
-          <Suspense fallback={<PageFallback />}>
+        <main className="min-w-0 overflow-x-clip p-6 px-7 max-[860px]:p-4">
+          <Suspense fallback={<RouteLoading />}>
             <div className="anim-route min-w-0">
               <Outlet />
             </div>
