@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SiswaLoading } from '../../components/loading';
 import { useAuth } from '../../lib/auth-context';
 import { useDebouncedValue } from '../../lib/hooks/use-debounced';
@@ -7,13 +8,13 @@ import SiswaFilterBar from './SiswaFilterBar';
 import SiswaTable from './SiswaTable';
 import { matchesAge } from './types';
 import SiswaPagination from './SiswaPagination';
-import SiswaDetailModal from './SiswaDetailModal';
 import { useSiswaData } from './useSiswaData';
 
 const PAGE_SIZE = 8;
 
 export default function Siswa() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const admin = user!.role === 'admin';
   const [q, setQ] = useState('');
   const debouncedQ = useDebouncedValue(q);
@@ -21,15 +22,16 @@ export default function Siswa() {
   const [lokasi, setLokasi] = useState('');
   const [usia, setUsia] = useState('');
   const [page, setPage] = useState(1);
-  const [detailId, setDetailId] = useState<string | null>(null);
 
   const { siswa, isLoading, locationOptions } = useSiswaData();
 
   const filtered = useMemo(() => {
+    // Jika pool manager, data backend sudah terfilter khusus kolamnya jika backend menyaringnya.
+    // Jika user.lokasi ada, saring sesuai lokasi tersebut jika belum terfilter.
     const scoped =
       admin || !user!.lokasi
         ? siswa
-        : siswa.filter((r) => r.lokasi === user!.lokasi);
+        : siswa.filter((r) => r.lokasi === user!.lokasi || !r.lokasi || r.lokasi === '-');
     const query = debouncedQ.trim().toLowerCase();
     return scoped.filter(
       (r) =>
@@ -46,9 +48,6 @@ export default function Siswa() {
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
-
-  const detail =
-    detailId !== null ? siswa.find((r) => r.id === detailId) ?? null : null;
 
   function resetPage() {
     setPage(1);
@@ -86,7 +85,10 @@ export default function Siswa() {
         locationOptions={locationOptions}
       />
 
-      <SiswaTable rows={pageRows} onSelectDetail={setDetailId} />
+      <SiswaTable
+        rows={pageRows}
+        onSelectDetail={(id) => navigate(`/siswa/${id}`)}
+      />
 
       <SiswaPagination
         totalItems={filtered.length}
@@ -95,8 +97,6 @@ export default function Siswa() {
         onPrev={() => setPage(safePage - 1)}
         onNext={() => setPage(safePage + 1)}
       />
-
-      <SiswaDetailModal detail={detail} onClose={() => setDetailId(null)} />
     </div>
   );
 }

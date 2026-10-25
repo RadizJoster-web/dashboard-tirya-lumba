@@ -23,6 +23,7 @@ const PelatihDetail = lazy(() => import('./pages/Pelatih/Detail'));
 const Pengelola = lazy(() => import('./pages/Pengelola'));
 const Absensi = lazy(() => import('./pages/Absensi'));
 const Siswa = lazy(() => import('./pages/Siswa'));
+const SiswaDetail = lazy(() => import('./pages/Siswa/Detail'));
 const Profil = lazy(() => import('./pages/Profil'));
 
 export default function App() {
@@ -71,6 +72,7 @@ export default function App() {
               <Route path="pengelola" element={<Pengelola />} />
               <Route path="absen" element={<Absensi />} />
               <Route path="siswa" element={<Siswa />} />
+              <Route path="siswa/:id" element={<SiswaDetail />} />
               <Route path="profil" element={<Profil />} />
             </Route>
           </Routes>

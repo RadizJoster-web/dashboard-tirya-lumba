@@ -3,9 +3,7 @@ import DataTable from '../../components/ui/DataTable';
 import type { DataTableColumn } from '../../components/ui/DataTable';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Button } from '../../components/ui';
-import { assetUrl } from '../../lib/api/client';
 import type { ServerInstructor } from '../../lib/api/types';
-import { initials } from '../../lib/format';
 
 interface PelatihTableProps {
   rows: ServerInstructor[];
@@ -23,28 +21,9 @@ export default function PelatihTable({
         header: 'Nama',
         width: '40%',
         primary: true,
-        render: (r) => {
-          const photo = assetUrl(r.profilePictureUrl);
-          return (
-            <div className="flex items-center gap-2.5">
-              {photo ? (
-                <img
-                  src={photo}
-                  alt=""
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-azure text-xs font-bold text-primary"
-                >
-                  {initials(r.fullName)}
-                </span>
-              )}
-              <span className="min-w-0 truncate">{r.fullName}</span>
-            </div>
-          );
-        },
+        render: (r) => (
+          <span className="font-medium text-slate-800 truncate">{r.fullName}</span>
+        ),
       },
       {
         key: 'phone',

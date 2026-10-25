@@ -69,9 +69,10 @@ export async function authenticate(idRaw: string, password: string, remember: bo
     const user: SessionUser = {
       username: data.user.email,
       role: roleFromServer(data.user.role),
-      nama: data.user.email,
+      nama: (data.user as any).fullName || data.user.email,
       email: data.user.email,
       userId: data.user.userId,
+      lokasi: (data.user as any).locationName || (data.user as any).lokasi || undefined,
     };
     persist(user, jwtExpiry(data.token), remember);
     return { ok: true, user };
@@ -132,7 +133,7 @@ export const NAV: { path: string; label: string }[] = [
 
 export const ROLE_PATHS: Record<Role, string[]> = {
   admin: NAV.map((n) => n.path),
-  pengelola: ['/overview', '/pendaftaran', '/absen', '/siswa', '/profil'],
+  pengelola: ['/overview', '/pendaftaran', '/siswa', '/pelatih', '/absen', '/profil'],
 };
 
 export function pathsFor(role: Role): { path: string; label: string }[] {

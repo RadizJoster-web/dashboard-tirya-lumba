@@ -4,14 +4,20 @@ interface OverviewStatsProps {
   totalSiswa: number;
   totalGuru: number;
   totalPendaftar: number;
+  pendaftarLabel?: string;
 }
 
-export default function OverviewStats({ totalSiswa, totalGuru, totalPendaftar }: OverviewStatsProps) {
+export default function OverviewStats({
+  totalSiswa,
+  totalGuru,
+  totalPendaftar,
+  pendaftarLabel = 'Total pendaftar (periode ini)',
+}: OverviewStatsProps) {
   return (
-    <div className="mb-3.5 flex flex-wrap gap-2.5">
+    <div className="mb-4 flex flex-wrap gap-3">
       <Stat label="Total siswa" value={String(totalSiswa)} />
       <Stat label="Total guru" value={String(totalGuru)} />
-      <Stat label="Total pendaftar (tahun ini)" value={String(totalPendaftar)} />
+      <Stat label={pendaftarLabel} value={String(totalPendaftar)} />
     </div>
   );
 }

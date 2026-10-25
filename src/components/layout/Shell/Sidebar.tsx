@@ -5,8 +5,8 @@ import SidebarUserCard from './SidebarUserCard';
 import type { SessionUser } from '../../../lib/auth';
 
 const GROUPS: Array<{ title: string; paths: string[] }> = [
-  { title: 'Operasional', paths: ['/overview', '/pendaftaran', '/absen', '/siswa'] },
-  { title: 'Master Data', paths: ['/jadwal', '/lokasi', '/paket', '/pelatih', '/pengelola'] },
+  { title: 'Operasional', paths: ['/overview', '/pendaftaran', '/siswa', '/pelatih', '/absen'] },
+  { title: 'Master Data', paths: ['/jadwal', '/lokasi', '/paket', '/pengelola'] },
   { title: 'Akun', paths: ['/profil'] },
 ];
 
