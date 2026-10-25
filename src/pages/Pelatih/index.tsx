@@ -1,16 +1,17 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PelatihLoading } from '../../components/loading';
 import { useDebouncedValue } from '../../lib/hooks/use-debounced';
 import PelatihHeader from './PelatihHeader';
 import PelatihFilterBar from './PelatihFilterBar';
 import PelatihTable from './PelatihTable';
 import PelatihPagination from './PelatihPagination';
-import PelatihDetailModal from './PelatihDetailModal';
 import { usePelatihData } from './usePelatihData';
 
 const PAGE_SIZE = 8;
 
 export default function Pelatih() {
+  const navigate = useNavigate();
   const [q, setQ] = useState('');
   const debouncedQ = useDebouncedValue(q);
   const [status, setStatus] = useState('');
@@ -19,12 +20,6 @@ export default function Pelatih() {
   const {
     instructors,
     isLoading,
-    detail,
-    detailLoading,
-    detailError,
-    reloadDetail,
-    detailId,
-    setDetailId,
   } = usePelatihData();
 
   const filtered = useMemo(() => {
@@ -65,7 +60,10 @@ export default function Pelatih() {
         }}
       />
 
-      <PelatihTable rows={pageRows} onSelectDetail={setDetailId} />
+      <PelatihTable
+        rows={pageRows}
+        onSelectDetail={(id) => navigate(`/pelatih/${id}`)}
+      />
 
       <PelatihPagination
         totalItems={filtered.length}
@@ -73,15 +71,6 @@ export default function Pelatih() {
         totalPages={totalPages}
         onPrev={() => setPage(safePage - 1)}
         onNext={() => setPage(safePage + 1)}
-      />
-
-      <PelatihDetailModal
-        isOpen={Boolean(detailId)}
-        detail={detail}
-        detailLoading={detailLoading}
-        detailError={detailError}
-        onClose={() => setDetailId(null)}
-        onRetry={() => void reloadDetail()}
       />
     </div>
   );

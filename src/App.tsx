@@ -19,6 +19,7 @@ const Jadwal = lazy(() => import('./pages/Jadwal'));
 const Lokasi = lazy(() => import('./pages/Lokasi'));
 const Paket = lazy(() => import('./pages/Paket'));
 const Pelatih = lazy(() => import('./pages/Pelatih'));
+const PelatihDetail = lazy(() => import('./pages/Pelatih/Detail'));
 const Pengelola = lazy(() => import('./pages/Pengelola'));
 const Absensi = lazy(() => import('./pages/Absensi'));
 const Siswa = lazy(() => import('./pages/Siswa'));
@@ -66,6 +67,7 @@ export default function App() {
               <Route path="lokasi" element={<Lokasi />} />
               <Route path="paket" element={<Paket />} />
               <Route path="pelatih" element={<Pelatih />} />
+              <Route path="pelatih/:id" element={<PelatihDetail />} />
               <Route path="pengelola" element={<Pengelola />} />
               <Route path="absen" element={<Absensi />} />
               <Route path="siswa" element={<Siswa />} />

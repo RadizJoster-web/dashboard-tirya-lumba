@@ -6,20 +6,31 @@ import type {
   AbsenPayload,
   AbsenResult,
   ServerAbsen,
-  ServerInstructor,
   ServerLocation,
-  ServerSiswa,
 } from '../../lib/api/types';
 import { useAuth } from '../../lib/auth-context';
+
+export interface AbsensiTodayItem {
+  peran: 'Murid' | 'Pelatih';
+  nama: string;
+  lokasi: string;
+  sesi: string;
+  status: 'Hadir' | 'Tidak Hadir';
+}
+
+interface TodayApiResponse {
+  success: boolean;
+  today: string;
+  date: string;
+  totalItems: number;
+  data: AbsensiTodayItem[];
+}
 
 const fetchAttendance = (): Promise<ServerAbsen[]> =>
   apiGet<ServerAbsen[]>('/absensi');
 
-const fetchStudents = (): Promise<ServerSiswa[]> =>
-  apiGet<ServerSiswa[]>('/siswa');
-
-const fetchInstructors = (): Promise<ServerInstructor[]> =>
-  apiGet<ServerInstructor[]>('/instructor/management?page=1&limit=100');
+const fetchTodayPeople = (): Promise<TodayApiResponse> =>
+  apiGet<TodayApiResponse>('/absensi/today');
 
 const fetchLocations = (): Promise<ServerLocation[]> =>
   apiGet<ServerLocation[]>('/locations');
@@ -36,42 +47,34 @@ export function useAbsensiData() {
   const {
     data: history,
     loading: historyLoading,
-    reload,
+    reload: reloadHistory,
   } = useResource('/absensi', fetchAttendance);
 
-  const { data: studentData, loading: studentsLoading } = useResource(
-    '/siswa',
-    fetchStudents,
-  );
-
-  const { data: instructorData, loading: instructorsLoading } = useResource(
-    '/instructor/management?page=1&limit=100',
-    fetchInstructors,
-  );
+  const {
+    data: todayResponse,
+    loading: todayLoading,
+    reload: reloadToday,
+  } = useResource('/absensi/today', fetchTodayPeople);
 
   const { data: locationData } = useResource('/locations', fetchLocations);
 
   const absen = useMemo(() => history ?? [], [history]);
-  const siswa = useMemo(() => studentData ?? [], [studentData]);
-  const pelatih = useMemo(() => instructorData ?? [], [instructorData]);
   const locations = useMemo(
     () => (locationData ?? []).map((l) => l.name),
     [locationData],
   );
 
-  const people = useMemo(() => {
-    return [
-      ...pelatih
-        .filter((p) => p.isActive)
-        .map((p) => ({ peran: 'Pelatih' as const, nama: p.fullName })),
-      ...siswa
-        .filter((s) => s.lokasi === lokasi && s.aktif)
-        .slice(0, 6)
-        .map((s) => ({ peran: 'Murid' as const, nama: s.nama })),
-    ];
-  }, [pelatih, siswa, lokasi]);
+  const rawPeople = useMemo(
+    () => todayResponse?.data ?? [],
+    [todayResponse],
+  );
 
-  const loading = historyLoading || studentsLoading || instructorsLoading;
+  const people = useMemo(() => {
+    if (admin) return rawPeople;
+    return rawPeople.filter((p) => !lokasi || p.lokasi === lokasi);
+  }, [rawPeople, admin, lokasi]);
+
+  const loading = historyLoading || todayLoading;
 
   async function submitAttendance(
     draft: Record<string, 'Hadir' | 'Tidak Hadir'>,
@@ -80,14 +83,14 @@ export function useAbsensiData() {
       tgl: todayIso(),
       nama: p.nama,
       peran: p.peran,
-      lokasi,
-      st: draft[`${p.peran}|${p.nama}`] ?? 'Tidak Hadir',
+      lokasi: p.lokasi || lokasi,
+      st: draft[`${p.peran}|${p.nama}`] ?? p.status ?? 'Tidak Hadir',
     }));
 
     try {
       await apiSend<AbsenResult>('/absensi', 'POST', rows);
-      await reload();
-      toast.success('Absensi hari ini tersimpan.');
+      await Promise.all([reloadHistory(), reloadToday()]);
+      toast.success('Absensi hari ini berhasil tersimpan.');
       return true;
     } catch (err) {
       toast.error(

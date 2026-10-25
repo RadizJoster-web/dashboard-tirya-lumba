@@ -1,7 +1,6 @@
 import { toast } from 'sonner';
 import { JadwalLoading } from '../../components/loading';
 import { HARI } from '../../lib/format';
-import { resolveResched, useResched } from '../../lib/local/reschedule-requests';
 import { slotKey } from '../../components/jadwal/session-templates';
 import JadwalHeader from './JadwalHeader';
 import JadwalContent from './JadwalContent';
@@ -12,7 +11,6 @@ import { useJadwalData } from './useJadwalData';
 import { useScheduleSelection } from './useScheduleSelection';
 
 export default function Jadwal() {
-  const resched = useResched();
   const templateState = useTemplateState();
 
   const {
@@ -71,15 +69,6 @@ export default function Jadwal() {
     dialogs.setSaving(false);
   }
 
-  function decideReschedule(id: number, approved: boolean) {
-    resolveResched(id);
-    toast.success(
-      approved
-        ? 'Perubahan jadwal disetujui.'
-        : 'Permintaan perubahan ditolak.',
-    );
-  }
-
   if (
     locationsLoading ||
     (activeLocationId && !sessionData && !sessionsError)
@@ -113,8 +102,6 @@ export default function Jadwal() {
         onToggleRow={toggleRow}
         onOpenSaved={() => dialogs.setSavedOpen(true)}
         onSubmitSchedule={() => void handleSubmitSchedule()}
-        resched={resched}
-        onDecideReschedule={decideReschedule}
       />
       <JadwalDialogs
         savedOpen={dialogs.savedOpen}

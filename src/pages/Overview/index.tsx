@@ -3,7 +3,11 @@ import { OverviewLoading } from '../../components/loading';
 import { MONTHS_SHORT } from '../../lib/format';
 import { apiGet } from '../../lib/api/client';
 import { useResource } from '../../lib/api/cache';
-import type { ServerInstructor, ServerSiswa } from '../../lib/api/types';
+import type {
+  ServerInstructor,
+  ServerRegistration,
+  ServerSiswa,
+} from '../../lib/api/types';
 import { useAuth } from '../../lib/auth-context';
 import OverviewStats from './OverviewStats';
 import OverviewChart from './OverviewChart';
@@ -14,19 +18,27 @@ const fetchStudents = (): Promise<ServerSiswa[]> =>
 const fetchInstructors = (): Promise<ServerInstructor[]> =>
   apiGet<ServerInstructor[]>('/instructor/management?page=1&limit=100');
 
-function seedFromData(
-  siswa: ServerSiswa[],
+const fetchRegistrations = (): Promise<
+  (ServerRegistration & { createdAt?: string })[]
+> => apiGet<(ServerRegistration & { createdAt?: string })[]>('/register?status=ALL');
+
+function countRegistrationsPerMonth(
+  registrations: (ServerRegistration & { createdAt?: string })[],
   year: number,
   scoped: boolean,
   lokasi?: string,
 ): number[] {
-  return MONTHS_SHORT.map(() => {
-    const count = siswa.filter((s) => {
-      const yearMatch = String(year) === String(s.berlakuSd ?? '').slice(0, 4);
-      const locMatch = scoped ? s.lokasi === lokasi : true;
-      return yearMatch && locMatch;
+  return MONTHS_SHORT.map((_, monthIndex) => {
+    return registrations.filter((r) => {
+      const locMatch = scoped ? r.lokasi === lokasi : true;
+      if (!locMatch) return false;
+
+      const dateStr = r.createdAt;
+      if (!dateStr) return false;
+
+      const d = new Date(dateStr);
+      return d.getFullYear() === year && d.getMonth() === monthIndex;
     }).length;
-    return count;
   });
 }
 
@@ -43,10 +55,15 @@ export default function Overview() {
     '/instructor/management?page=1&limit=100',
     fetchInstructors,
   );
+  const { data: pendaftaran, loading: pendaftaranLoading } = useResource(
+    '/register?status=ALL',
+    fetchRegistrations,
+  );
 
-  const loading = siswaLoading || pelatihLoading;
+  const loading = siswaLoading || pelatihLoading || pendaftaranLoading;
   const siswaRows = siswa ?? [];
   const pelatihRows = pelatih ?? [];
+  const regRows = pendaftaran ?? [];
 
   const totalSiswa = scoped
     ? siswaRows.filter((s) => s.lokasi === lokasi).length
@@ -54,8 +71,8 @@ export default function Overview() {
   const totalGuru = pelatihRows.length;
 
   const data = useMemo(
-    () => seedFromData(siswa ?? [], 2026, scoped, lokasi),
-    [siswa, scoped, lokasi],
+    () => countRegistrationsPerMonth(regRows, 2026, scoped, lokasi),
+    [regRows, scoped, lokasi],
   );
   const total = data.reduce((a, b) => a + b, 0);
 
