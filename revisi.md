@@ -1,15 +1,34 @@
-==============================
-Revisi
-==============================
 
-1. Di halaman Jadwal dan sesi. Hapus section Ketersediaan sesi, lalu tambahkan fitur Edit di section Jadwal mingguan, dengan click Edit button yang berada di samping simpan maka admin bisa memperbaiki Ketersediaan jadwal. Jangana tampilkan tombol button Edit jika data emang belum ada.
+============================================
+Perbaiikan Struktur Folder & File
+============================================
+Role & Objective:
+Kamu adalah Expert Next.js & TypeScript Developer. Tugas utamamu adalah melakukan refactoring, modularisasi, dan restrukturisasi folder/file pada project Next.js + Tailwind CSS ini sesuai dengan guidelines arsitektur yang sangat spesifik.
 
-2. Tambahkan 1 button "check semua" yang dimana ketika di checklist maka semua sesi dan hari akan di check. Tapi button ini berisfatnya horizontal, jika check semua di sesi satu maka hanya sesi satu disemua hari saja yang di check. Buat tampilan yang berbeda dari check biasanya agar mudah di lihat.
+Konteks Project:
+Terdapat fitur yang sudah berjalan dan beberapa yang memiliki bug. Aturan Mutlak: Dilarang keras mencoba melakukan debugging, mengubah business logic yang kompleks, atau memperbaiki bug logic. Fokusmu 100% pada pemecahan file, pemindahan kode, dan merapihkan struktur (termasuk memastikan imports/exports tidak error).
 
-3. Buat loading sekeleton lebih relevan dengan konten yang tampil. Buat satu folder /loading yang berisi component loading yang digunakan disetiap route atau halaman. 
- 
-4. Di halaman lokasi kolam. Layout table masih berantakan, nama, kategori, map url di setiap kolom memiliki jarak yang berbeda, ini dikarenakan kamu tidak membuat jarak yang fix.
-
-5. Di halaman pengelola, ketika ingin menambah / mengedit pengelola pastikan form input password ada fitur lihat password. Ini berlaku disemua Form input bukan hanya di pengelola.
-
-6. Perbaiki responsive di mobile. Semua table, tombol, layar harus digeser kekanan untuk melihat data full. Perbaiki responsive agar tidak ada lagi horizontal scroll.
+Aturan Ketat Modularisasi (Wajib Diikuti Tanpa Terkecuali):
+1. Folder sebagai Direktori Komponen & index.tsx/.ts sebagai Parent:
+- Setiap komponen/fitur yang memiliki sub-elemen atau logic sendiri WAJIB dibuatkan foldernya.
+- File entry-point di dalam folder tersebut harus bernama index.tsx (untuk UI) atau index.ts (untuk logic).
+- index.tsx bertindak secara eksklusif sebagai Parent Component yang HANYA bertugas mengurus:
+    - State Management (deklarasi state).
+    - Action Functions (fungsi fetch API, event handler, fungsi submit).
+    - Layout Management (menyusun dan mengorkestrasi child components, meneruskan state/function sebagai props).
+2. Batas Maksimal 150 Baris:
+- Dilarang keras ada file tunggal yang melebihi 150 baris kode.
+- Jika sebuah file mendekati batas ini, itu adalah indikator bahwa file tersebut kehilangan tujuan spesifiknya. Segera ekstraksi elemen UI atau logic ke dalam file terpisah di dalam folder komponen tersebut.
+3. Separation of Concerns (Berbasis Konteks):
+- Jangan menunggu hingga 150 baris jika di dalam satu file terdapat kode dengan konteks/tugas yang berbeda. Pecah file tersebut sejak awal.
+- Contoh Implementasi Target: Untuk komponen navigasi, buat folder Navbar. Jadikan Navbar/index.tsx sebagai parent. Ekstraksi bagian UI yang spesifik menjadi sibling files di dalam folder yang sama:
+    - BrandLogo.tsx (Fokus pada logo & nama brand)
+    - NavigationList.tsx (Fokus pada list menu & routing)
+    - AuthProfile.tsx (Fokus pada tombol login/profil)
+- Navbar/index.tsx akan memanggil ketiga file tersebut dan mengatur layout serta logic autentikasinya.
+Langkah Eksekusi:
+1. Analisis file yang saya berikan. Evaluasi total baris kode dan tumpang-tindih tanggung jawab.
+2. Buat direktori folder baru dan pecah kode menjadi pola index.tsx (Parent) + SpecificChild.tsx (Children).
+3. Ekstraksi semua state dan fetch/submit logic ke index.tsx, lalu teruskan ke child component melalui props (buatkan TypeScript interface yang sesuai untuk props tersebut).
+4. Perbarui dan pastikan semua baris import yang terdampak akibat pemindahan file ini sudah benar.
+5. Berikan saya tree structure hasil akhir dari folder tersebut setelah direfaktor.

@@ -1,11 +1,3 @@
-import type {
-  AbsenPayload,
-  AbsenResult,
-  ServerAbsen,
-  ServerProfil,
-  ServerSiswa,
-} from './types';
-
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5000/api';
 const TOKEN_KEY = 'tl_jwt';
 const TIMEOUT_MS = 8000;
@@ -75,7 +67,12 @@ export function clearToken(): void {
   }
 }
 
-export async function apiRequest<T>(path: string, init?: RequestInit, timeoutMs: number = TIMEOUT_MS): Promise<T> {
+export async function apiRequest<T>(
+  path: string,
+  init?: RequestInit,
+  timeoutMs: number = TIMEOUT_MS,
+  allowRawResponse = false,
+): Promise<T> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
   const headers = new Headers(init?.headers);
@@ -110,14 +107,26 @@ export async function apiRequest<T>(path: string, init?: RequestInit, timeoutMs:
   if (!res.ok || !body || body.success === false) {
     throw new ApiError(body?.message ?? `Permintaan gagal (${res.status}).`, res.status);
   }
-  if (body.data === undefined && init?.method !== 'DELETE') {
+  if (body.data !== undefined) return body.data;
+  if (
+    allowRawResponse &&
+    typeof body === 'object' &&
+    body !== null
+  ) {
+    return body as T;
+  }
+  if (init?.method !== 'DELETE') {
     throw new ApiError(body.message ?? `Permintaan gagal (${res.status}).`, res.status);
   }
-  return body.data as T;
+  return undefined as T;
 }
 
 export function apiGet<T>(path: string): Promise<T> {
   return apiRequest<T>(path, { method: 'GET' });
+}
+
+export function apiGetPayload<T>(path: string): Promise<T> {
+  return apiRequest<T>(path, { method: 'GET' }, TIMEOUT_MS, true);
 }
 
 export function apiSend<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown): Promise<T> {
@@ -125,20 +134,4 @@ export function apiSend<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body
     method,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-}
-
-export function apiGetAbsensi(path: string): Promise<ServerAbsen[]> {
-  return apiGet<ServerAbsen[]>(path);
-}
-
-export function apiSendAbsensi(path: string, payload: AbsenPayload[]): Promise<AbsenResult> {
-  return apiSend<AbsenResult>(path, 'POST', payload);
-}
-
-export function apiGetSiswa(): Promise<ServerSiswa[]> {
-  return apiGet<ServerSiswa[]>('/siswa');
-}
-
-export function apiGetProfil(): Promise<ServerProfil> {
-  return apiGet<ServerProfil>('/auth/me');
 }

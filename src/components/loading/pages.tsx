@@ -58,6 +58,11 @@ export function JadwalLoading() {
 export function LokasiLoading() {
   return (
     <SkeletonPage label="Memuat data lokasi">
+      <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
+        <SkeletonBar className="h-5 w-48" />
+        <SkeletonBar className="mt-2 h-3.5 w-72" />
+        <SkeletonBar className="mt-4 h-10 w-full" />
+      </div>
       <SkeletonHeader action />
       <SkeletonTable rows={6} cols={4} />
     </SkeletonPage>

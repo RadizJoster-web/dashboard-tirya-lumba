@@ -642,28 +642,36 @@ Modul ini mengelola paket les renang (misal: Reguler, Privat, Prestasi) dan nomi
 
 ---
 
-### 5.2 Menampilkan Detail Paket Berdasarkan ID
+### 5.2 Menampilkan Paket Berdasarkan Lokasi
 * **Endpoint:** `GET /api/packages/:id`
 * **Authentikasi:** Tidak Butuh
 * **Otorisasi Role:** `PUBLIC`
 
 **Contoh Request:**
-- **URL Path Params:** `id` (string, UUID)
+- **URL Path Params:** `id` (string, UUID lokasi/kolam)
 
 **Contoh Response Sukses (200 OK):**
 ```json
 {
   "success": true,
   "data": {
-    "package": {
-      "id": "c1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
-      "locationId": "a898fd3b-7fee-4479-b5f7-19624b25d614",
-      "type": "Reguler",
-      "price": 350000
-    }
+    "packages": [
+      {
+        "id": "c1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+        "type": "Reguler",
+        "price": 350000
+      },
+      {
+        "id": "d2e3f4a5-6b7c-8d9e-0f1a-2b3c4d5e6f7a",
+        "type": "Privat",
+        "price": 800000
+      }
+    ]
   }
 }
 ```
+
+Endpoint ini menerima ID lokasi/kolam dan mengembalikan seluruh paket milik lokasi tersebut.
 
 **Contoh Response Gagal (404 Not Found):**
 ```json
@@ -1631,7 +1639,7 @@ Modul ini menangani submit formulir pendaftaran siswa baru (booking kelas) serta
 | `/api/locations/:id` | `PUT` | Membutuhkan Token | `ADMIN` | Update data lokasi kolam |
 | `/api/locations/:id` | `DELETE` | Membutuhkan Token | `ADMIN` | Hapus lokasi kolam |
 | `/api/packages` | `GET` | Tidak Butuh | `PUBLIC` | Ambil semua paket les renang |
-| `/api/packages/:id` | `GET` | Tidak Butuh | `PUBLIC` | Ambil detail paket les renang |
+| `/api/packages/:id` | `GET` | Tidak Butuh | `PUBLIC` | Ambil daftar paket berdasarkan ID lokasi/kolam |
 | `/api/packages` | `POST` | Membutuhkan Token | `ADMIN` | Tambah master paket les baru |
 | `/api/packages/:id` | `PUT` | Membutuhkan Token | `ADMIN` | Update paket les |
 | `/api/packages/:id` | `DELETE` | Membutuhkan Token | `ADMIN` | Hapus paket les |

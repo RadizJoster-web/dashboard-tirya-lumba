@@ -7,7 +7,12 @@ export interface ResourceState<T> {
   loaded: boolean;
 }
 
-const idle: ResourceState<unknown> = { data: null, error: null, loading: false, loaded: false };
+const idle: ResourceState<unknown> = {
+  data: null,
+  error: null,
+  loading: false,
+  loaded: false,
+};
 
 const states = new Map<string, ResourceState<unknown>>();
 const fetchers = new Map<string, () => Promise<unknown>>();
@@ -38,7 +43,11 @@ function subscribeTo(key: string, listener: () => void): () => void {
 
 // A request is shared by every component that asks for the same key, and a loaded
 // resource is served from cache until something explicitly refreshes it.
-export function loadResource<T>(key: string, fetcher?: () => Promise<T>, force = false): Promise<T> {
+export function loadResource<T>(
+  key: string,
+  fetcher?: () => Promise<T>,
+  force = false,
+): Promise<T> {
   if (fetcher) fetchers.set(key, fetcher);
 
   const current = states.get(key) as ResourceState<T> | undefined;
@@ -48,7 +57,10 @@ export function loadResource<T>(key: string, fetcher?: () => Promise<T>, force =
   if (running) return running as Promise<T>;
 
   const run = fetchers.get(key);
-  if (!run) return Promise.reject(new Error(`Resource "${key}" belum memiliki fetcher.`));
+  if (!run)
+    return Promise.reject(
+      new Error(`Resource "${key}" belum memiliki fetcher.`),
+    );
 
   setState(key, { ...(current ?? idle), loading: true, error: null });
 
@@ -58,8 +70,16 @@ export function loadResource<T>(key: string, fetcher?: () => Promise<T>, force =
       return data;
     })
     .catch((error: unknown) => {
-      const message = error instanceof Error && error.message ? error.message : 'Gagal memuat data.';
-      setState(key, { data: current?.data ?? null, error: message, loading: false, loaded: true });
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Gagal memuat data.';
+      setState(key, {
+        data: current?.data ?? null,
+        error: message,
+        loading: false,
+        loaded: true,
+      });
       throw error;
     })
     .finally(() => {
@@ -78,9 +98,18 @@ export function clearResources(): void {
   listeners.forEach((group) => group.forEach((listener) => listener()));
 }
 
-export function useResource<T>(key: string, fetcher: () => Promise<T>): ResourceState<T> & { reload: () => Promise<void> } {
-  const subscribe = useCallback((listener: () => void) => subscribeTo(key, listener), [key]);
-  const snapshot = useSyncExternalStore(subscribe, () => stateOf(key) as ResourceState<T>);
+export function useResource<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+): ResourceState<T> & { reload: () => Promise<void> } {
+  const subscribe = useCallback(
+    (listener: () => void) => subscribeTo(key, listener),
+    [key],
+  );
+  const snapshot = useSyncExternalStore(
+    subscribe,
+    () => stateOf(key) as ResourceState<T>,
+  );
 
   useEffect(() => {
     if (!states.get(key)?.loaded) {
@@ -89,7 +118,10 @@ export function useResource<T>(key: string, fetcher: () => Promise<T>): Resource
   }, [key, fetcher]);
 
   const reload = useCallback(
-    () => loadResource(key, fetcher, true).then(() => undefined).catch(() => undefined),
+    () =>
+      loadResource(key, fetcher, true)
+        .then(() => undefined)
+        .catch(() => undefined),
     [key, fetcher],
   );
 

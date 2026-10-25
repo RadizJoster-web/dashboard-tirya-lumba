@@ -7,7 +7,7 @@ Vite + React 19 + TypeScript + Tailwind CSS v4 single-package app. Source is spl
 - `src/components/loading/` — skeleton primitives (`primitives.tsx`) + satu komponen per halaman (`pages.tsx`), dipakai di setiap route dan di `Suspense` fallback. Folder ini menggantikan `ui/Skeleton.tsx` yang sudah dihapus.
 - `src/components/CrudPage.tsx` — scaffold CRUD tingkat atas (form + tabel + modal); bukan primitif, dipakai `Pengelola`.
 - `src/components/jadwal/` — TemplateSection, WeeklyMatrix, SavedSessionsModal, ReschedulePanel, SessionDialogs, and `session-templates.ts` helpers. Section "Ketersediaan sesi" sudah dihapus; daftar sesi tersimpan kini dibuka dari tombol "Edit jadwal" di WeeklyMatrix.
-- `src/lib/api/` — `client.ts` (fetch), `types.ts` (DTO), `cache.ts` (server-state cache), `resources.ts` (keys, fetchers, bootstrap).
+- `src/lib/api/` — `client.ts` (fetch wrappers `apiGet`/`apiGetPayload`/`apiSend`), `types.ts` (DTO), `cache.ts` (server-state cache). Fetching data spesifik kini berada di parent komponen / hooks masing-masing halaman.
 - `src/lib/local/` — local-only `registration-queue.ts` and `reschedule-requests.ts` until endpoints exist.
 - `src/lib/hooks/` — reusable hooks (e.g. `use-debounced.ts`).
 
@@ -28,8 +28,9 @@ No test runner, CI, or `.env` configured. Verify with `npm run lint && npm run b
 - `src/lib/api/client.ts` — fetch wrapper (`apiGet`/`apiSend`), `ApiError`, JWT in `localStorage`/`sessionStorage` under `tl_jwt`, 8s timeout, sends `Authorization: Bearer` and `credentials: include`.
 - `src/lib/api/types.ts` — server DTOs. Note the server model differs from the local demo shapes (locations use `{name, category, mapUrl, areaId}`, no address/coordinate fields).
 - `src/lib/auth.ts` — `authenticate()` hanya memanggil `POST /auth/login` dengan email + password server; tidak ada akun demo. Hanya `ADMIN`/`POOL_MANAGER` yang boleh masuk. Not documented: `logout`, `/auth/me`.
-- `src/lib/api/cache.ts` — cache data per key (`useResource`, `loadResource`, `clearResources`). Request hanya terjadi saat resource pertama kali dipakai atau di-`reload()` setelah mutasi; tidak ada refetch saat pindah route/tab. Pakai `useResource(API_KEYS.x, fetchX)` dari `src/lib/api/resources.ts`.
-- `src/lib/api/resources.ts` — `useBootstrapData()` (dipanggil sekali di `Shell`) memuat `/areas`, `/locations`, `/packages`, `/instructor/management`, `/pool-managers` ke cache. `GET /sessions` wajib `locationId` + `dayOfWeek`, jadi `fetchSessionsForLocation()` menggabungkan 7 request harian dan menyimpannya per lokasi (`sessionsKey`). Tidak ada fallback data demo; kegagalan ditampilkan sebagai empty/error state.
+- `src/lib/api/cache.ts` — cache data per key (`useResource`, `loadResource`, `clearResources`). Request hanya terjadi saat resource pertama kali dipakai atau di-`reload()` setelah mutasi; tidak ada refetch saat pindah route/tab. Setiap halaman mendefinisikan fetcher dan key-nya sendiri secara modular.
+- **Fetching modular**: Semua fetch request server dipindahkan ke hook / parent component di folder masing-masing halaman (misal `src/pages/Paket/usePaketData.ts`, `src/pages/Absensi/useAbsensiData.ts`, `src/pages/Lokasi/useLokasiData.ts`, dll.). `resources.ts` telah dihapus.
+
 - **sonner terpasang**: `<Toaster />` dipasang di `App.tsx` (top-right). Setiap sukses → `toast.success`, gagal → `toast.error` warna `#B3341F`. Jangan tambahkan banner `notice` inline — pakai toast.
 - **Logo**: `public/logo.svg` (asli, 442 path, hasil VTracer — punya `viewBox`), `public/logo-mark.svg` (subset 11 shape besar, dibuat `scripts/logo-mark.mjs`; jalankan ulang bila logo berganti). Komponen `src/components/layout/BrandLogo.tsx` dipakai di sidebar & tombol sidebar mengambang; Login memakai logo asli via `<img src="/logo.svg">`. Jangan kembalikan ke emoji 🐬.
 - **Animasi**: keyframes `route-in`/`modal-in`/`fade-in` + class `anim-route`/`anim-modal`/`anim-overlay` di `src/index.css`, semua dalam `@media (prefers-reduced-motion: no-preference)`. `main` di Shell memakai `anim-route` tanpa `key` per path agar halaman tidak remount; Modal pakai `anim-overlay` + `anim-modal`.
