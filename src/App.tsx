@@ -14,6 +14,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 const Overview = lazy(() => import('./pages/Overview'));
 const Pendaftaran = lazy(() => import('./pages/Pendaftaran'));
+const PendaftaranDetail = lazy(() => import('./pages/Pendaftaran/Detail'));
 const Jadwal = lazy(() => import('./pages/Jadwal'));
 const Lokasi = lazy(() => import('./pages/Lokasi'));
 const Paket = lazy(() => import('./pages/Paket'));
@@ -60,6 +61,7 @@ export default function App() {
               <Route index element={<Navigate to="/overview" replace />} />
               <Route path="overview" element={<Overview />} />
               <Route path="pendaftaran" element={<Pendaftaran />} />
+              <Route path="pendaftaran/:id" element={<PendaftaranDetail />} />
               <Route path="jadwal" element={<Jadwal />} />
               <Route path="lokasi" element={<Lokasi />} />
               <Route path="paket" element={<Paket />} />

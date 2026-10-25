@@ -1,25 +1,22 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { RouteLoading } from '../../components/loading';
 import type { ServerRegistration } from '../../lib/api/types';
 import PendaftaranFilter, { type TipeAntrean } from './PendaftaranFilter';
 import PendaftaranTable from './PendaftaranTable';
-import PendaftaranDetailModal from './PendaftaranDetailModal';
 import PendaftaranRejectModal from './PendaftaranRejectModal';
 import { usePendaftaranData } from './usePendaftaranData';
 
 export default function Pendaftaran() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const admin = user?.role === 'admin';
 
   const {
     registrations,
     isLoading,
-    detailData,
-    detailLoading,
     actionLoading,
-    openDetail,
-    closeDetail,
     approveRegistration,
     rejectRegistration,
   } = usePendaftaranData();
@@ -67,23 +64,9 @@ export default function Pendaftaran() {
       <PendaftaranTable
         rows={filteredRows}
         actionLoading={actionLoading}
-        onDetail={(id) => void openDetail(id)}
+        onDetail={(id) => navigate(`/pendaftaran/${id}`)}
         onApprove={(id) => void approveRegistration(id)}
         onReject={(target) => setRejectTarget(target)}
-      />
-
-      {/* Modal Detail Pendaftaran */}
-      <PendaftaranDetailModal
-        detail={detailData}
-        isLoading={detailLoading}
-        actionLoading={actionLoading}
-        onClose={closeDetail}
-        onApprove={(id) => void approveRegistration(id)}
-        onReject={() => {
-          if (detailData) {
-            setRejectTarget(detailData);
-          }
-        }}
       />
 
       {/* Modal Alasan Penolakan */}
