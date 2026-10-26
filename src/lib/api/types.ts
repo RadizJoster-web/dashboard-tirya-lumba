@@ -23,6 +23,21 @@ export interface ServerPackage {
   locationId: string;
   type: string;
   price: number;
+  sessionCount?: number;
+}
+
+export interface DashboardSummaryData {
+  totalSiswa: number;
+  totalGuru: number;
+  totalPendaftar: number;
+  chartData: {
+    data: number[];
+    labels: string[];
+    total: number;
+    title: string;
+    subtitle: string;
+    statLabel: string;
+  };
 }
 
 export interface ServerSession {

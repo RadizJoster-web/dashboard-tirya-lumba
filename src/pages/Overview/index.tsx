@@ -1,13 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { OverviewLoading } from '../../components/loading';
-import { MONTHS_SHORT } from '../../lib/format';
 import { apiGet } from '../../lib/api/client';
 import { useResource } from '../../lib/api/cache';
-import type {
-  ServerInstructor,
-  ServerRegistration,
-  ServerSiswa,
-} from '../../lib/api/types';
+import type { DashboardSummaryData } from '../../lib/api/types';
 import { useAuth } from '../../lib/auth-context';
 import OverviewStats from './OverviewStats';
 import OverviewChart from './OverviewChart';
@@ -29,15 +24,10 @@ const MONTH_NAMES = [
 
 const AVAILABLE_YEARS = [2024, 2025, 2026, 2027];
 
-const fetchStudents = (): Promise<ServerSiswa[]> =>
-  apiGet<ServerSiswa[]>('/siswa');
-
-const fetchInstructors = (): Promise<ServerInstructor[]> =>
-  apiGet<ServerInstructor[]>('/instructor/management?page=1&limit=100');
-
-const fetchRegistrations = (): Promise<
-  (ServerRegistration & { createdAt?: string })[]
-> => apiGet<(ServerRegistration & { createdAt?: string })[]>('/register?status=ALL');
+const fetchSummary = (year: number, month: string) => () =>
+  apiGet<DashboardSummaryData>(
+    `/dashboard/summary?year=${year}&month=${encodeURIComponent(month)}`,
+  );
 
 export default function Overview() {
   const { user } = useAuth();
@@ -47,105 +37,21 @@ export default function Overview() {
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedMonth, setSelectedMonth] = useState<string>('ALL');
 
-  const { data: siswa, loading: siswaLoading } = useResource(
-    '/siswa',
-    fetchStudents,
-  );
-  const { data: pelatih, loading: pelatihLoading } = useResource(
-    '/instructor/management?page=1&limit=100',
-    fetchInstructors,
-  );
-  const { data: pendaftaran, loading: pendaftaranLoading } = useResource(
-    '/register?status=ALL',
-    fetchRegistrations,
+  const { data: summary, loading } = useResource(
+    `/dashboard/summary:${selectedYear}:${selectedMonth}`,
+    fetchSummary(selectedYear, selectedMonth),
   );
 
-  const loading = siswaLoading || pelatihLoading || pendaftaranLoading;
-  const siswaRows = siswa ?? [];
-  const pelatihRows = pelatih ?? [];
-  const regRows = pendaftaran ?? [];
-
-  // Untuk pengelola (Pool Manager), data dari endpoint backend SUDAH difilter untuk kolamnya
-  const totalSiswa = siswaRows.length;
-  const totalGuru = pelatihRows.length;
-
-  // Filter pendaftaran berdasarkan tahun dan bulan terpilih
-  const chartData = useMemo(() => {
-    // Saring pendaftaran di tahun terpilih
-    const yearFiltered = regRows.filter((r) => {
-      if (!r.createdAt) return false;
-      const d = new Date(r.createdAt);
-      return d.getFullYear() === selectedYear;
-    });
-
-    if (selectedMonth === 'ALL') {
-      // 12 Bulan (Jan - Des)
-      const monthlyCounts = MONTHS_SHORT.map((_, monthIndex) => {
-        return yearFiltered.filter((r) => {
-          const d = new Date(r.createdAt!);
-          return d.getMonth() === monthIndex;
-        }).length;
-      });
-
-      return {
-        data: monthlyCounts,
-        labels: MONTHS_SHORT,
-        total: monthlyCounts.reduce((a, b) => a + b, 0),
-        title: `Tren Pendaftaran Tahun ${selectedYear}`,
-        subtitle: `Data pendaftaran per bulan untuk tahun ${selectedYear}`,
-        statLabel: `Total pendaftar (${selectedYear})`,
-      };
-    } else {
-      // Spesifik Bulan Terpilih -> Pecah menjadi 5 kelompok minggu (1-7, 8-14, 15-21, 22-28, 29-31)
-      const monthIdx = parseInt(selectedMonth, 10);
-      const monthFiltered = yearFiltered.filter((r) => {
-        const d = new Date(r.createdAt!);
-        return d.getMonth() === monthIdx;
-      });
-
-      const weekLabels = [
-        'Mgg 1 (1-7)',
-        'Mgg 2 (8-14)',
-        'Mgg 3 (15-21)',
-        'Mgg 4 (22-28)',
-        'Mgg 5 (29-31)',
-      ];
-
-      const weeklyCounts = [
-        monthFiltered.filter((r) => {
-          const date = new Date(r.createdAt!).getDate();
-          return date >= 1 && date <= 7;
-        }).length,
-        monthFiltered.filter((r) => {
-          const date = new Date(r.createdAt!).getDate();
-          return date >= 8 && date <= 14;
-        }).length,
-        monthFiltered.filter((r) => {
-          const date = new Date(r.createdAt!).getDate();
-          return date >= 15 && date <= 21;
-        }).length,
-        monthFiltered.filter((r) => {
-          const date = new Date(r.createdAt!).getDate();
-          return date >= 22 && date <= 28;
-        }).length,
-        monthFiltered.filter((r) => {
-          const date = new Date(r.createdAt!).getDate();
-          return date >= 29;
-        }).length,
-      ];
-
-      const monthName = MONTH_NAMES[monthIdx];
-
-      return {
-        data: weeklyCounts,
-        labels: weekLabels,
-        total: weeklyCounts.reduce((a, b) => a + b, 0),
-        title: `Tren Pendaftaran ${monthName} ${selectedYear}`,
-        subtitle: `Distribusi pendaftaran per minggu di bulan ${monthName} ${selectedYear}`,
-        statLabel: `Total pendaftar (${monthName} ${selectedYear})`,
-      };
-    }
-  }, [regRows, selectedYear, selectedMonth]);
+  const totalSiswa = summary?.totalSiswa ?? 0;
+  const totalGuru = summary?.totalGuru ?? 0;
+  const chartData = summary?.chartData ?? {
+    data: [],
+    labels: [],
+    total: 0,
+    title: `Tren Pendaftaran Tahun ${selectedYear}`,
+    subtitle: `Data pendaftaran per bulan untuk tahun ${selectedYear}`,
+    statLabel: `Total pendaftar (${selectedYear})`,
+  };
 
   if (loading) {
     return <OverviewLoading />;
