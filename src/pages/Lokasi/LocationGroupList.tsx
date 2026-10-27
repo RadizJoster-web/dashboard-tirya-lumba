@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import DataTable from '../../components/ui/DataTable';
-import type { DataTableColumn } from '../../components/ui/DataTable';
-import { Button } from '../../components/ui';
+import { ExternalLink, MapPin } from 'lucide-react';
+import DataTable, { type DataTableColumn } from '../../components/ui/DataTable';
+import { Button, RoleTag } from '../../components/ui';
 import type { ServerLocation } from '../../lib/api/types';
 
 interface LocationGroup {
@@ -22,12 +22,33 @@ export default function LocationGroupList({
 }: LocationGroupListProps) {
   const columns = useMemo<DataTableColumn<ServerLocation>[]>(
     () => [
-      { key: 'name', header: 'Nama', width: '28%', primary: true },
-      { key: 'category', header: 'Kategori', width: '16%' },
+      {
+        key: 'name',
+        header: 'Nama Kolam Renang',
+        width: '32%',
+        primary: true,
+        render: (location) => (
+          <div>
+            <span className="font-bold text-[#1D3557] text-sm block">
+              {location.name}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'category',
+        header: 'Kategori Kerjasama',
+        width: '20%',
+        render: (location) => (
+          <RoleTag role={location.category}>
+            {location.category || 'Mitra Standar'}
+          </RoleTag>
+        ),
+      },
       {
         key: 'mapUrl',
-        header: 'Map URL',
-        width: '34%',
+        header: 'Peta / Koordinat',
+        width: '30%',
         render: (location) =>
           location.mapUrl ? (
             <a
@@ -35,31 +56,33 @@ export default function LocationGroupList({
               target="_blank"
               rel="noreferrer"
               title={location.mapUrl}
-              className="block max-w-full truncate text-primary underline underline-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-[#0077B6] border border-gray-200 hover:bg-[#E0FBFC] hover:border-[#00B4D8] transition-colors"
             >
-              {location.mapUrl}
+              <MapPin size={12} className="text-[#00B4D8]" />
+              Buka Google Maps
+              <ExternalLink size={11} className="text-slate-400" />
             </a>
           ) : (
-            '-'
+            <span className="text-xs text-slate-400">-</span>
           ),
       },
       {
         key: 'aksi',
         header: 'Aksi',
-        width: '22%',
+        width: '18%',
         asActions: true,
         render: (location) => (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex items-center justify-end gap-1.5">
             <Button
               variant="ghost"
-              className="px-2.5 py-1 text-[13px]"
+              size="sm"
               onClick={() => onEdit(location)}
             >
               Edit
             </Button>
             <Button
               variant="danger"
-              className="px-2.5 py-1 text-[13px]"
+              size="sm"
               onClick={() => onDelete(location)}
             >
               Hapus
@@ -77,20 +100,24 @@ export default function LocationGroupList({
         columns={columns}
         rows={[]}
         rowKey={(l) => l.id}
-        emptyText="Belum ada lokasi kolam terdaftar."
+        emptyText="Belum ada lokasi kolam terdaftar di sistem."
       />
     );
   }
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-6">
       {groups.map((group) => (
-        <section key={group.name}>
-          <div className="mb-2.5 flex flex-wrap items-baseline gap-2">
-            <h3 className="m-0 text-lg font-bold">{group.name}</h3>
-            <span className="text-sm text-slate-500">
-              {group.items.length} lokasi
-            </span>
+        <section key={group.name} className="space-y-2.5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-display m-0 text-base font-bold text-[#1D3557]">
+                {group.name}
+              </h3>
+              <span className="rounded-full bg-[#E0FBFC] px-2.5 py-0.5 text-xs font-semibold text-[#0077B6]">
+                {group.items.length} Kolam
+              </span>
+            </div>
           </div>
           <DataTable
             columns={columns}

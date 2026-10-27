@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import { Button } from '../../components/ui';
 
 interface LokasiHeaderProps {
@@ -6,12 +7,19 @@ interface LokasiHeaderProps {
 
 export default function LokasiHeader({ onAddClick }: LokasiHeaderProps) {
   return (
-    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
-        <h2 className="text-2xl leading-8 font-bold">Lokasi Kolam</h2>
-        <p className="text-slate-500">Data lokasi dan kategori kolam renang per area</p>
+        <h3 className="font-display text-lg font-bold text-[#1D3557]">
+          Daftar Titik Kolam Renang Mitra
+        </h3>
+        <p className="mt-0.5 text-xs text-slate-500 font-normal">
+          Daftar lokasi kolam renang yang dikelompokkan berdasarkan wilayah operasional
+        </p>
       </div>
-      <Button onClick={onAddClick}>+ Tambah lokasi</Button>
+      <Button onClick={onAddClick} size="sm">
+        <Plus size={14} className="mr-1" />
+        Tambah Lokasi Kolam
+      </Button>
     </div>
   );
 }

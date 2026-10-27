@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { MapPin, Pencil, Trash2 } from 'lucide-react';
+import { MapPin, Pencil, Trash2, Plus } from 'lucide-react';
 import { Button } from '../../components/ui';
 import type { ServerArea } from '../../lib/api/types';
 
@@ -30,15 +30,17 @@ export default function AreaFormSection({
   }
 
   return (
-    <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
-      <div className="flex items-center gap-2">
-        <div className="grid h-8 w-8 place-items-center rounded-lg bg-azure text-primary">
+    <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-2xs">
+      <div className="flex items-center gap-3">
+        <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#E0FBFC] text-[#0077B6] border border-[#00B4D8]/20">
           <MapPin size={18} aria-hidden="true" />
         </div>
         <div>
-          <h3 className="text-lg leading-6 font-bold text-ink">Master Area / Kota</h3>
-          <p className="text-xs text-slate-500">
-            Daftarkan area/kota terlebih dahulu sebelum membuat titik lokasi kolam renang
+          <h3 className="font-display text-base font-bold text-[#1D3557]">
+            Master Area & Wilayah Operasional
+          </h3>
+          <p className="text-xs text-slate-500 font-normal">
+            Kelola data kota/wilayah operasional sebelum mendaftarkan titik kolam renang
           </p>
         </div>
       </div>
@@ -50,36 +52,33 @@ export default function AreaFormSection({
             name="name"
             value={areaName}
             onChange={(e) => setAreaName(e.target.value)}
-            placeholder="Ketik nama area/kota baru (contoh: Jakarta Barat, Tangerang Selatan, Bintaro)..."
+            placeholder="Ketik nama area/kota baru (contoh: Tangerang Selatan, Jakarta Barat, Bintaro)..."
             disabled={savingArea}
             required
             minLength={2}
             maxLength={50}
-            className="block w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2 font-medium transition-all duration-300 ease-in-out focus:border-aqua focus:ring-2 focus:ring-aqua/40 focus:outline-none"
+            className="block w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-xs font-medium text-[#1D3557] focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 transition-all"
           />
         </div>
         <Button
           type="submit"
+          size="sm"
           disabled={savingArea || !areaName.trim()}
-          className="shrink-0"
+          className="shrink-0 h-[38px]"
         >
-          {savingArea ? 'Menyimpan…' : '+ Tambah Area'}
+          <Plus size={14} className="mr-1" />
+          {savingArea ? 'Menyimpan…' : 'Tambah Area'}
         </Button>
       </form>
 
       <div className="mt-4 border-t border-gray-100 pt-3.5">
-        <div className="mb-2.5 flex items-center justify-between text-xs font-semibold tracking-wider text-slate-500 uppercase">
+        <div className="mb-2.5 flex items-center justify-between text-xs font-semibold tracking-wider text-slate-400 uppercase">
           <span>Area Terdaftar ({areas.length})</span>
-          {areas.length === 0 ? null : (
-            <span className="text-[11px] font-normal lowercase text-slate-400">
-              klik ikon pensil untuk ubah atau sampah untuk hapus
-            </span>
-          )}
         </div>
 
         {areas.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-300 bg-slate-50/50 p-4 text-center text-sm text-slate-500">
-            Belum ada area/kota terdaftar. Tambahkan nama area di atas agar bisa memilih area saat mendaftarkan lokasi kolam renang.
+          <div className="rounded-xl border border-dashed border-gray-200 bg-slate-50/50 p-4 text-center text-xs text-slate-400">
+            Belum ada area/kota terdaftar. Tambahkan nama area di atas.
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
@@ -88,35 +87,35 @@ export default function AreaFormSection({
               return (
                 <div
                   key={area.id}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-slate-50 px-3 py-1.5 text-sm transition-colors hover:bg-slate-100/80"
+                  className="group inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-slate-50/70 px-3 py-1.5 text-xs transition-colors hover:bg-white hover:shadow-2xs"
                 >
-                  <span className="font-semibold text-slate-800">{area.name}</span>
+                  <span className="font-semibold text-[#1D3557]">{area.name}</span>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    className={`rounded-full px-2 py-0.2 text-[10px] font-bold ${
                       locationCount > 0
-                        ? 'bg-azure text-primary'
-                        : 'bg-gray-200/70 text-slate-600'
+                        ? 'bg-[#E0FBFC] text-[#0077B6]'
+                        : 'bg-gray-200/60 text-slate-500'
                     }`}
                     title={`${locationCount} kolam terdaftar di area ini`}
                   >
                     {locationCount} kolam
                   </span>
-                  <div className="flex items-center gap-1 border-l border-gray-200 pl-1.5">
+                  <div className="ml-1 flex items-center gap-1 border-l border-gray-200 pl-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
                       onClick={() => onEditArea(area)}
-                      title={`Edit area ${area.name}`}
-                      className="cursor-pointer p-1 text-slate-400 transition-colors hover:text-primary"
+                      title={`Ubah area ${area.name}`}
+                      className="p-1 text-slate-400 hover:text-[#0077B6] cursor-pointer"
                     >
-                      <Pencil size={13} aria-hidden="true" />
+                      <Pencil size={12} />
                     </button>
                     <button
                       type="button"
                       onClick={() => onDeleteArea(area)}
                       title={`Hapus area ${area.name}`}
-                      className="cursor-pointer p-1 text-slate-400 transition-colors hover:text-[#B3341F]"
+                      className="p-1 text-slate-400 hover:text-[#FF6F59] cursor-pointer"
                     >
-                      <Trash2 size={13} aria-hidden="true" />
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 </div>
