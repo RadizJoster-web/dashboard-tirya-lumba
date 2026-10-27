@@ -8,19 +8,32 @@ interface ProfilCardProps {
 }
 
 export default function ProfilCard({ displayName, avatarUrl, role }: ProfilCardProps) {
+  const isAdmin = role === 'admin';
+
   return (
-    <Card className="flex flex-col items-center gap-3 py-6 text-center">
+    <Card className="flex flex-col items-center gap-4 py-8 text-center">
       {avatarUrl ? (
-        <img src={avatarUrl} alt={`Avatar ${displayName}`} className="h-24 w-24 rounded-full object-cover" />
+        <img
+          src={avatarUrl}
+          alt={`Avatar ${displayName}`}
+          className="h-24 w-24 rounded-2xl object-cover border-2 border-gray-200 shadow-2xs"
+        />
       ) : (
-        <span aria-hidden="true" className="grid h-24 w-24 place-items-center rounded-full bg-azure font-display text-2xl font-bold text-primary">
+        <span
+          aria-hidden="true"
+          className="grid h-24 w-24 place-items-center rounded-2xl bg-gradient-to-br from-[#0077B6] to-[#00B4D8] font-display text-3xl font-bold text-white shadow-2xs"
+        >
           {initials(displayName)}
         </span>
       )}
       <div className="min-w-0">
-        <p className="truncate font-semibold">{displayName}</p>
-        <div className="mt-1.5">
-          <RoleTag>{role === 'admin' ? 'Admin Pusat' : 'Pengelola Kolam'}</RoleTag>
+        <h3 className="font-display text-lg font-bold text-[#1D3557] truncate">
+          {displayName}
+        </h3>
+        <div className="mt-2">
+          <RoleTag role={isAdmin ? 'ADMIN' : 'POOL_MANAGER'}>
+            {isAdmin ? 'Super Admin' : 'Pengelola Kolam'}
+          </RoleTag>
         </div>
       </div>
     </Card>
