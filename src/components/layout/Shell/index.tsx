@@ -49,7 +49,6 @@ export default function Shell() {
       <MobileBottomNav
         user={user}
         pending={pending}
-        onLogout={handleLogout}
       />
 
       {/* Main Canvas Area */}

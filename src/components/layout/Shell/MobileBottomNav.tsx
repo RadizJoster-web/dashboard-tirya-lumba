@@ -5,7 +5,6 @@ import {
   ClipboardCheck,
   GraduationCap,
   LayoutDashboard,
-  LogOut,
   MapPin,
   Menu,
   ShieldCheck,
@@ -20,10 +19,9 @@ import type { SessionUser } from '../../../lib/auth';
 interface MobileBottomNavProps {
   user: SessionUser | null;
   pending: number;
-  onLogout?: () => void;
 }
 
-export default function MobileBottomNav({ user, pending, onLogout }: MobileBottomNavProps) {
+export default function MobileBottomNav({ user, pending }: MobileBottomNavProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isAdmin = user?.role === 'admin';
 
@@ -167,22 +165,6 @@ export default function MobileBottomNav({ user, pending, onLogout }: MobileBotto
                 );
               })}
             </div>
-
-            {onLogout && (
-              <div className="border-t border-gray-100 pt-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    onLogout();
-                  }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#FF6F59]/20 bg-[#FFE4DF]/60 py-2.5 text-xs font-bold text-[#FF6F59] hover:bg-[#FFE4DF] transition-colors cursor-pointer"
-                >
-                  <LogOut size={16} />
-                  Keluar dari Akun
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

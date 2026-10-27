@@ -35,7 +35,7 @@ export default function WeeklyMatrix({
   const hasSaved = existing.size > 0;
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-2xs">
+    <section className="min-w-0 max-w-full rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-2xs overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h3 className="font-display m-0 text-base font-bold text-[#1D3557]">
@@ -46,14 +46,14 @@ export default function WeeklyMatrix({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-slate-500 whitespace-nowrap">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+          <label className="text-xs font-semibold text-slate-500 shrink-0">
             Lokasi Kolam:
           </label>
           <select
             value={activeLocationId}
             onChange={(e) => onLocationChange(e.target.value)}
-            className="w-full sm:w-auto rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D3557] shadow-2xs focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer"
+            className="w-full sm:w-auto rounded-lg border border-gray-300 bg-white px-3 py-2 sm:py-1.5 text-xs font-semibold text-[#1D3557] shadow-2xs focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer truncate max-w-full"
           >
             <option value="">Pilih Lokasi Kolam</option>
             {locations.map((location) => (
@@ -75,21 +75,24 @@ export default function WeeklyMatrix({
         </p>
       ) : (
         <>
-          <WeeklyMatrixTable
-            templates={templates}
-            existing={existing}
-            selected={selected}
-            saving={saving}
-            onToggle={onToggle}
-            onToggleRow={onToggleRow}
-          />
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3.5">
+          <div className="mt-4 min-w-0 max-w-full overflow-hidden">
+            <WeeklyMatrixTable
+              templates={templates}
+              existing={existing}
+              selected={selected}
+              saving={saving}
+              onToggle={onToggle}
+              onToggleRow={onToggleRow}
+            />
+          </div>
+
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 pt-3.5">
             <p className="m-0 text-xs text-slate-500">
               {locationName ? `Kolam Aktif: ${locationName}. ` : ''}Slot bertanda <strong>Tersimpan</strong> telah aktif di sistem.
             </p>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {hasSaved && (
-                <Button variant="ghost" size="sm" onClick={onOpenSaved}>
+                <Button variant="ghost" size="sm" onClick={onOpenSaved} className="w-full sm:w-auto">
                   Lihat / Edit Sesi Tersimpan
                 </Button>
               )}
@@ -98,6 +101,7 @@ export default function WeeklyMatrix({
                 size="sm"
                 onClick={onSubmit}
                 disabled={saving || selected.size === 0}
+                className="w-full sm:w-auto"
               >
                 {saving ? 'Menyimpan Jadwal…' : `Simpan ${selected.size} Slot Terpilih`}
               </Button>

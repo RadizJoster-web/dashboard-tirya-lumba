@@ -25,8 +25,8 @@ export default function TemplateSection({
   onRemove,
 }: TemplateSectionProps) {
   return (
-    <section className="rounded-xl border border-gray-200 bg-white shadow-2xs">
-      <div className="p-5">
+    <section className="min-w-0 max-w-full rounded-xl border border-gray-200 bg-white shadow-2xs overflow-hidden">
+      <div className="p-4 sm:p-5">
         <h3 className="font-display m-0 text-base font-bold text-[#1D3557]">
           Generator Template Sesi
         </h3>
@@ -35,7 +35,7 @@ export default function TemplateSection({
         </p>
         <form
           onSubmit={onSubmit}
-          className="mt-4 grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_140px_140px_auto]"
+          className="mt-4 grid items-end gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_140px_140px_auto]"
         >
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
             Nama Sesi
@@ -65,18 +65,18 @@ export default function TemplateSection({
               {nextEnd || '-'}
             </span>
           </div>
-          <Button type="submit" size="sm" className="h-[38px]">
+          <Button type="submit" size="sm" className="h-[38px] w-full sm:w-auto">
             Tambah Sesi
           </Button>
         </form>
       </div>
 
       {templates.length === 0 ? (
-        <p className="m-0 border-t border-gray-100 px-5 py-4 text-xs text-slate-400">
+        <p className="m-0 border-t border-gray-100 px-4 sm:px-5 py-4 text-xs text-slate-400">
           Belum ada template sesi. Buat template sesi pertama Anda di atas.
         </p>
       ) : (
-        <div className="border-t border-gray-100 px-5 py-3 bg-slate-50/50">
+        <div className="border-t border-gray-100 px-4 sm:px-5 py-3.5 bg-slate-50/50">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-2">
             Template Sesi Terdaftar ({templates.length})
           </span>

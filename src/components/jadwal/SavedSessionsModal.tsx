@@ -44,7 +44,7 @@ export default function SavedSessionsModal({ locationName, sessions, onClose, on
             width: '22%',
             asActions: true,
             render: (s) => (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex items-center gap-1.5">
                 <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => onEdit(s)}>
                   Edit
                 </Button>

@@ -21,48 +21,56 @@ export default function WeeklyMatrixTable({
   onToggleRow,
 }: WeeklyMatrixTableProps) {
   return (
-    <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-2xs">
-      <table className="w-full min-w-[760px] table-fixed border-collapse">
-        <colgroup>
-          <col style={{ width: '220px' }} />
-          {HARI.map((day) => (
-            <col key={day} />
-          ))}
-        </colgroup>
-        <thead>
-          <tr className="border-b border-gray-100 bg-slate-50/70">
-            <th
-              scope="col"
-              className="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
-            >
-              Template Sesi
-            </th>
-            {HARI.map((day, index) => (
-              <th
-                key={day}
-                scope="col"
-                title={day}
-                className="py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-slate-500"
-              >
-                {DAY_SHORT[index]}
-              </th>
+    <div className="w-full min-w-0 max-w-full">
+      {/* Mobile scroll hint */}
+      <div className="flex items-center justify-between text-[11px] text-slate-400 mb-2 sm:hidden px-1">
+        <span>Geser tabel untuk melihat hari lainnya</span>
+        <span className="font-semibold text-[#0077B6]">← Sen - Min →</span>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-2xs w-full max-w-full">
+        <table className="w-full min-w-[660px] table-fixed border-collapse">
+          <colgroup>
+            <col style={{ width: '180px' }} />
+            {HARI.map((day) => (
+              <col key={day} style={{ width: '68px' }} />
             ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {templates.map((template) => (
-            <WeeklyMatrixRow
-              key={template.id}
-              template={template}
-              existing={existing}
-              selected={selected}
-              saving={saving}
-              onToggle={onToggle}
-              onToggleRow={onToggleRow}
-            />
-          ))}
-        </tbody>
-      </table>
+          </colgroup>
+          <thead>
+            <tr className="border-b border-gray-100 bg-slate-50/70">
+              <th
+                scope="col"
+                className="py-3 px-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-400 w-[180px]"
+              >
+                Template Sesi
+              </th>
+              {HARI.map((day, index) => (
+                <th
+                  key={day}
+                  scope="col"
+                  title={day}
+                  className="py-3 px-1 text-center text-xs font-bold uppercase tracking-wider text-slate-500"
+                >
+                  {DAY_SHORT[index]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {templates.map((template) => (
+              <WeeklyMatrixRow
+                key={template.id}
+                template={template}
+                existing={existing}
+                selected={selected}
+                saving={saving}
+                onToggle={onToggle}
+                onToggleRow={onToggleRow}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

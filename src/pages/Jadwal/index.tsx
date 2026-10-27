@@ -77,7 +77,7 @@ export default function Jadwal() {
   }
 
   return (
-    <div>
+    <div className="space-y-6 min-w-0 max-w-full">
       <JadwalHeader
         sessionsError={sessionsError}
         onRetry={() => void reloadSessions()}

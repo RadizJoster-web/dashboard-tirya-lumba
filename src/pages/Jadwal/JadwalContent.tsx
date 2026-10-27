@@ -48,7 +48,7 @@ export default function JadwalContent({
   onSubmitSchedule,
 }: JadwalContentProps) {
   return (
-    <div className="grid gap-6 w-full">
+    <div className="flex flex-col gap-6 w-full min-w-0 max-w-full">
       <TemplateSection
         templates={templates}
         templateName={templateName}

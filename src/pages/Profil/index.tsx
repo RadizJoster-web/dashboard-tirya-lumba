@@ -18,7 +18,7 @@ export default function Profil() {
 
   const displayName = profil?.nama ?? user!.nama;
   const displayEmail = profil?.email ?? user!.email ?? user!.username;
-  const displayLokasi = profil?.lokasi ?? user!.lokasi ?? 'Semua lokasi';
+  const displayLokasi = profil?.lokasi ?? user!.lokasi ?? 'Semua cabang kolam';
   const avatarUrl = assetUrl(profil?.avatarUrl);
 
   if (isLoading) {
@@ -26,24 +26,32 @@ export default function Profil() {
   }
 
   return (
-    <div>
-      <div className="mb-5">
-        <h2 className="text-2xl leading-8 font-bold">Profil</h2>
-        <p className="text-slate-500">Informasi akun yang sedang masuk</p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="font-display text-2xl font-bold text-[#1D3557] tracking-tight">
+          Profil Pengguna
+        </h2>
+        <p className="mt-1 text-sm text-slate-500 font-normal">
+          Informasi identitas akun dan hak akses operasional yang sedang aktif
+        </p>
       </div>
 
-      <div className="grid items-start gap-3.5 [grid-template-columns:1fr] min-[960px]:[grid-template-columns:280px_1fr]">
-        <ProfilCard
-          displayName={displayName}
-          avatarUrl={avatarUrl}
-          role={user!.role}
-        />
-        <ProfilDetailCard
-          displayName={displayName}
-          displayEmail={displayEmail}
-          displayLokasi={displayLokasi}
-          role={user!.role}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="md:col-span-1">
+          <ProfilCard
+            displayName={displayName}
+            avatarUrl={avatarUrl}
+            role={user!.role}
+          />
+        </div>
+        <div className="md:col-span-2">
+          <ProfilDetailCard
+            displayName={displayName}
+            displayEmail={displayEmail}
+            displayLokasi={displayLokasi}
+            role={user!.role}
+          />
+        </div>
       </div>
     </div>
   );
