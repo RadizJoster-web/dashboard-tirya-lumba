@@ -21,27 +21,35 @@ export default function WeeklyMatrixTable({
   onToggleRow,
 }: WeeklyMatrixTableProps) {
   return (
-    <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200">
-      <table className="w-full min-w-[720px] table-fixed border-collapse">
+    <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-2xs">
+      <table className="w-full min-w-[760px] table-fixed border-collapse">
         <colgroup>
-          <col style={{ width: '210px' }} />
+          <col style={{ width: '220px' }} />
           {HARI.map((day) => (
             <col key={day} />
           ))}
         </colgroup>
         <thead>
-          <tr>
-            <th scope="col" className="border-b border-gray-200 bg-basedash px-3 py-2.5 text-left font-semibold text-slate-500">
-              Sesi
+          <tr className="border-b border-gray-100 bg-slate-50/70">
+            <th
+              scope="col"
+              className="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
+            >
+              Template Sesi
             </th>
             {HARI.map((day, index) => (
-              <th key={day} scope="col" title={day} className="border-b border-gray-200 bg-basedash px-3 py-2.5 text-center font-semibold text-slate-500">
+              <th
+                key={day}
+                scope="col"
+                title={day}
+                className="py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-slate-500"
+              >
                 {DAY_SHORT[index]}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-gray-100">
           {templates.map((template) => (
             <WeeklyMatrixRow
               key={template.id}
