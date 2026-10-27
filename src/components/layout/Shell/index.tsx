@@ -33,7 +33,7 @@ export default function Shell() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F3F4F6]">
       {!sidebarOpen ? <SidebarToggleButton onToggle={toggleSidebar} /> : null}
       <Sidebar
         sidebarOpen={sidebarOpen}
@@ -42,11 +42,12 @@ export default function Shell() {
         allowedSet={allowedSet}
         pending={pending}
         onToggleSidebar={toggleSidebar}
+        onLogout={handleLogout}
       />
 
-      <div className={`min-w-0 transition-[padding] duration-300 ease-in-out ${sidebarOpen ? 'min-[861px]:pl-[248px]' : ''}`}>
+      <div className={`min-w-0 transition-[padding] duration-300 ease-in-out ${sidebarOpen ? 'min-[861px]:pl-64' : ''}`}>
         <Topbar user={user!} onLogout={handleLogout} />
-        <main className="min-w-0 overflow-x-clip p-6 px-7 max-[860px]:p-4">
+        <main className="min-w-0 overflow-x-clip p-6 lg:p-8 max-[860px]:p-4">
           <Suspense fallback={<RouteLoading />}>
             <div className="anim-route min-w-0">
               <Outlet />
