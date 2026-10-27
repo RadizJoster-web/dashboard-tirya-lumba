@@ -12,26 +12,33 @@ export default function OverviewChart({
   data,
   labels,
   total,
-  title = 'Tren pendaftaran 2026',
+  title = 'Tren Pendaftaran',
   subtitle,
 }: OverviewChartProps) {
   return (
-    <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-2xs">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
         <div>
-          <h3 className="text-base font-bold text-ink">{title}</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {subtitle ?? `${total} pendaftar baru terdaftar`}
+          <h3 className="font-display text-base sm:text-lg font-bold text-[#1D3557]">
+            {title}
+          </h3>
+          <p className="mt-0.5 text-xs text-slate-500 font-normal">
+            {subtitle ?? `${total} pendaftar baru terdaftar pada periode ini`}
           </p>
         </div>
-        <span className="rounded-full bg-azure px-3 py-1 text-xs font-semibold text-primary">
-          Total: {total} Siswa
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E0FBFC] px-3 py-1 text-xs font-semibold text-[#0077B6] border border-[#00B4D8]/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#00B4D8]" />
+            Total: {total} Siswa
+          </span>
+        </div>
       </div>
+
       <ChartBar
         data={data}
         labels={labels}
         caption={`${title}, total ${total}`}
+        height={220}
       />
     </div>
   );
