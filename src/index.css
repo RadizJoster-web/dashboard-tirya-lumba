@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 @theme {
@@ -8,8 +8,12 @@
   --color-coral: #ff6f59;
   --color-basedash: #f3f4f6;
   --color-ink: #1d3557;
-  --font-display: 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:root {
+  color-scheme: light;
 }
 
 body {
@@ -19,19 +23,41 @@ body {
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Custom Scrollbar for sleek modern SaaS look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   @keyframes route-in {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(6px);
     }
     to {
       opacity: 1;
@@ -41,7 +67,7 @@ h3 {
   @keyframes modal-in {
     from {
       opacity: 0;
-      transform: translateY(10px) scale(0.97);
+      transform: translateY(8px) scale(0.98);
     }
     to {
       opacity: 1;
@@ -57,16 +83,15 @@ h3 {
     }
   }
   .anim-route {
-    animation: route-in 260ms ease-out;
+    animation: route-in 220ms ease-out;
   }
   .anim-modal {
-    animation: modal-in 220ms cubic-bezier(0.32, 0.72, 0.34, 1);
+    animation: modal-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .anim-overlay {
-    animation: fade-in 180ms ease-out;
+    animation: fade-in 160ms ease-out;
   }
-  /* Sonner toast lifecycle */
   [data-sonner-toast] {
-    animation: route-in 260ms ease-out;
+    animation: route-in 240ms ease-out;
   }
 }

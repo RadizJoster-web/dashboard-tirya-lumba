@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Inbox } from 'lucide-react';
 
 export interface DataTableColumn<T> {
   key: string;
@@ -18,6 +19,7 @@ interface DataTableProps<T> {
   actions?: (row: T) => ReactNode;
   actionsWidth?: string;
   emptyText?: string;
+  loading?: boolean;
 }
 
 function cellValue<T>(row: T, column: DataTableColumn<T>): ReactNode {
@@ -31,13 +33,30 @@ export default function DataTable<T>({
   rows,
   rowKey,
   actions,
-  actionsWidth = '20%',
+  actionsWidth = '18%',
   emptyText = 'Belum ada data yang cocok.',
+  loading = false,
 }: DataTableProps<T>) {
+  if (loading) {
+    return (
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="p-8 space-y-4">
+          <div className="h-4 bg-slate-100 rounded w-1/4 animate-pulse" />
+          <div className="h-10 bg-slate-50 rounded animate-pulse" />
+          <div className="h-10 bg-slate-50 rounded animate-pulse" />
+          <div className="h-10 bg-slate-50 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   if (rows.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-7 text-center text-slate-500">
-        {emptyText}
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white py-12 px-6 text-center">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-400">
+          <Inbox size={24} strokeWidth={1.5} />
+        </div>
+        <p className="text-sm font-medium text-slate-500">{emptyText}</p>
       </div>
     );
   }
@@ -48,65 +67,98 @@ export default function DataTable<T>({
 
   return (
     <>
-      <div className="hidden overflow-x-auto rounded-lg border border-gray-200 bg-white sm:block">
-        <table className="w-full table-fixed border-collapse">
-          <colgroup>
-            {columns.map((c) => (
-              <col key={c.key} style={{ width: c.width }} />
-            ))}
-            {actions ? <col style={{ width: actionsWidth }} /> : null}
-          </colgroup>
-          <thead>
-            <tr>
+      {/* Desktop / Tablet Table View */}
+      <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xs sm:block">
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed border-collapse text-left">
+            <colgroup>
               {columns.map((c) => (
-                <th
-                  key={c.key}
-                  scope="col"
-                  className="border-b border-gray-200 bg-basedash px-3.5 py-2.5 text-left font-semibold text-slate-500"
-                >
-                  {c.header}
-                </th>
+                <col key={c.key} style={{ width: c.width }} />
               ))}
-              {actions ? (
-                <th scope="col" className="border-b border-gray-200 bg-basedash px-3.5 py-2.5 text-left font-semibold text-slate-500">
-                  Aksi
-                </th>
-              ) : null}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={rowKey(row, index)} className="border-b border-gray-200 last:border-0">
+              {actions ? <col style={{ width: actionsWidth }} /> : null}
+            </colgroup>
+            <thead>
+              <tr className="border-b border-gray-100 bg-slate-50/70">
                 {columns.map((c) => (
-                  <td key={c.key} className="px-3.5 py-2.5 align-middle break-words">
-                    {cellValue(row, c)}
-                  </td>
+                  <th
+                    key={c.key}
+                    scope="col"
+                    className="py-3.5 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400"
+                  >
+                    {c.header}
+                  </th>
                 ))}
-                {actions ? <td className="px-3.5 py-2.5 align-middle">{actions(row)}</td> : null}
+                {actions ? (
+                  <th
+                    scope="col"
+                    className="py-3.5 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400"
+                  >
+                    Aksi
+                  </th>
+                ) : null}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {rows.map((row, index) => (
+                <tr
+                  key={rowKey(row, index)}
+                  className="transition-colors hover:bg-slate-50/60"
+                >
+                  {columns.map((c) => (
+                    <td
+                      key={c.key}
+                      className="py-3.5 px-4 align-middle text-sm font-medium tabular-nums text-[#1D3557] break-words"
+                    >
+                      {cellValue(row, c)}
+                    </td>
+                  ))}
+                  {actions ? (
+                    <td className="py-3.5 px-4 align-middle text-sm">
+                      {actions(row)}
+                    </td>
+                  ) : null}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <ul className="grid gap-2.5 sm:hidden">
+      {/* Mobile Card List View */}
+      <ul className="grid gap-3 sm:hidden">
         {rows.map((row, index) => (
-          <li key={rowKey(row, index)} className="rounded-lg border border-gray-200 bg-white p-3.5">
-            <div className="font-semibold break-words">{cellValue(row, primary)}</div>
+          <li
+            key={rowKey(row, index)}
+            className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs"
+          >
+            <div className="text-sm font-semibold text-[#1D3557] break-words">
+              {cellValue(row, primary)}
+            </div>
             {meta.length > 0 ? (
-              <dl className="mt-2 grid gap-1.5">
+              <dl className="mt-3 grid gap-2 border-t border-gray-100 pt-2.5">
                 {meta.map((c) => (
-                  <div key={c.key} className="flex items-baseline justify-between gap-3">
-                    <dt className="shrink-0 text-slate-500">{c.mobileLabel ?? c.header}</dt>
-                    <dd className="m-0 min-w-0 text-right break-words">{cellValue(row, c)}</dd>
+                  <div
+                    key={c.key}
+                    className="flex items-baseline justify-between gap-3 text-xs"
+                  >
+                    <dt className="shrink-0 font-medium text-slate-400">
+                      {c.mobileLabel ?? c.header}
+                    </dt>
+                    <dd className="min-w-0 text-right font-medium text-[#1D3557] break-words">
+                      {cellValue(row, c)}
+                    </dd>
                   </div>
                 ))}
               </dl>
             ) : null}
-            {actionColumn || actions ? (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {actionColumn ? cellValue(row, actionColumn) : null}
-                {actions ? actions(row) : null}
+            {actionColumn ? (
+              <div className="mt-3.5 border-t border-gray-100 pt-2.5">
+                {actionColumn.render?.(row)}
+              </div>
+            ) : null}
+            {actions ? (
+              <div className="mt-3.5 border-t border-gray-100 pt-2.5">
+                {actions(row)}
               </div>
             ) : null}
           </li>
