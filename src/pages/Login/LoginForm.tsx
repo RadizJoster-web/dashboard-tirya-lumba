@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Button, Field } from '../../components/ui';
+import BrandLogo from '../../components/layout/BrandLogo';
 
 export interface LoginCredentials {
   email: string;
@@ -40,73 +41,76 @@ export default function LoginForm({
   }
 
   return (
-    <div className="min-h-screen grid place-items-center p-4 bg-basedash">
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        className="bg-white border border-gray-200 rounded-2xl p-8 w-full max-w-[400px]"
-      >
-        <img
-          src="/logo-mark.svg"
-          alt="Logo PT Tirya Lumba"
-          width={40}
-          height={40}
-          draggable={false}
-          className="mx-auto w-10 h-10 object-contain"
-        />
-        <h1 className="text-[26px] leading-[34px] mt-3.5 mb-1">
-          Masuk ke Dashboard
-        </h1>
-        <p className="text-slate-500 mb-5">
-          Kelola kolam, jadwal, dan siswa dalam satu tempat.
-        </p>
+    <div className="min-h-screen grid place-items-center p-4 bg-[#F3F4F6]">
+      <div className="w-full max-w-[420px] rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
+        <div className="flex flex-col items-center text-center">
+          <BrandLogo sz={44} />
+          <h1 className="font-display text-2xl font-bold text-[#1D3557] mt-3 tracking-tight">
+            Tirya Lumba
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Dasbor Manajemen Operasional & Pengelola Kolam
+          </p>
+        </div>
 
-        <Field
-          id="email"
-          label="Email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (userError) setUserError('');
-          }}
-          error={userError}
-        />
-        <Field
-          id="password"
-          label="Password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            if (passError) setPassError('');
-          }}
-          error={passError}
-        />
-
-        <label className="block font-medium mb-2.5">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-            className="w-auto mr-1.5 align-middle accent-primary"
+        <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+          <Field
+            id="email"
+            label="Alamat Email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="admin@tiryalumba.com"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (userError) setUserError('');
+            }}
+            error={userError}
           />
-          Ingat aku
-        </label>
-        {formError ? (
-          <span className="block text-[#B3341F] text-[13px] font-medium mb-2.5">
-            {formError}
-          </span>
-        ) : null}
 
-        <Button type="submit" className="w-full py-2.5" disabled={busy}>
-          {busy ? 'Memproses…' : 'Masuk'}
-        </Button>
-      </form>
+          <Field
+            id="password"
+            label="Kata Sandi"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (passError) setPassError('');
+            }}
+            error={passError}
+          />
+
+          <div className="flex items-center justify-between text-xs pt-1">
+            <label className="flex items-center gap-2 font-medium text-slate-600 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 accent-[#0077B6]"
+              />
+              Ingat sesi login
+            </label>
+          </div>
+
+          {formError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-[#FF6F59]">
+              {formError}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={busy}
+            className="w-full justify-center h-11 text-sm font-semibold mt-2"
+          >
+            {busy ? 'Memverifikasi Akun…' : 'Masuk ke Dasbor'}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
