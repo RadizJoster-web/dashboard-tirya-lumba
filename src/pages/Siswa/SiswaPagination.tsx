@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../../components/ui';
 
 interface SiswaPaginationProps {
@@ -16,17 +17,33 @@ export default function SiswaPagination({
   onNext,
 }: SiswaPaginationProps) {
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-slate-500">
-      <span>{totalItems} siswa</span>
-      <div className="flex items-center gap-1.5">
-        <Button variant="ghost" className="px-2.5 py-1 text-[13px]" disabled={safePage < 2} onClick={onPrev}>
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+      <span className="font-medium tabular-nums">
+        Total <strong className="text-[#1D3557] font-semibold">{totalItems}</strong> siswa terdaftar
+      </span>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={safePage < 2}
+          onClick={onPrev}
+          className="rounded-full px-3 py-1 gap-1"
+        >
+          <ChevronLeft size={14} />
           Sebelumnya
         </Button>
-        <span className="px-2 py-1">
+        <span className="rounded-full bg-white border border-gray-200 px-3 py-1 font-semibold text-[#1D3557] tabular-nums shadow-2xs">
           {safePage} / {totalPages}
         </span>
-        <Button variant="ghost" className="px-2.5 py-1 text-[13px]" disabled={safePage >= totalPages} onClick={onNext}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={safePage >= totalPages}
+          onClick={onNext}
+          className="rounded-full px-3 py-1 gap-1"
+        >
           Berikutnya
+          <ChevronRight size={14} />
         </Button>
       </div>
     </div>
