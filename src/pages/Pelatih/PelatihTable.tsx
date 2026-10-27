@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import DataTable from '../../components/ui/DataTable';
-import type { DataTableColumn } from '../../components/ui/DataTable';
+import DataTable, { type DataTableColumn } from '../../components/ui/DataTable';
 import StatusBadge from '../../components/ui/StatusBadge';
-import { Button } from '../../components/ui';
+import { Button, RoleTag } from '../../components/ui';
+import { assetUrl } from '../../lib/api/client';
+import { initials } from '../../lib/format';
 import type { ServerInstructor } from '../../lib/api/types';
 
 interface PelatihTableProps {
@@ -18,38 +19,68 @@ export default function PelatihTable({
     () => [
       {
         key: 'fullName',
-        header: 'Nama',
-        width: '40%',
+        header: 'Instruktur / Pelatih',
+        width: '38%',
         primary: true,
-        render: (r) => (
-          <span className="font-medium text-slate-800 truncate">{r.fullName}</span>
-        ),
+        render: (r) => {
+          const photo = assetUrl(r.profilePictureUrl);
+          return (
+            <div className="flex items-center gap-3">
+              {photo ? (
+                <img
+                  src={photo}
+                  alt={r.fullName}
+                  className="h-9 w-9 rounded-full object-cover shrink-0 border border-gray-200"
+                />
+              ) : (
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#6B21A8] to-[#A855F7] text-xs font-bold text-white shrink-0 shadow-2xs">
+                  {initials(r.fullName)}
+                </div>
+              )}
+              <div className="min-w-0">
+                <span className="block font-semibold text-[#1D3557] truncate text-sm">
+                  {r.fullName}
+                </span>
+                <span className="block text-xs text-slate-400 truncate">
+                  Pelatih Renang Berlisensi
+                </span>
+              </div>
+            </div>
+          );
+        },
       },
       {
         key: 'phone',
-        header: 'Telepon',
-        width: '22%',
-        render: (r) => r.phone ?? '-',
+        header: 'Kontak',
+        width: '24%',
+        render: (r) => (
+          <div className="text-xs">
+            <span className="font-medium text-[#1D3557] block">{r.phone || '-'}</span>
+            <RoleTag role="instructor">Pelatih</RoleTag>
+          </div>
+        ),
       },
       {
         key: 'isActive',
-        header: 'Status',
-        width: '18%',
+        header: 'Status Mengajar',
+        width: '20%',
         render: (r) => <StatusBadge active={r.isActive} />,
       },
       {
         key: 'aksi',
         header: 'Aksi',
-        width: '20%',
+        width: '18%',
         asActions: true,
         render: (r) => (
-          <Button
-            variant="ghost"
-            className="px-2.5 py-1 text-[13px]"
-            onClick={() => onSelectDetail(r.id)}
-          >
-            Detail
-          </Button>
+          <div className="flex items-center justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSelectDetail(r.id)}
+            >
+              Detail Profil
+            </Button>
+          </div>
         ),
       },
     ],
@@ -61,7 +92,7 @@ export default function PelatihTable({
       columns={columns}
       rows={rows}
       rowKey={(r) => r.id}
-      emptyText="Belum ada pelatih yang cocok."
+      emptyText="Belum ada pelatih yang cocok dengan filter pencarian."
     />
   );
 }

@@ -1,7 +1,8 @@
+import { Phone } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import { SkeletonDetail } from '../../components/loading';
 import StatusBadge from '../../components/ui/StatusBadge';
-import { Button } from '../../components/ui';
+import { Button, RoleTag } from '../../components/ui';
 import { assetUrl } from '../../lib/api/client';
 import { initials } from '../../lib/format';
 import type { ServerInstructorDetail } from '../../lib/api/types';
@@ -30,52 +31,105 @@ export default function PelatihDetailModal({
   const locations = profile?.locations ?? [];
 
   return (
-    <Modal title="Detail pelatih" onClose={onClose} footer={<Button variant="ghost" onClick={onClose}>Tutup</Button>}>
+    <Modal
+      title="Detail Profil Pelatih"
+      onClose={onClose}
+      footer={
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          Tutup
+        </Button>
+      }
+    >
       {detailLoading || (!detail && !detailError) ? (
         <SkeletonDetail />
       ) : detailError ? (
         <div className="text-sm">
-          <p className="m-0 text-[#B3341F]">{detailError}</p>
-          <Button variant="ghost" className="mt-3 px-2.5 py-1 text-[13px]" onClick={onRetry}>
+          <p className="m-0 text-[#FF6F59]">{detailError}</p>
+          <Button variant="ghost" size="sm" className="mt-3" onClick={onRetry}>
             Coba lagi
           </Button>
         </div>
       ) : detail ? (
-        <>
-          <div className="mb-4 flex items-center gap-3">
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-slate-50/80 p-4">
             {detailPhoto ? (
-              <img src={detailPhoto} alt={`Foto ${detail.fullName}`} className="h-16 w-16 rounded-full object-cover" />
+              <img
+                src={detailPhoto}
+                alt={`Foto ${detail.fullName}`}
+                className="h-16 w-16 rounded-xl object-cover border border-gray-200 shadow-2xs shrink-0"
+              />
             ) : (
-              <span aria-hidden="true" className="grid h-16 w-16 place-items-center rounded-full bg-azure font-display text-lg font-bold text-primary">
+              <span
+                aria-hidden="true"
+                className="grid h-16 w-16 place-items-center rounded-xl bg-gradient-to-br from-[#6B21A8] to-[#A855F7] font-display text-xl font-bold text-white shadow-2xs shrink-0"
+              >
                 {initials(detail.fullName)}
               </span>
             )}
-            <div className="min-w-0">
-              <b className="block truncate">{detail.fullName}</b>
-              <p className="m-0 truncate text-slate-500">{detail.email ?? '-'}</p>
+            <div className="min-w-0 flex-1">
+              <h4 className="font-display font-bold text-base text-[#1D3557] truncate">
+                {detail.fullName}
+              </h4>
+              <p className="text-xs text-slate-500 truncate mt-0.5">{detail.email ?? '-'}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <StatusBadge active={detail.isActive} />
+                {detail.phone && (
+                  <a
+                    href={`https://wa.me/${detail.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                  >
+                    <Phone size={11} />
+                    WhatsApp
+                  </a>
+                )}
+              </div>
             </div>
           </div>
-          <dl className="grid grid-cols-[100px_1fr] gap-x-3 gap-y-2 text-sm sm:grid-cols-[120px_1fr]">
-            <dt className="text-slate-500">Telepon</dt>
-            <dd className="m-0">{detail.phone ?? '-'}</dd>
-            <dt className="text-slate-500">Status</dt>
-            <dd className="m-0"><StatusBadge active={detail.isActive} /></dd>
-            <dt className="text-slate-500">Verifikasi</dt>
-            <dd className="m-0">{detail.isVerified ? 'Terverifikasi' : 'Belum terverifikasi'}</dd>
-            <dt className="text-slate-500">Lisensi</dt>
-            <dd className="m-0">{profile?.license ?? '-'}</dd>
-            <dt className="text-slate-500">Pengalaman</dt>
-            <dd className="m-0">{profile?.experience ?? '-'}</dd>
-            <dt className="text-slate-500">Bio</dt>
-            <dd className="m-0">{profile?.shortBio ?? '-'}</dd>
-            <dt className="text-slate-500">Lokasi</dt>
-            <dd className="m-0">
-              {locations.length === 0
-                ? '-'
-                : locations.map((l) => `${l.name}${l.area?.name ? ` (${l.area.name})` : ''}`).join(', ')}
-            </dd>
-          </dl>
-        </>
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="rounded-lg border border-gray-100 bg-slate-50 p-3">
+              <span className="text-slate-400 font-semibold block uppercase">Lisensi</span>
+              <span className="font-semibold text-[#1D3557] mt-0.5 block">
+                {profile?.license ?? 'Tidak ada lisensi'}
+              </span>
+            </div>
+
+            <div className="rounded-lg border border-gray-100 bg-slate-50 p-3">
+              <span className="text-slate-400 font-semibold block uppercase">Pengalaman</span>
+              <span className="font-semibold text-[#1D3557] mt-0.5 block">
+                {profile?.experience ?? '-'}
+              </span>
+            </div>
+          </div>
+
+          {profile?.shortBio && (
+            <div className="rounded-lg border border-gray-100 bg-slate-50 p-3 text-xs">
+              <span className="text-slate-400 font-semibold block uppercase mb-1">
+                Bio Profil
+              </span>
+              <p className="text-[#1D3557] italic leading-relaxed">
+                "{profile.shortBio}"
+              </p>
+            </div>
+          )}
+
+          {locations.length > 0 && (
+            <div className="rounded-lg border border-gray-100 bg-slate-50 p-3 text-xs">
+              <span className="text-slate-400 font-semibold block uppercase mb-2">
+                Lokasi Kolam Mengajar ({locations.length})
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {locations.map((l) => (
+                  <RoleTag key={l.id} role="pool_manager">
+                    {l.name}
+                  </RoleTag>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       ) : null}
     </Modal>
   );
