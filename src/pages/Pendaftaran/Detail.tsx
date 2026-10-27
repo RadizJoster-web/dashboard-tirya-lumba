@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { ArrowLeft, Check, FileText, Mail, Phone, X, ExternalLink } from 'lucide-react';
 import { apiGet, apiSend, assetUrl } from '../../lib/api/client';
-import { Button } from '../../components/ui';
+import { Button, RoleTag, StatusBadge } from '../../components/ui';
 import { RouteLoading } from '../../components/loading';
 import PendaftaranRejectModal from './PendaftaranRejectModal';
 import type { ServerRegistrationDetail, ServerRegistration } from '../../lib/api/types';
@@ -29,7 +30,6 @@ export default function PendaftaranDetail() {
         if (active) {
           toast.error(
             err instanceof Error ? err.message : 'Gagal memuat detail pendaftaran.',
-            { style: { color: '#B3341F' } },
           );
           navigate('/pendaftaran');
         }
@@ -68,7 +68,6 @@ export default function PendaftaranDetail() {
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : 'Gagal menyetujui pendaftaran.',
-        { style: { color: '#B3341F' } },
       );
     } finally {
       setActionLoading(false);
@@ -81,9 +80,7 @@ export default function PendaftaranDetail() {
       await apiSend(`/register/${detail.id}/reject`, 'POST', {
         rejectionReason: reason,
       });
-      toast.error('Pendaftaran telah ditolak.', {
-        style: { color: '#B3341F' },
-      });
+      toast.error('Pendaftaran telah ditolak.');
       setDetail((prev) =>
         prev
           ? {
@@ -97,7 +94,6 @@ export default function PendaftaranDetail() {
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : 'Gagal menolak pendaftaran.',
-        { style: { color: '#B3341F' } },
       );
     } finally {
       setActionLoading(false);
@@ -120,126 +116,103 @@ export default function PendaftaranDetail() {
   };
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 pb-12">
       {/* 1. Bar Navigasi & Breadcrumb */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 bg-white p-4.5 rounded-xl shadow-2xs">
         <div className="flex items-center gap-3">
           <Link
             to="/pendaftaran"
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200 hover:text-ink"
-            title="Kembali ke Antrean Pendaftaran"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#0077B6]"
+            title="Kembali ke Antrean"
           >
-            ←
+            <ArrowLeft size={16} />
           </Link>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Pendaftaran #{detail.id.slice(0, 8)}
               </span>
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                  isInstructor
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'bg-blue-100 text-blue-700'
-                }`}
-              >
+              <RoleTag role={isInstructor ? 'instructor' : 'student'}>
                 {isInstructor ? 'Pelatih Baru' : 'Murid Baru'}
-              </span>
+              </RoleTag>
             </div>
-            <h1 className="text-xl font-bold text-ink sm:text-2xl">
-              Detail Pendaftaran {isInstructor ? 'Pelatih' : 'Murid'}
+            <h1 className="font-display text-xl font-bold text-[#1D3557] sm:text-2xl mt-0.5">
+              {detail.name || user?.fullName || 'Pendaftar'}
             </h1>
           </div>
         </div>
 
         {/* Status Badge & Aksi Cepat Header */}
         <div className="flex items-center gap-2.5">
-          {isPending && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              Menunggu Persetujuan
-            </span>
-          )}
-          {isApproved && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Telah Disetujui
-            </span>
-          )}
-          {isRejected && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-3 py-1 text-xs font-bold text-red-800">
-              <span className="h-2 w-2 rounded-full bg-red-500" />
-              Ditolak
-            </span>
-          )}
+          <StatusBadge status={detail.status} />
 
           {isPending && (
             <div className="flex items-center gap-2 pl-2">
               <Button
                 variant="danger"
-                className="px-3 py-1.5 text-xs min-h-0"
+                size="sm"
                 disabled={actionLoading}
                 onClick={() => setShowRejectModal(true)}
               >
-                ✕ Tolak
+                <X size={14} className="mr-1" />
+                Tolak
               </Button>
               <Button
                 variant="primary"
-                className="px-4 py-1.5 text-xs min-h-0 bg-emerald-600 hover:bg-emerald-700"
+                size="sm"
                 disabled={actionLoading}
                 onClick={handleApprove}
               >
-                ✓ Setujui (ACC)
+                <Check size={14} className="mr-1" />
+                Setujui Pendaftaran
               </Button>
             </div>
           )}
         </div>
       </div>
 
-      {/* 2. Grid Tata Letak Utama (Hierarki Penting -> Samping) */}
+      {/* 2. Grid Tata Letak Utama */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* ============================================================== */}
-        {/* KOLOM UTAMA (KIRI - 2/3 LAYAR)                                  */}
-        {/* ============================================================== */}
+        {/* Kolom Kiri (2/3) */}
         <div className="space-y-6 lg:col-span-2">
-          {/* TINGKAT 1: IDENTITAS UTAMA PENDAFTAR (PALING PENTING) */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+          {/* Identitas Pendaftar */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               {photo ? (
                 <img
                   src={photo}
                   alt={detail.name}
-                  className="h-20 w-20 rounded-2xl object-cover border-2 border-azure shadow-sm shrink-0"
+                  className="h-20 w-20 rounded-xl object-cover border border-gray-200 shadow-2xs shrink-0"
                 />
               ) : (
-                <div className="grid h-20 w-20 place-items-center rounded-2xl bg-azure text-2xl font-extrabold text-primary shrink-0 border-2 border-azure">
+                <div className="grid h-20 w-20 place-items-center rounded-xl bg-gradient-to-br from-[#0077B6] to-[#00B4D8] text-2xl font-bold text-white shrink-0 shadow-2xs">
                   {(detail.name || user?.fullName || 'U').charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-xl font-bold text-ink truncate">
+                  <h2 className="font-display text-xl font-bold text-[#1D3557] truncate">
                     {detail.name || user?.fullName || 'Pendaftar'}
                   </h2>
                   <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
-                    ID Akun: {user?.id?.slice(0, 8) || '-'}
+                    ID: {user?.id?.slice(0, 8) || '-'}
                   </span>
                 </div>
-                <div className="mt-2.5 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                    <span className="text-slate-400">✉️</span>
+                <div className="mt-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Mail size={14} className="text-slate-400 shrink-0" />
                     <a
                       href={`mailto:${detail.email || user?.email}`}
-                      className="hover:text-primary truncate"
+                      className="hover:text-[#0077B6] truncate"
                     >
                       {detail.email || user?.email || '-'}
                     </a>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                    <span className="text-slate-400">📞</span>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Phone size={14} className="text-slate-400 shrink-0" />
                     <a
                       href={`tel:${detail.phone || user?.phone}`}
-                      className="hover:text-primary font-medium"
+                      className="hover:text-[#0077B6] font-medium"
                     >
                       {detail.phone || user?.phone || '-'}
                     </a>
@@ -249,54 +222,48 @@ export default function PendaftaranDetail() {
             </div>
           </div>
 
-          {/* TINGKAT 2: RINCIAN KELAS & OPERASIONAL */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
-            <h3 className="text-base font-bold text-ink border-b border-slate-100 pb-3 flex items-center gap-2">
-              <span>{isInstructor ? '🏊‍♂️' : '🎯'}</span>
-              <span>
-                {isInstructor
-                  ? 'Data Kualifikasi & Lokasi Pelatih'
-                  : 'Pilihan Kelas & Jadwal Pertemuan Murid'}
-              </span>
+          {/* Rincian Operasional & Kelas */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
+            <h3 className="font-display text-base font-bold text-[#1D3557] border-b border-gray-100 pb-3">
+              {isInstructor ? 'Data Kualifikasi & Lokasi Mengajar' : 'Pilihan Kelas & Jadwal Murid'}
             </h3>
 
             {isInstructor ? (
-              // Konten Operasional Pelatih
-              <div className="mt-4 space-y-4 text-sm">
+              <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                       Lisensi & Sertifikasi
                     </span>
-                    <p className="mt-1 font-semibold text-slate-800">
+                    <p className="mt-1 font-semibold text-[#1D3557]">
                       {user?.instructorProfile?.license || 'Belum ada lisensi dicantumkan'}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                       Pengalaman Mengajar
                     </span>
-                    <p className="mt-1 font-semibold text-slate-800">
+                    <p className="mt-1 font-semibold text-[#1D3557]">
                       {user?.instructorProfile?.experience || 'Belum ada keterangan pengalaman'}
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                    Jadwal Ketersediaan Mengajar Terdaftar ({detail.schedules?.length ?? 0} Sesi)
+                <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                    Jadwal Ketersediaan Mengajar ({detail.schedules?.length ?? 0} Sesi)
                   </span>
                   {detail.schedules && detail.schedules.length > 0 ? (
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {detail.schedules.map((s, idx) => (
                         <div
                           key={s.id || idx}
-                          className="flex items-center justify-between rounded-lg bg-white p-2.5 border border-slate-200 text-xs"
+                          className="flex items-center justify-between rounded-lg bg-white p-2.5 border border-gray-200 text-xs"
                         >
-                          <span className="font-bold text-slate-800">
+                          <span className="font-semibold text-[#1D3557]">
                             {s.dayOfWeek} • {s.sessionName}
                           </span>
-                          <span className="text-slate-500 font-medium">
+                          <span className="text-slate-500">
                             {s.location?.name ? `Kolam ${s.location.name}` : 'Kolam'}
                           </span>
                         </div>
@@ -304,14 +271,14 @@ export default function PendaftaranDetail() {
                     </div>
                   ) : (
                     <p className="text-xs text-slate-400 italic">
-                      Tidak ada data jadwal spesifik terlampir.
+                      Tidak ada jadwal spesifik terlampir.
                     </p>
                   )}
                 </div>
 
                 {user?.instructorProfile?.shortBio && (
-                  <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                       Bio & Ringkasan Diri
                     </span>
                     <p className="mt-1 text-xs text-slate-700 leading-relaxed whitespace-pre-line">
@@ -321,24 +288,23 @@ export default function PendaftaranDetail() {
                 )}
               </div>
             ) : (
-              // Konten Operasional Murid
-              <div className="mt-4 space-y-4 text-sm">
+              <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                       Lokasi Kolam Renang
                     </span>
-                    <p className="mt-1 font-bold text-primary">
+                    <p className="mt-1 font-bold text-[#0077B6]">
                       {detail.location?.name
                         ? `Kolam Renang ${detail.location.name}`
                         : detail.lokasi || '-'}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                       Paket Les & Biaya
                     </span>
-                    <p className="mt-1 font-bold text-slate-800">
+                    <p className="mt-1 font-bold text-[#1D3557]">
                       {detail.package?.type || 'Paket Les'} —{' '}
                       {detail.package?.price
                         ? `Rp ${Number(detail.package.price).toLocaleString('id-ID')}`
@@ -348,11 +314,11 @@ export default function PendaftaranDetail() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                       Rencana Pertemuan Pertama
                     </span>
-                    <p className="mt-1 font-semibold text-slate-800">
+                    <p className="mt-1 font-semibold text-[#1D3557] text-xs">
                       {detail.firstMeetDate
                         ? new Date(detail.firstMeetDate).toLocaleDateString('id-ID', {
                             weekday: 'long',
@@ -364,11 +330,11 @@ export default function PendaftaranDetail() {
                       • {detail.firstMeetSession || '-'}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                       Pelatih yang Dipilih
                     </span>
-                    <p className="mt-1 font-semibold text-slate-800">
+                    <p className="mt-1 font-semibold text-[#1D3557] text-xs">
                       {detail.instructor?.fullName || 'Belum ditentukan'}
                     </p>
                   </div>
@@ -377,33 +343,27 @@ export default function PendaftaranDetail() {
             )}
           </div>
 
-          {/* TINGKAT 3: VERIFIKASI BERKAS & PEMBAYARAN */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
-            <h3 className="text-base font-bold text-ink border-b border-slate-100 pb-3 flex items-center gap-2">
-              <span>{isInstructor ? '📄' : '💳'}</span>
-              <span>
-                {isInstructor
-                  ? 'Berkas CV / Portofolio Pelatih'
-                  : 'Verifikasi Pembayaran Murid'}
-              </span>
+          {/* Lampiran Dokumen (CV atau Bukti Pembayaran) */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
+            <h3 className="font-display text-base font-bold text-[#1D3557] border-b border-gray-100 pb-3">
+              {isInstructor ? 'Berkas CV Pelatih' : 'Verifikasi Pembayaran Kursus'}
             </h3>
 
             <div className="mt-4">
               {isInstructor ? (
-                // Berkas CV Pelatih
                 <div>
                   {cvLink ? (
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-slate-50/70 p-4">
                       <div className="flex items-center gap-3">
-                        <span className="grid h-10 w-10 place-items-center rounded-lg bg-red-100 text-lg text-red-600">
-                          PDF
-                        </span>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600 border border-red-100">
+                          <FileText size={20} />
+                        </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-800">
-                            Berkas CV Pelatih
+                          <p className="text-sm font-bold text-[#1D3557]">
+                            Berkas CV Pelamar
                           </p>
-                          <p className="text-xs text-slate-500">
-                            Format PDF dokumen pelamar
+                          <p className="text-xs text-slate-400">
+                            Dokumen digital kurikulum vitae
                           </p>
                         </div>
                       </div>
@@ -411,24 +371,24 @@ export default function PendaftaranDetail() {
                         href={cvLink}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-primary-hover"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-[#0077B6] px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#005f8f] transition-colors"
                       >
-                        Buka & Unduh CV →
+                        Buka & Unduh CV
+                        <ExternalLink size={14} />
                       </a>
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400">
+                    <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-xs text-slate-400">
                       Pelatih tidak melampirkan berkas CV digital.
                     </div>
                   )}
                 </div>
               ) : (
-                // Bukti Pembayaran Murid
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div>
-                      <span className="font-bold text-slate-500">Metode Pembayaran: </span>
-                      <span className="font-bold text-slate-800">
+                      <span className="font-semibold text-slate-500">Metode: </span>
+                      <span className="font-bold text-[#1D3557]">
                         {detail.paymentMethod === 'BANK_TRANSFER'
                           ? 'Transfer Bank'
                           : detail.paymentMethod || '-'}
@@ -439,15 +399,15 @@ export default function PendaftaranDetail() {
                         href={paymentProofLink}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-semibold text-primary hover:underline"
+                        className="inline-flex items-center gap-1 font-semibold text-[#0077B6] hover:underline"
                       >
-                        Buka Gambar Ukuran Penuh ↗
+                        Buka Gambar Penuh <ExternalLink size={12} />
                       </a>
                     )}
                   </div>
 
                   {paymentProofLink ? (
-                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 max-w-md">
+                    <div className="overflow-hidden rounded-xl border border-gray-200 bg-slate-50 max-w-md">
                       <img
                         src={paymentProofLink}
                         alt="Bukti Transfer Pembayaran"
@@ -455,7 +415,7 @@ export default function PendaftaranDetail() {
                       />
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400">
+                    <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-xs text-slate-400">
                       Tidak ada bukti transfer yang diunggah.
                     </div>
                   )}
@@ -464,24 +424,23 @@ export default function PendaftaranDetail() {
             </div>
           </div>
 
-          {/* TINGKAT 4: BIODATA PENDUKUNG & DATA TAMBAHAN */}
+          {/* Biodata Lengkap Tambahan Siswa */}
           {!isInstructor && user?.studentProfile && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
-              <h3 className="text-base font-bold text-ink border-b border-slate-100 pb-3 flex items-center gap-2">
-                <span>📋</span>
-                <span>Biodata Lengkap Siswa</span>
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
+              <h3 className="font-display text-base font-bold text-[#1D3557] border-b border-gray-100 pb-3">
+                Biodata Lengkap Siswa
               </h3>
 
               <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 text-xs">
                 <div>
                   <dt className="font-semibold text-slate-400">Nama Lengkap Murid</dt>
-                  <dd className="font-medium text-slate-800 mt-0.5">
+                  <dd className="font-medium text-[#1D3557] mt-0.5">
                     {user.studentProfile.fullName || '-'}
                   </dd>
                 </div>
                 <div>
                   <dt className="font-semibold text-slate-400">Tempat, Tanggal Lahir</dt>
-                  <dd className="font-medium text-slate-800 mt-0.5">
+                  <dd className="font-medium text-[#1D3557] mt-0.5">
                     {user.studentProfile.birthPlace || '-'}{' '}
                     {user.studentProfile.birthDate
                       ? `, ${new Date(user.studentProfile.birthDate).toLocaleDateString('id-ID')}`
@@ -490,25 +449,25 @@ export default function PendaftaranDetail() {
                 </div>
                 <div>
                   <dt className="font-semibold text-slate-400">Jenis Kelamin</dt>
-                  <dd className="font-medium text-slate-800 mt-0.5">
+                  <dd className="font-medium text-[#1D3557] mt-0.5">
                     {user.studentProfile.gender || '-'}
                   </dd>
                 </div>
                 <div>
                   <dt className="font-semibold text-slate-400">Ukuran T-Shirt</dt>
-                  <dd className="font-medium text-slate-800 mt-0.5">
+                  <dd className="font-medium text-[#1D3557] mt-0.5">
                     {user.studentProfile.tshirtSize || '-'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="font-semibold text-slate-400">Sekolah / Tempat Kerja</dt>
-                  <dd className="font-medium text-slate-800 mt-0.5">
+                  <dt className="font-semibold text-slate-400">Sekolah / Instansi</dt>
+                  <dd className="font-medium text-[#1D3557] mt-0.5">
                     {user.studentProfile.schoolOrOffice || '-'}
                   </dd>
                 </div>
                 <div>
                   <dt className="font-semibold text-slate-400">Alamat Domisili</dt>
-                  <dd className="font-medium text-slate-800 mt-0.5">
+                  <dd className="font-medium text-[#1D3557] mt-0.5">
                     {user.studentProfile.address || '-'}
                   </dd>
                 </div>
@@ -517,29 +476,28 @@ export default function PendaftaranDetail() {
           )}
         </div>
 
-        {/* ============================================================== */}
-        {/* KOLOM SAMPING (KANAN - 1/3 LAYAR)                               */}
-        {/* ============================================================== */}
+        {/* Kolom Kanan (1/3) */}
         <div className="space-y-6">
-          {/* PANEL KEPUTUSAN VERIFIKASI */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <h3 className="font-bold text-ink text-sm border-b border-slate-100 pb-2.5">
+          {/* Panel Keputusan Verifikasi */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-2xs">
+            <h3 className="font-display font-bold text-[#1D3557] text-sm border-b border-gray-100 pb-2.5">
               Tindakan Verifikasi
             </h3>
 
             {isPending ? (
               <div className="mt-4 space-y-3">
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Periksa kelengkapan kualifikasi dan validitas berkas di samping sebelum menyetujui pendaftaran ini.
+                  Periksa kelengkapan kualifikasi dan berkas di samping sebelum memberikan keputusan verifikasi.
                 </p>
 
                 <Button
                   variant="primary"
-                  className="w-full justify-center bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full justify-center"
                   disabled={actionLoading}
                   onClick={handleApprove}
                 >
-                  ✓ Setujui Pendaftaran (ACC)
+                  <Check size={16} className="mr-1.5" />
+                  Setujui Pendaftaran
                 </Button>
 
                 <Button
@@ -548,28 +506,33 @@ export default function PendaftaranDetail() {
                   disabled={actionLoading}
                   onClick={() => setShowRejectModal(true)}
                 >
-                  ✕ Tolak Pendaftaran
+                  <X size={16} className="mr-1.5" />
+                  Tolak Pendaftaran
                 </Button>
               </div>
             ) : isApproved ? (
               <div className="mt-4 rounded-xl bg-emerald-50 p-4 border border-emerald-200 text-xs text-emerald-800 leading-relaxed">
-                <p className="font-bold">✓ Pendaftaran Telah Disetujui</p>
+                <p className="font-bold flex items-center gap-1.5">
+                  <Check size={16} /> Pendaftaran Telah Disetujui
+                </p>
                 <p className="mt-1">
-                  Akun pengguna telah diaktifkan dengan role {isInstructor ? 'Pelatih' : 'Murid'}.
+                  Akun pengguna telah aktif dengan peran {isInstructor ? 'Pelatih' : 'Murid'}.
                 </p>
               </div>
             ) : (
               <div className="mt-4 rounded-xl bg-red-50 p-4 border border-red-200 text-xs text-red-800 leading-relaxed">
-                <p className="font-bold">✕ Pendaftaran Ditolak</p>
+                <p className="font-bold flex items-center gap-1.5">
+                  <X size={16} /> Pendaftaran Ditolak
+                </p>
                 <p className="mt-1 font-semibold">Alasan:</p>
                 <p className="mt-0.5 italic">{detail.rejectionReason || 'Tidak ada alasan khusus.'}</p>
               </div>
             )}
           </div>
 
-          {/* PANEL INFORMASI SISTEM */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-xs space-y-3">
-            <h4 className="font-bold text-ink text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
+          {/* Panel Metadata Sistem */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-2xs text-xs space-y-3">
+            <h4 className="font-semibold text-slate-400 text-xs uppercase tracking-wider border-b border-gray-100 pb-2">
               Metadata Sistem
             </h4>
 
@@ -582,14 +545,14 @@ export default function PendaftaranDetail() {
 
             <div>
               <span className="text-slate-400 block font-medium">Tipe Pendaftaran</span>
-              <span className="font-bold text-slate-800">
+              <span className="font-bold text-[#1D3557]">
                 {detail.type}
               </span>
             </div>
 
             <div>
-              <span className="text-slate-400 block font-medium">Status Database</span>
-              <span className="font-bold text-slate-800">
+              <span className="text-slate-400 block font-medium">Status</span>
+              <span className="font-bold text-[#1D3557]">
                 {detail.status}
               </span>
             </div>

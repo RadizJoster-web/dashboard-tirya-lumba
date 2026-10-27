@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
-import DataTable from '../../components/ui/DataTable';
-import type { DataTableColumn } from '../../components/ui/DataTable';
-import { Button } from '../../components/ui';
+import DataTable, { type DataTableColumn } from '../../components/ui/DataTable';
+import { Button, RoleTag, StatusBadge } from '../../components/ui';
 import { assetUrl } from '../../lib/api/client';
 import type { ServerRegistration } from '../../lib/api/types';
 
@@ -24,101 +23,81 @@ export default function PendaftaranTable({
     () => [
       {
         key: 'name',
-        header: 'Nama Pendaftar',
-        width: '26%',
+        header: 'Pendaftar',
+        width: '32%',
         primary: true,
         render: (r) => {
           const photo = assetUrl(r.profilePictureUrl ?? undefined);
           return (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               {photo ? (
                 <img
                   src={photo}
                   alt={r.name}
-                  className="h-8 w-8 rounded-full object-cover shrink-0"
+                  className="h-9 w-9 rounded-full object-cover shrink-0 border border-gray-200"
                 />
               ) : (
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-azure text-xs font-bold text-primary shrink-0">
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#0077B6] to-[#00B4D8] text-xs font-bold text-white shrink-0 shadow-2xs">
                   {r.name.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="font-semibold text-ink truncate">{r.name}</span>
+              <div className="min-w-0">
+                <span className="block font-semibold text-[#1D3557] truncate text-sm">
+                  {r.name}
+                </span>
+                <span className="block text-xs text-slate-400 truncate">
+                  {r.email ?? r.phone ?? 'Tidak ada kontak'}
+                </span>
+              </div>
             </div>
           );
         },
       },
       {
-        key: 'email',
-        header: 'Kontak',
-        width: '24%',
+        key: 'type',
+        header: 'Jenis',
+        width: '15%',
         render: (r) => (
-          <div className="text-xs">
-            <p className="font-medium text-slate-700 truncate">{r.email ?? '-'}</p>
-            <p className="text-slate-400 truncate">{r.phone ?? '-'}</p>
-          </div>
+          <RoleTag role={r.type === 'NEW_INSTRUCTOR' ? 'instructor' : 'student'}>
+            {r.type === 'NEW_INSTRUCTOR' ? 'Pelatih Baru' : 'Murid Baru'}
+          </RoleTag>
         ),
       },
       {
         key: 'lokasi',
         header: 'Lokasi Kolam',
-        width: '20%',
+        width: '22%',
         render: (r) => (
           <span className="text-xs font-medium text-slate-600 line-clamp-2">
-            {r.lokasi || '-'}
+            {r.lokasi || 'Belum dipilih'}
           </span>
         ),
       },
       {
-        key: 'type',
-        header: 'Tipe',
-        width: '12%',
-        render: (r) => (
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-              r.type === 'NEW_INSTRUCTOR'
-                ? 'bg-purple-100 text-purple-700'
-                : 'bg-blue-100 text-blue-700'
-            }`}
-          >
-            {r.type === 'NEW_INSTRUCTOR' ? 'Pelatih' : 'Murid'}
-          </span>
-        ),
+        key: 'status',
+        header: 'Status Verifikasi',
+        width: '15%',
+        render: (r) => <StatusBadge status={r.status ?? 'PENDING'} />,
       },
       {
         key: 'aksi',
         header: 'Aksi',
-        width: '18%',
+        width: '16%',
         asActions: true,
         render: (r) => (
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center justify-end gap-1.5">
             <Button
               variant="ghost"
-              className="px-2.5 py-1 text-xs min-h-0"
+              size="sm"
               onClick={() => onDetail(r.id)}
             >
-              Detail
-            </Button>
-            <Button
-              variant="primary"
-              className="px-2.5 py-1 text-xs min-h-0"
-              disabled={actionLoading}
-              onClick={() => onApprove(r.id)}
-            >
-              ACC
-            </Button>
-            <Button
-              variant="danger"
-              className="px-2.5 py-1 text-xs min-h-0"
-              disabled={actionLoading}
-              onClick={() => onReject(r)}
-            >
-              Tolak
+              Tinjau Detail
             </Button>
           </div>
         ),
       },
     ],
-    [onDetail, onApprove, onReject, actionLoading],
+    [onDetail],
   );
 
   return (
@@ -126,7 +105,7 @@ export default function PendaftaranTable({
       columns={columns}
       rows={rows}
       rowKey={(r) => r.id}
-      emptyText="Belum ada pendaftar baru yang menunggu persetujuan."
+      emptyText="Tidak ada antrean pendaftaran yang menunggu persetujuan."
     />
   );
 }

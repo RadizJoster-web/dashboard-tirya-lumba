@@ -39,21 +39,28 @@ export default function Pendaftaran() {
   });
 
   return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-5 pb-8">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl leading-8 font-bold">Pendaftaran dan Antrean</h2>
-          <p className="text-slate-500">
+          <h2 className="font-display text-2xl font-bold text-[#1D3557] tracking-tight">
+            Antrean Pendaftaran
+          </h2>
+          <p className="mt-0.5 text-sm text-slate-500 font-normal">
             {admin
-              ? 'Tinjau dan verifikasi calon murid dan pelatih baru yang mendaftar'
-              : (user?.lokasi ?? 'Pendaftaran murid di kolam Anda')}
+              ? 'Tinjau berkas verifikasi dan setujui pendaftaran murid dan pelatih baru'
+              : (user?.lokasi ? `Pendaftaran murid baru di ${user.lokasi}` : 'Pendaftaran murid di kolam Anda')}
           </p>
         </div>
-        <div className="rounded-full bg-azure px-3 py-1 text-xs font-semibold text-primary">
-          {filteredRows.length} Menunggu Persetujuan
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E0FBFC] px-3 py-1 text-xs font-semibold text-[#0077B6] border border-[#00B4D8]/20 shadow-2xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#00B4D8] animate-pulse" />
+            {filteredRows.length} Menunggu Persetujuan
+          </span>
         </div>
       </div>
 
+      {/* Filter Tabs */}
       {admin ? (
         <PendaftaranFilter
           tipeAntrean={tipeAntrean}
@@ -61,6 +68,7 @@ export default function Pendaftaran() {
         />
       ) : null}
 
+      {/* Main Queue Table */}
       <PendaftaranTable
         rows={filteredRows}
         actionLoading={actionLoading}
