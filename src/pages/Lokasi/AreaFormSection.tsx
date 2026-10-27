@@ -30,7 +30,7 @@ export default function AreaFormSection({
   }
 
   return (
-    <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-2xs">
+    <section className="mb-8 rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-2xs">
       <div className="flex items-center gap-3">
         <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#E0FBFC] text-[#0077B6] border border-[#00B4D8]/20">
           <MapPin size={18} aria-hidden="true" />
@@ -100,7 +100,7 @@ export default function AreaFormSection({
                   >
                     {locationCount} kolam
                   </span>
-                  <div className="ml-1 flex items-center gap-1 border-l border-gray-200 pl-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                  <div className="ml-1 flex items-center gap-1 border-l border-gray-200 pl-1.5 opacity-90 sm:opacity-60 sm:group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
                       onClick={() => onEditArea(area)}

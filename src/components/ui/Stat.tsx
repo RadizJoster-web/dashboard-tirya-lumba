@@ -21,7 +21,7 @@ export default function Stat({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl p-5.5 transition-all duration-200 flex-1 min-w-[220px] ${
+      className={`relative overflow-hidden rounded-2xl p-4 sm:p-5.5 transition-all duration-200 w-full min-w-0 ${
         isPrimary
           ? 'bg-gradient-to-br from-[#1D3557] via-[#143B64] to-[#0077B6] text-white shadow-md shadow-[#0077B6]/10'
           : 'bg-white border border-gray-200 text-[#1D3557] shadow-2xs hover:border-gray-300'

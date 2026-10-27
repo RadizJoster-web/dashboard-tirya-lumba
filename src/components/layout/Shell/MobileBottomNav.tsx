@@ -1,0 +1,191 @@
+import { useState } from 'react';
+import { Link, useMatch } from 'react-router-dom';
+import {
+  CalendarDays,
+  ClipboardCheck,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+  MapPin,
+  Menu,
+  ShieldCheck,
+  Trophy,
+  UserCircle,
+  UserPlus,
+  Wallet,
+  X,
+} from 'lucide-react';
+import type { SessionUser } from '../../../lib/auth';
+
+interface MobileBottomNavProps {
+  user: SessionUser | null;
+  pending: number;
+  onLogout?: () => void;
+}
+
+export default function MobileBottomNav({ user, pending, onLogout }: MobileBottomNavProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isAdmin = user?.role === 'admin';
+
+  // Check active routes
+  const isOverview = !!useMatch({ path: '/overview', end: true });
+  const isPendaftaran = !!useMatch({ path: '/pendaftaran', end: true });
+  const isSiswa = !!useMatch({ path: '/siswa', end: true });
+  const isAbsen = !!useMatch({ path: '/absen', end: true });
+  const isProfil = !!useMatch({ path: '/profil', end: true });
+
+  const isMoreActive =
+    !isOverview && !isPendaftaran && !isSiswa && !isAbsen && !isProfil;
+
+  const moreItems = [
+    { path: '/pelatih', label: 'Data Pelatih', icon: Trophy },
+    ...(isAdmin
+      ? [
+          { path: '/jadwal', label: 'Jadwal & Sesi', icon: CalendarDays },
+          { path: '/lokasi', label: 'Master Lokasi', icon: MapPin },
+          { path: '/paket', label: 'Harga & Paket', icon: Wallet },
+          { path: '/pengelola', label: 'Akun Pengelola', icon: ShieldCheck },
+        ]
+      : []),
+    { path: '/profil', label: 'Profil Saya', icon: UserCircle },
+  ];
+
+  return (
+    <>
+      {/* Fixed Bottom Tab Bar on Mobile */}
+      <nav
+        aria-label="Navigasi Bawah Mobile"
+        className="fixed bottom-0 inset-x-0 z-40 flex h-16 items-center justify-around border-t border-gray-200 bg-white/95 px-2 py-1 shadow-lg backdrop-blur-md min-[861px]:hidden"
+      >
+        {/* 1. Overview */}
+        <Link
+          to="/overview"
+          className={`flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
+            isOverview ? 'text-[#0077B6] font-bold' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <LayoutDashboard size={20} strokeWidth={isOverview ? 2.4 : 1.8} />
+          <span className="mt-1 text-[10px]">Overview</span>
+        </Link>
+
+        {/* 2. Pendaftaran */}
+        <Link
+          to="/pendaftaran"
+          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
+            isPendaftaran ? 'text-[#0077B6] font-bold' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <div className="relative">
+            <UserPlus size={20} strokeWidth={isPendaftaran ? 2.4 : 1.8} />
+            {pending > 0 && (
+              <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FF6F59] px-1 text-[9px] font-bold text-white shadow-2xs">
+                {pending}
+              </span>
+            )}
+          </div>
+          <span className="mt-1 text-[10px]">Antrean</span>
+        </Link>
+
+        {/* 3. Siswa */}
+        <Link
+          to="/siswa"
+          className={`flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
+            isSiswa ? 'text-[#0077B6] font-bold' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <GraduationCap size={20} strokeWidth={isSiswa ? 2.4 : 1.8} />
+          <span className="mt-1 text-[10px]">Siswa</span>
+        </Link>
+
+        {/* 4. Absensi */}
+        <Link
+          to="/absen"
+          className={`flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
+            isAbsen ? 'text-[#0077B6] font-bold' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <ClipboardCheck size={20} strokeWidth={isAbsen ? 2.4 : 1.8} />
+          <span className="mt-1 text-[10px]">Presensi</span>
+        </Link>
+
+        {/* 5. More Menu Drawer Trigger */}
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          className={`flex flex-1 flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+            isMoreActive || drawerOpen
+              ? 'text-[#0077B6] font-bold'
+              : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <Menu size={20} strokeWidth={isMoreActive || drawerOpen ? 2.4 : 1.8} />
+          <span className="mt-1 text-[10px]">Menu</span>
+        </button>
+      </nav>
+
+      {/* Mobile Drawer / Bottom Sheet for "More" Menus */}
+      {drawerOpen && (
+        <div
+          role="presentation"
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-900/40 backdrop-blur-xs min-[861px]:hidden animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDrawerOpen(false);
+          }}
+        >
+          <div className="w-full rounded-t-2xl border-t border-gray-200 bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div>
+                <h3 className="font-display text-base font-bold text-[#1D3557]">
+                  Menu Selengkapnya
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {isAdmin ? 'Akses master data dan konfigurasi' : 'Navigasi dan profil'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 py-4">
+              {moreItems.map((item) => {
+                const ItemIcon = item.icon;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl border border-gray-200 bg-slate-50/70 p-3 text-xs font-semibold text-[#1D3557] hover:bg-[#E0FBFC] hover:text-[#0077B6] hover:border-[#00B4D8]/30 transition-all"
+                  >
+                    <ItemIcon size={18} className="text-[#0077B6] shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {onLogout && (
+              <div className="border-t border-gray-100 pt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    onLogout();
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#FF6F59]/20 bg-[#FFE4DF]/60 py-2.5 text-xs font-bold text-[#FF6F59] hover:bg-[#FFE4DF] transition-colors cursor-pointer"
+                >
+                  <LogOut size={16} />
+                  Keluar dari Akun
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

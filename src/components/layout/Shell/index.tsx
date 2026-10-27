@@ -7,7 +7,7 @@ import { logout, pathsFor } from '../../../lib/auth';
 import { useUiStore } from '../../../lib/ui-store';
 import { useAntrean } from '../../../lib/local/registration-queue';
 import Sidebar from './Sidebar';
-import SidebarToggleButton from './SidebarToggleButton';
+import MobileBottomNav from './MobileBottomNav';
 
 export default function Shell() {
   const { user } = useAuth();
@@ -34,7 +34,7 @@ export default function Shell() {
 
   return (
     <div className="min-h-screen bg-[#F3F4F6]">
-      {!sidebarOpen ? <SidebarToggleButton onToggle={toggleSidebar} /> : null}
+      {/* Desktop Sidebar (Full or Mini-Rail) */}
       <Sidebar
         sidebarOpen={sidebarOpen}
         isDesktop={isDesktop}
@@ -45,9 +45,21 @@ export default function Shell() {
         onLogout={handleLogout}
       />
 
-      <div className={`min-w-0 transition-[padding] duration-300 ease-in-out ${sidebarOpen ? 'min-[861px]:pl-64' : ''}`}>
+      {/* Mobile Bottom Tab Bar */}
+      <MobileBottomNav
+        user={user}
+        pending={pending}
+        onLogout={handleLogout}
+      />
+
+      {/* Main Canvas Area */}
+      <div
+        className={`min-w-0 transition-[padding] duration-300 ease-in-out ${
+          sidebarOpen ? 'min-[861px]:pl-64' : 'min-[861px]:pl-[68px]'
+        }`}
+      >
         <Topbar user={user!} onLogout={handleLogout} />
-        <main className="min-w-0 overflow-x-clip p-6 lg:p-8 max-[860px]:p-4">
+        <main className="min-w-0 overflow-x-clip p-4 sm:p-6 lg:p-8 max-[860px]:pb-24">
           <Suspense fallback={<RouteLoading />}>
             <div className="anim-route min-w-0">
               <Outlet />

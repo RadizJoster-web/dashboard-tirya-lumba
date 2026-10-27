@@ -72,7 +72,7 @@ export default function PelatihTable({
         width: '18%',
         asActions: true,
         render: (r) => (
-          <div className="flex items-center justify-end">
+          <div className="flex items-center">
             <Button
               variant="ghost"
               size="sm"

@@ -73,9 +73,9 @@ export default function Overview() {
         </div>
 
         {/* KONTROL FILTER BULAN & TAHUN (Sleek Segmented Controls) */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           {/* Segmented Year Switcher */}
-          <div className="flex items-center rounded-full border border-gray-200 bg-white p-1 shadow-2xs">
+          <div className="flex items-center rounded-full border border-gray-200 bg-white p-0.5 sm:p-1 shadow-2xs">
             {AVAILABLE_YEARS.map((yr) => {
               const isSelected = selectedYear === yr;
               return (
@@ -83,7 +83,7 @@ export default function Overview() {
                   key={yr}
                   type="button"
                   onClick={() => setSelectedYear(yr)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`rounded-full px-2.5 sm:px-3 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     isSelected
                       ? 'bg-[#1D3557] text-white shadow-2xs'
                       : 'text-slate-500 hover:text-[#1D3557]'
@@ -101,16 +101,16 @@ export default function Overview() {
               id="filter-bulan"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="appearance-none rounded-full border border-gray-200 bg-white py-1.5 pl-3.5 pr-8 text-xs font-semibold text-slate-700 shadow-2xs hover:border-gray-300 focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer transition-all"
+              className="appearance-none rounded-full border border-gray-200 bg-white py-1.5 pl-3 pr-7 sm:pl-3.5 sm:pr-8 text-xs font-semibold text-slate-700 shadow-2xs hover:border-gray-300 focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer transition-all max-w-[160px] sm:max-w-none truncate"
             >
-              <option value="ALL">Semua Bulan (Jan - Des)</option>
+              <option value="ALL">Semua Bulan</option>
               {MONTH_NAMES.map((name, idx) => (
                 <option key={idx} value={String(idx)}>
                   {name}
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
               <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 20 20">
                 <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
               </svg>

@@ -5,6 +5,7 @@ export interface DataTableColumn<T> {
   key: string;
   header: string;
   width?: string;
+  align?: 'left' | 'center' | 'right';
   primary?: boolean;
   mobileLabel?: string;
   hideOnMobile?: boolean;
@@ -65,6 +66,12 @@ export default function DataTable<T>({
   const meta = columns.filter((c) => c !== primary && !c.hideOnMobile && !c.asActions);
   const actionColumn = columns.find((c) => c.asActions);
 
+  function getAlignClass(align?: 'left' | 'center' | 'right') {
+    if (align === 'right') return 'text-right';
+    if (align === 'center') return 'text-center';
+    return 'text-left';
+  }
+
   return (
     <>
       {/* Desktop / Tablet Table View */}
@@ -83,7 +90,9 @@ export default function DataTable<T>({
                   <th
                     key={c.key}
                     scope="col"
-                    className="py-3.5 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400"
+                    className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 ${getAlignClass(
+                      c.align,
+                    )}`}
                   >
                     {c.header}
                   </th>
@@ -91,7 +100,7 @@ export default function DataTable<T>({
                 {actions ? (
                   <th
                     scope="col"
-                    className="py-3.5 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400"
+                    className="py-3.5 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 text-left"
                   >
                     Aksi
                   </th>
@@ -107,14 +116,16 @@ export default function DataTable<T>({
                   {columns.map((c) => (
                     <td
                       key={c.key}
-                      className="py-3.5 px-4 align-middle text-sm font-medium tabular-nums text-[#1D3557] break-words"
+                      className={`py-3.5 px-4 align-middle text-sm font-medium tabular-nums text-[#1D3557] break-words ${getAlignClass(
+                        c.align,
+                      )}`}
                     >
                       {cellValue(row, c)}
                     </td>
                   ))}
                   {actions ? (
-                    <td className="py-3.5 px-4 align-middle text-sm">
-                      {actions(row)}
+                    <td className="py-3.5 px-4 align-middle text-sm text-left">
+                      <div className="flex items-center gap-1.5">{actions(row)}</div>
                     </td>
                   ) : null}
                 </tr>
@@ -139,7 +150,7 @@ export default function DataTable<T>({
                 {meta.map((c) => (
                   <div
                     key={c.key}
-                    className="flex items-baseline justify-between gap-3 text-xs"
+                    className="flex items-center justify-between gap-3 text-xs"
                   >
                     <dt className="shrink-0 font-medium text-slate-400">
                       {c.mobileLabel ?? c.header}
@@ -157,7 +168,7 @@ export default function DataTable<T>({
               </div>
             ) : null}
             {actions ? (
-              <div className="mt-3.5 border-t border-gray-100 pt-2.5">
+              <div className="mt-3.5 border-t border-gray-100 pt-2.5 flex items-center gap-2">
                 {actions(row)}
               </div>
             ) : null}

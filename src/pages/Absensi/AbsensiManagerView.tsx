@@ -157,12 +157,12 @@ export default function AbsensiManagerView({
 
         <div className="flex flex-wrap items-center gap-2">
           {people.length > 0 && (
-            <div className="hidden md:flex items-center gap-1.5 mr-2">
+            <div className="flex items-center gap-1.5 mr-auto sm:mr-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => markAll('Hadir')}
-                className="text-xs"
+                className="text-xs px-2.5 py-1"
               >
                 Semua Hadir
               </Button>
@@ -170,7 +170,7 @@ export default function AbsensiManagerView({
                 variant="ghost"
                 size="sm"
                 onClick={() => markAll('Tidak Hadir')}
-                className="text-xs"
+                className="text-xs px-2.5 py-1"
               >
                 Reset
               </Button>

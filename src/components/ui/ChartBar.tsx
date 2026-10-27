@@ -39,9 +39,9 @@ export default function ChartBar({
             return (
               <div
                 key={step}
-                className="flex items-center gap-3 w-full border-b border-dashed border-gray-200"
+                className="flex items-center gap-2 sm:gap-3 w-full border-b border-dashed border-gray-200"
               >
-                <span className="w-8 shrink-0 text-right font-mono text-[11px] font-medium text-slate-400 tabular-nums">
+                <span className="w-5 sm:w-7 shrink-0 text-right font-mono text-[10px] sm:text-[11px] font-medium text-slate-400 tabular-nums">
                   {val}
                 </span>
                 <div className="flex-1" />
@@ -51,7 +51,7 @@ export default function ChartBar({
         </div>
 
         {/* Bars Container */}
-        <div className="absolute inset-0 pl-11 flex items-end justify-between gap-1.5 sm:gap-3">
+        <div className="absolute inset-0 pl-6 sm:pl-9 flex items-end justify-between gap-1 sm:gap-2 md:gap-3">
           {data.map((value, i) => {
             const isPeak = i === peakIndex && value > 0;
             const isHovered = hoveredIdx === i;
@@ -102,27 +102,31 @@ export default function ChartBar({
       </div>
 
       {/* X-Axis Labels */}
-      <div className="pl-11 mt-3 flex items-center justify-between gap-1.5 sm:gap-3 border-t border-gray-100 pt-2">
+      <div className="pl-6 sm:pl-9 mt-3 flex items-center justify-between gap-1 sm:gap-2 md:gap-3 border-t border-gray-100 pt-2 overflow-hidden">
         {labels.map((label, i) => {
           const isPeak = i === peakIndex && data[i] > 0;
           const isHovered = hoveredIdx === i;
+          const shortLabel = label.length > 3 ? label.slice(0, 3) : label;
+
           return (
             <div
               key={label}
-              className="flex-1 text-center"
+              className="flex-1 min-w-0 text-center overflow-hidden"
               onMouseEnter={() => setHoveredIdx(i)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
               <span
-                className={`block text-[11px] sm:text-xs font-medium truncate transition-colors ${
+                className={`block text-[9px] sm:text-[11px] md:text-xs font-medium truncate transition-colors text-center ${
                   isPeak
                     ? 'font-bold text-[#0077B6]'
                     : isHovered
                     ? 'text-[#1D3557]'
                     : 'text-slate-400'
                 }`}
+                title={label}
               >
-                {label}
+                <span className="hidden sm:inline">{label}</span>
+                <span className="sm:hidden">{shortLabel}</span>
               </span>
             </div>
           );

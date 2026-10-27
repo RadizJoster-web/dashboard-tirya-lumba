@@ -1,4 +1,4 @@
-import { PanelLeftClose } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import BrandLogo from '../BrandLogo';
 import NavItem from './NavItem';
 import SidebarUserCard from './SidebarUserCard';
@@ -22,64 +22,88 @@ interface SidebarProps {
 
 export default function Sidebar({
   sidebarOpen,
-  isDesktop,
   user,
   allowedSet,
   pending,
   onToggleSidebar,
   onLogout,
 }: SidebarProps) {
+  const isCollapsed = !sidebarOpen;
+
   return (
     <aside
-      inert={!sidebarOpen && isDesktop}
-      className={`flex gap-1 border-gray-200 bg-white px-3.5 py-5 transition-transform duration-300 ease-in-out max-[860px]:static max-[860px]:h-auto max-[860px]:flex-row max-[860px]:overflow-x-auto max-[860px]:border-b max-[860px]:p-2.5 min-[861px]:fixed min-[861px]:inset-y-0 min-[861px]:left-0 min-[861px]:z-30 min-[861px]:h-dvh min-[861px]:w-64 min-[861px]:flex-col min-[861px]:border-r shadow-xs ${
-        sidebarOpen ? 'min-[861px]:translate-x-0' : 'min-[861px]:-translate-x-full'
+      className={`hidden min-[861px]:flex fixed inset-y-0 left-0 z-30 h-dvh flex-col border-r border-gray-200 bg-white transition-all duration-300 ease-in-out shadow-xs ${
+        isCollapsed ? 'w-[68px] px-2 py-4' : 'w-64 px-3.5 py-5'
       }`}
     >
       {/* Brand Header */}
-      <div className="flex items-center gap-2.5 px-2 pb-5 border-b border-gray-100 max-[860px]:border-b-0 max-[860px]:px-2 max-[860px]:pb-0">
-        <BrandLogo sz={32} />
-        <div>
-          <span className="font-display block text-base font-bold text-[#1D3557] tracking-tight">
-            Tirya Lumba
-          </span>
-          <span className="hidden min-[861px]:block text-[11px] font-medium text-slate-400">
-            SaaS Management
-          </span>
+      <div
+        className={`flex items-center border-b border-gray-100 pb-4 ${
+          isCollapsed ? 'flex-col gap-3 px-1' : 'gap-2.5 px-2'
+        }`}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <BrandLogo sz={isCollapsed ? 30 : 32} />
+          {!isCollapsed && (
+            <div className="min-w-0">
+              <span className="font-display block text-base font-bold text-[#1D3557] tracking-tight truncate">
+                Tirya Lumba
+              </span>
+              <span className="block text-[11px] font-medium text-slate-400 truncate">
+                SaaS Management
+              </span>
+            </div>
+          )}
         </div>
+
         <button
           type="button"
           onClick={onToggleSidebar}
-          aria-label="Sembunyikan sidebar"
-          title="Sembunyikan sidebar"
-          className="ml-auto hidden h-8 w-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 min-[861px]:grid cursor-pointer"
+          aria-label={isCollapsed ? 'Perluas sidebar' : 'Kecilkan sidebar'}
+          title={isCollapsed ? 'Perluas sidebar' : 'Kecilkan sidebar'}
+          className={`h-8 w-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 grid cursor-pointer ${
+            isCollapsed ? 'mt-1' : 'ml-auto'
+          }`}
         >
-          <PanelLeftClose size={18} aria-hidden="true" className="shrink-0" />
+          {isCollapsed ? (
+            <PanelLeftOpen size={18} aria-hidden="true" className="shrink-0" />
+          ) : (
+            <PanelLeftClose size={18} aria-hidden="true" className="shrink-0" />
+          )}
         </button>
       </div>
 
       {/* Navigation Groups */}
-      <div className="flex-1 overflow-y-auto space-y-4 pt-2">
+      <div className="flex-1 overflow-y-auto space-y-3 pt-3 no-scrollbar">
         {GROUPS.map((g) => {
           const groupPaths = g.paths.filter((p) => allowedSet.has(p));
           if (groupPaths.length === 0) return null;
           return (
-            <div key={g.title} className="flex gap-1 max-[860px]:contents min-[861px]:flex-col">
-              <p className="px-3 pt-2 text-[10px] font-bold tracking-wider uppercase text-slate-400 max-[860px]:hidden select-none">
-                {g.title}
-              </p>
-              <div className="flex flex-col gap-0.5">
-                {groupPaths.map((p) => (
-                  <NavItem key={p} path={p} pending={pending} />
-                ))}
-              </div>
+            <div key={g.title} className="flex flex-col gap-0.5">
+              {!isCollapsed && (
+                <p className="px-3 pt-2 text-[10px] font-bold tracking-wider uppercase text-slate-400 select-none">
+                  {g.title}
+                </p>
+              )}
+              {groupPaths.map((p) => (
+                <NavItem
+                  key={p}
+                  path={p}
+                  pending={pending}
+                  collapsed={isCollapsed}
+                />
+              ))}
             </div>
           );
         })}
       </div>
 
       {/* Bottom User Card */}
-      <SidebarUserCard user={user} onLogout={onLogout} />
+      <SidebarUserCard
+        user={user}
+        collapsed={isCollapsed}
+        onLogout={onLogout}
+      />
     </aside>
   );
 }

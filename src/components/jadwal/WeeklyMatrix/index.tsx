@@ -35,8 +35,8 @@ export default function WeeklyMatrix({
   const hasSaved = existing.size > 0;
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-2xs">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <section className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h3 className="font-display m-0 text-base font-bold text-[#1D3557]">
             Matriks Jadwal Mingguan (Senin – Minggu)
@@ -53,7 +53,7 @@ export default function WeeklyMatrix({
           <select
             value={activeLocationId}
             onChange={(e) => onLocationChange(e.target.value)}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D3557] shadow-2xs focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer"
+            className="w-full sm:w-auto rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D3557] shadow-2xs focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer"
           >
             <option value="">Pilih Lokasi Kolam</option>
             {locations.map((location) => (

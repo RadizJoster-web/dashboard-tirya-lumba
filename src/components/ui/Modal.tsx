@@ -54,9 +54,9 @@ export default function Modal({
         className={`anim-modal relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl ${maxWidth}`}
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4.5 bg-white">
+        <div className="flex items-start justify-between border-b border-gray-100 px-4 sm:px-6 py-3.5 sm:py-4.5 bg-white">
           <div className="pr-4">
-            <h3 className="font-display text-lg font-bold text-[#1D3557]">
+            <h3 className="font-display text-base sm:text-lg font-bold text-[#1D3557]">
               {title}
             </h3>
             {description && (
@@ -76,11 +76,11 @@ export default function Modal({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">{children}</div>
 
         {/* Modal Footer */}
         {footer && (
-          <div className="border-t border-gray-100 bg-slate-50/70 px-6 py-3.5 flex items-center justify-end gap-2.5">
+          <div className="border-t border-gray-100 bg-slate-50/70 px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-end gap-2.5">
             {footer}
           </div>
         )}

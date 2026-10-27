@@ -16,7 +16,7 @@ export default function OverviewChart({
   subtitle,
 }: OverviewChartProps) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-2xs">
+    <div className="rounded-2xl border border-gray-200 bg-white p-3.5 sm:p-6 shadow-2xs overflow-hidden">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
         <div>
           <h3 className="font-display text-base sm:text-lg font-bold text-[#1D3557]">

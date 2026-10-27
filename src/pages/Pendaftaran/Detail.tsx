@@ -118,17 +118,17 @@ export default function PendaftaranDetail() {
   return (
     <div className="space-y-6 pb-12">
       {/* 1. Bar Navigasi & Breadcrumb */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 bg-white p-4.5 rounded-xl shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 bg-white p-4 sm:p-5 rounded-xl shadow-2xs">
         <div className="flex items-center gap-3">
           <Link
             to="/pendaftaran"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#0077B6]"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#0077B6]"
             title="Kembali ke Antrean"
           >
             <ArrowLeft size={16} />
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Pendaftaran #{detail.id.slice(0, 8)}
               </span>
@@ -136,18 +136,18 @@ export default function PendaftaranDetail() {
                 {isInstructor ? 'Pelatih Baru' : 'Murid Baru'}
               </RoleTag>
             </div>
-            <h1 className="font-display text-xl font-bold text-[#1D3557] sm:text-2xl mt-0.5">
+            <h1 className="font-display text-lg sm:text-2xl font-bold text-[#1D3557] truncate mt-0.5">
               {detail.name || user?.fullName || 'Pendaftar'}
             </h1>
           </div>
         </div>
 
         {/* Status Badge & Aksi Cepat Header */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between sm:justify-end gap-2.5 flex-wrap pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
           <StatusBadge status={detail.status} />
 
           {isPending && (
-            <div className="flex items-center gap-2 pl-2">
+            <div className="flex items-center gap-2">
               <Button
                 variant="danger"
                 size="sm"
@@ -164,7 +164,7 @@ export default function PendaftaranDetail() {
                 onClick={handleApprove}
               >
                 <Check size={14} className="mr-1" />
-                Setujui Pendaftaran
+                Setujui
               </Button>
             </div>
           )}
@@ -176,7 +176,7 @@ export default function PendaftaranDetail() {
         {/* Kolom Kiri (2/3) */}
         <div className="space-y-6 lg:col-span-2">
           {/* Identitas Pendaftar */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 shadow-2xs">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               {photo ? (
                 <img
@@ -223,7 +223,7 @@ export default function PendaftaranDetail() {
           </div>
 
           {/* Rincian Operasional & Kelas */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 shadow-2xs">
             <h3 className="font-display text-base font-bold text-[#1D3557] border-b border-gray-100 pb-3">
               {isInstructor ? 'Data Kualifikasi & Lokasi Mengajar' : 'Pilihan Kelas & Jadwal Murid'}
             </h3>
@@ -344,7 +344,7 @@ export default function PendaftaranDetail() {
           </div>
 
           {/* Lampiran Dokumen (CV atau Bukti Pembayaran) */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 shadow-2xs">
             <h3 className="font-display text-base font-bold text-[#1D3557] border-b border-gray-100 pb-3">
               {isInstructor ? 'Berkas CV Pelatih' : 'Verifikasi Pembayaran Kursus'}
             </h3>
@@ -426,7 +426,7 @@ export default function PendaftaranDetail() {
 
           {/* Biodata Lengkap Tambahan Siswa */}
           {!isInstructor && user?.studentProfile && (
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-2xs">
+            <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 shadow-2xs">
               <h3 className="font-display text-base font-bold text-[#1D3557] border-b border-gray-100 pb-3">
                 Biodata Lengkap Siswa
               </h3>

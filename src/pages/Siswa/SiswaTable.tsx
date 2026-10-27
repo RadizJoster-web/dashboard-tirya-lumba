@@ -82,7 +82,7 @@ export default function SiswaTable({ rows, onSelectDetail }: SiswaTableProps) {
         width: '16%',
         asActions: true,
         render: (r) => (
-          <div className="flex items-center justify-end">
+          <div className="flex items-center">
             <Button
               variant="ghost"
               size="sm"

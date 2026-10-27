@@ -16,7 +16,7 @@ export default function LokasiHeader({ onAddClick }: LokasiHeaderProps) {
           Daftar lokasi kolam renang yang dikelompokkan berdasarkan wilayah operasional
         </p>
       </div>
-      <Button onClick={onAddClick} size="sm">
+      <Button onClick={onAddClick} size="sm" className="w-full sm:w-auto">
         <Plus size={14} className="mr-1" />
         Tambah Lokasi Kolam
       </Button>

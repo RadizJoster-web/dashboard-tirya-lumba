@@ -72,7 +72,7 @@ export default function LocationGroupList({
         width: '18%',
         asActions: true,
         render: (location) => (
-          <div className="flex items-center justify-end gap-1.5">
+          <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
               size="sm"

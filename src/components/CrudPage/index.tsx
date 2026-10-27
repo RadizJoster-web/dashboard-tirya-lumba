@@ -105,7 +105,7 @@ export default function CrudPage({
         rowKey={(r) => String(r.id)}
         actionsWidth={actionsWidth}
         actions={(r) => (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex items-center gap-1.5">
             {extraActions ? extraActions(r.id) : null}
             <Button variant="ghost" className="px-2.5 py-1 text-[13px]" onClick={() => setModal({ kind: 'edit', id: r.id })}>
               Edit

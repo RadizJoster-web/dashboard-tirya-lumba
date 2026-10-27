@@ -63,7 +63,7 @@ export default function PaketPriceForm({
   return (
     <form
       onSubmit={(e) => void handleSubmit(e)}
-      className="rounded-xl border border-gray-200 bg-white p-5 shadow-2xs space-y-4"
+      className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-2xs space-y-4"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
         <div>
