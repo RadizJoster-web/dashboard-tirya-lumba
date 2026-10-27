@@ -6,15 +6,15 @@ import type { ServerRegistration } from '../../lib/api/types';
 
 interface PendaftaranTableProps {
   rows: ServerRegistration[];
-  actionLoading: boolean;
+  actionLoading?: boolean;
   onDetail: (id: string) => void;
-  onApprove: (id: string) => void;
-  onReject: (target: ServerRegistration) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (target: ServerRegistration) => void;
 }
 
 export default function PendaftaranTable({
   rows,
-  actionLoading,
+  actionLoading = false,
   onDetail,
   onApprove,
   onReject,
@@ -66,7 +66,7 @@ export default function PendaftaranTable({
       {
         key: 'lokasi',
         header: 'Lokasi Kolam',
-        width: '22%',
+        width: '20%',
         render: (r) => (
           <span className="text-xs font-medium text-slate-600 line-clamp-2">
             {r.lokasi || 'Belum dipilih'}
@@ -82,7 +82,7 @@ export default function PendaftaranTable({
       {
         key: 'aksi',
         header: 'Aksi',
-        width: '16%',
+        width: '18%',
         asActions: true,
         render: (r) => (
           <div className="flex items-center justify-end gap-1.5">
@@ -93,11 +93,35 @@ export default function PendaftaranTable({
             >
               Tinjau Detail
             </Button>
+            {onApprove && (
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={actionLoading}
+                onClick={() => onApprove(r.id)}
+                title="Setujui pendaftaran"
+                className="hidden xl:inline-flex"
+              >
+                Setujui
+              </Button>
+            )}
+            {onReject && (
+              <Button
+                variant="danger"
+                size="sm"
+                disabled={actionLoading}
+                onClick={() => onReject(r)}
+                title="Tolak pendaftaran"
+                className="hidden xl:inline-flex"
+              >
+                Tolak
+              </Button>
+            )}
           </div>
         ),
       },
     ],
-    [onDetail],
+    [onDetail, onApprove, onReject, actionLoading],
   );
 
   return (

@@ -519,7 +519,7 @@ export default function PendaftaranDetail() {
                   Akun pengguna telah aktif dengan peran {isInstructor ? 'Pelatih' : 'Murid'}.
                 </p>
               </div>
-            ) : (
+            ) : isRejected ? (
               <div className="mt-4 rounded-xl bg-red-50 p-4 border border-red-200 text-xs text-red-800 leading-relaxed">
                 <p className="font-bold flex items-center gap-1.5">
                   <X size={16} /> Pendaftaran Ditolak
@@ -527,7 +527,7 @@ export default function PendaftaranDetail() {
                 <p className="mt-1 font-semibold">Alasan:</p>
                 <p className="mt-0.5 italic">{detail.rejectionReason || 'Tidak ada alasan khusus.'}</p>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Panel Metadata Sistem */}
