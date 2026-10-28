@@ -41,8 +41,10 @@ function subscribeTo(key: string, listener: () => void): () => void {
   };
 }
 
-// A request is shared by every component that asks for the same key, and a loaded
-// resource is served from cache until something explicitly refreshes it.
+/**
+ * Memuat resource dari network request.
+ * Mendukung in-flight request deduplication tanpa memblokir refetch jaringan.
+ */
 export function loadResource<T>(
   key: string,
   fetcher?: () => Promise<T>,
@@ -51,18 +53,25 @@ export function loadResource<T>(
   if (fetcher) fetchers.set(key, fetcher);
 
   const current = states.get(key) as ResourceState<T> | undefined;
-  if (!force && current?.loaded) return Promise.resolve(current.data as T);
 
-  const running = pending.get(key);
-  if (running) return running as Promise<T>;
+  // Jika tidak dipaksa dan sedang ada request berjalan, gunakan promise yang sama
+  if (!force) {
+    const running = pending.get(key);
+    if (running) return running as Promise<T>;
+  }
 
   const run = fetchers.get(key);
-  if (!run)
-    return Promise.reject(
-      new Error(`Resource "${key}" belum memiliki fetcher.`),
-    );
+  if (!run) {
+    return Promise.reject(new Error(`Resource "${key}" belum memiliki fetcher.`));
+  }
 
-  setState(key, { ...(current ?? idle), loading: true, error: null });
+  // Tampilkan data yang sudah ada (jika ada) sambil loading di background
+  setState(key, {
+    data: current?.data ?? null,
+    error: null,
+    loading: true,
+    loaded: Boolean(current?.loaded),
+  });
 
   const request = run()
     .then((data) => {
@@ -73,7 +82,7 @@ export function loadResource<T>(
       const message =
         error instanceof Error && error.message
           ? error.message
-          : 'Gagal memuat data.';
+          : 'Gagal memuat data dari server.';
       setState(key, {
         data: current?.data ?? null,
         error: message,
@@ -90,7 +99,28 @@ export function loadResource<T>(
   return request as Promise<T>;
 }
 
-// Logout must not leave another account reading the previous account's data.
+/**
+ * Invalidation otomatis: Menghapus cache resource dan memicu refetch ke server.
+ * Jika keyOrPrefix diberikan, hanya resource yang cocok yang di-invalidate.
+ */
+export function invalidateResource(keyOrPrefix?: string): void {
+  for (const [key] of states.entries()) {
+    if (!keyOrPrefix || key.startsWith(keyOrPrefix)) {
+      const current = states.get(key);
+      if (current) {
+        setState(key, { ...current, loaded: false });
+      }
+      const fetcher = fetchers.get(key);
+      if (fetcher) {
+        loadResource(key, fetcher, true).catch(() => {});
+      }
+    }
+  }
+}
+
+/**
+ * Membersihkan seluruh resource saat logout.
+ */
 export function clearResources(): void {
   states.clear();
   pending.clear();
@@ -98,6 +128,10 @@ export function clearResources(): void {
   listeners.forEach((group) => group.forEach((listener) => listener()));
 }
 
+/**
+ * Hook useResource: Selalu melakukan network request saat mount (Revalidate-on-Mount)
+ * untuk menjamin data real-time dari Vercel CDN atau Backend Server.
+ */
 export function useResource<T>(
   key: string,
   fetcher: () => Promise<T>,
@@ -111,10 +145,9 @@ export function useResource<T>(
     () => stateOf(key) as ResourceState<T>,
   );
 
+  // Selalu jalankan fetch network saat hook ter-mount
   useEffect(() => {
-    if (!states.get(key)?.loaded) {
-      loadResource(key, fetcher).catch(() => {});
-    }
+    loadResource(key, fetcher, true).catch(() => {});
   }, [key, fetcher]);
 
   const reload = useCallback(

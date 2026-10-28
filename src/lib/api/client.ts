@@ -1,3 +1,5 @@
+import { invalidateResource } from './cache';
+
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5000/api';
 const TOKEN_KEY = 'tl_jwt';
 const TIMEOUT_MS = 8000;
@@ -82,6 +84,11 @@ export async function apiRequest<T>(
     headers.set('Content-Type', 'application/json');
   }
 
+  // Cegah browser disk caching untuk request ke server
+  if (!headers.has('Cache-Control')) {
+    headers.set('Cache-Control', 'no-cache');
+  }
+
   let res: Response;
   try {
     res = await fetch(`${API_BASE}${path}`, {
@@ -129,9 +136,18 @@ export function apiGetPayload<T>(path: string): Promise<T> {
   return apiRequest<T>(path, { method: 'GET' }, TIMEOUT_MS, true);
 }
 
-export function apiSend<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown): Promise<T> {
-  return apiRequest<T>(path, {
+export async function apiSend<T>(
+  path: string,
+  method: 'POST' | 'PUT' | 'DELETE',
+  body?: unknown,
+): Promise<T> {
+  const result = await apiRequest<T>(path, {
     method,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+
+  // Mutasi sukses: Langsung bersihkan cache lokal dan picu refetch data terbaru
+  invalidateResource();
+
+  return result;
 }
