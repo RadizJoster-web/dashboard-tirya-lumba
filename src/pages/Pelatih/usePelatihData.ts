@@ -7,13 +7,13 @@ import type {
 } from '../../lib/api/types';
 
 const fetchInstructors = (): Promise<ServerInstructor[]> =>
-  apiGet<ServerInstructor[]>('/instructor/management?page=1&limit=100');
+  apiGet<ServerInstructor[]>('/instructor/management?page=1&limit=50');
 
 export function usePelatihData() {
   const [detailId, setDetailId] = useState<string | null>(null);
 
   const { data, loading: isLoading } = useResource(
-    '/instructor/management?page=1&limit=100',
+    '/instructor/management?page=1&limit=50',
     fetchInstructors,
   );
   const instructors = useMemo(() => data ?? [], [data]);
