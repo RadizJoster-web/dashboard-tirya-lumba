@@ -26,7 +26,7 @@ export default function ChartBar({
     <div
       role="img"
       aria-label={caption}
-      className="relative flex flex-col pt-4 select-none"
+      className="relative flex flex-col pt-4 select-none anim-fade"
     >
       {/* Background horizontal dashed gridlines */}
       <div
@@ -67,7 +67,7 @@ export default function ChartBar({
               >
                 {/* Floating Tooltip */}
                 {isHovered && (
-                  <div className="absolute -top-11 z-20 flex flex-col items-center pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute -top-11 z-20 flex flex-col items-center pointer-events-none anim-scale">
                     <div className="rounded-lg bg-[#1D3557] px-2.5 py-1 text-center shadow-lg">
                       <span className="block text-[11px] font-bold text-white tabular-nums">
                         {value} pendaftar
@@ -79,10 +79,11 @@ export default function ChartBar({
 
                 {/* Bar Element */}
                 <div
-                  className="w-full max-w-[42px] transition-all duration-300 ease-out"
+                  className="w-full max-w-[42px] transition-all duration-300 ease-out anim-bar"
                   style={{
                     height: `${Math.max(barHeightPct, 0)}%`,
                     minHeight: `${minHeightPx}px`,
+                    animationDelay: `${i * 30}ms`,
                   }}
                 >
                   <div
@@ -102,7 +103,7 @@ export default function ChartBar({
       </div>
 
       {/* X-Axis Labels */}
-      <div className="pl-6 sm:pl-9 mt-3 flex items-center justify-between gap-1 sm:gap-2 md:gap-3 border-t border-gray-100 pt-2 overflow-hidden">
+      <div className="pl-6 sm:pl-9 mt-3 flex items-center justify-between gap-1 sm:gap-2 md:gap-3 border-t border-gray-100 pt-2 overflow-hidden anim-fade">
         {labels.map((label, i) => {
           const isPeak = i === peakIndex && data[i] > 0;
           const isHovered = hoveredIdx === i;

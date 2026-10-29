@@ -21,10 +21,10 @@ export default function Stat({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl p-4 sm:p-5.5 transition-all duration-200 w-full min-w-0 ${
+      className={`anim-scale relative overflow-hidden rounded-2xl p-4 sm:p-5.5 transition-all duration-300 w-full min-w-0 hover:-translate-y-0.5 ${
         isPrimary
-          ? 'bg-gradient-to-br from-[#1D3557] via-[#143B64] to-[#0077B6] text-white shadow-md shadow-[#0077B6]/10'
-          : 'bg-white border border-gray-200 text-[#1D3557] shadow-2xs hover:border-gray-300'
+          ? 'bg-gradient-to-br from-[#1D3557] via-[#143B64] to-[#0077B6] text-white shadow-md shadow-[#0077B6]/15 hover:shadow-lg hover:shadow-[#0077B6]/25'
+          : 'bg-white border border-gray-200 text-[#1D3557] shadow-2xs hover:border-gray-300 hover:shadow-xs'
       } ${className}`}
     >
       {/* Subtle background glow for primary variant */}

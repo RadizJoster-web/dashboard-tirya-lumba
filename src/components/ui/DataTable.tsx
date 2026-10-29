@@ -40,7 +40,7 @@ export default function DataTable<T>({
 }: DataTableProps<T>) {
   if (loading) {
     return (
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white anim-fade">
         <div className="p-8 space-y-4">
           <div className="h-4 bg-slate-100 rounded w-1/4 animate-pulse" />
           <div className="h-10 bg-slate-50 rounded animate-pulse" />
@@ -53,7 +53,7 @@ export default function DataTable<T>({
 
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white py-12 px-6 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white py-12 px-6 text-center anim-scale">
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-400">
           <Inbox size={24} strokeWidth={1.5} />
         </div>
@@ -75,7 +75,7 @@ export default function DataTable<T>({
   return (
     <>
       {/* Desktop / Tablet Table View */}
-      <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xs sm:block">
+      <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xs sm:block anim-enter">
         <div className="overflow-x-auto">
           <table className="w-full table-fixed border-collapse text-left">
             <colgroup>
@@ -111,7 +111,7 @@ export default function DataTable<T>({
               {rows.map((row, index) => (
                 <tr
                   key={rowKey(row, index)}
-                  className="transition-colors hover:bg-slate-50/60"
+                  className="transition-colors hover:bg-slate-50/60 anim-fade"
                 >
                   {columns.map((c) => (
                     <td
@@ -140,7 +140,7 @@ export default function DataTable<T>({
         {rows.map((row, index) => (
           <li
             key={rowKey(row, index)}
-            className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs"
+            className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs anim-enter"
           >
             <div className="text-sm font-semibold text-[#1D3557] break-words">
               {cellValue(row, primary)}

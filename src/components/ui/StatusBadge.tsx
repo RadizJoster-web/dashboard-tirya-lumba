@@ -61,7 +61,7 @@ export default function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-normal transition-colors ${colorClasses} ${className}`}
+      className={`anim-scale inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-normal transition-colors ${colorClasses} ${className}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${dotColor} shrink-0`} />
       <span>{displayLabel}</span>

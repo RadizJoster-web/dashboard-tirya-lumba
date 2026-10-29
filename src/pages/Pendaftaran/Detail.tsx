@@ -118,7 +118,7 @@ export default function PendaftaranDetail() {
   return (
     <div className="space-y-6 pb-12">
       {/* 1. Bar Navigasi & Breadcrumb */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 bg-white p-4 sm:p-5 rounded-xl shadow-2xs">
+      <div className="anim-enter flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 bg-white p-4 sm:p-5 rounded-xl shadow-2xs">
         <div className="flex items-center gap-3">
           <Link
             to="/pendaftaran"

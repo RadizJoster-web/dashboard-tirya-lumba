@@ -20,6 +20,7 @@ export default function ProfilDetailCard({
     <Card
       title="Informasi Rincian Akun"
       subtitle="Data kredensial dan hak akses akun yang sedang aktif"
+      className="anim-enter-2"
     >
       <div className="divide-y divide-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 py-3.5 first:pt-0">

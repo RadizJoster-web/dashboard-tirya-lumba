@@ -53,7 +53,7 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
       {/* Fixed Bottom Tab Bar on Mobile */}
       <nav
         aria-label="Navigasi Bawah Mobile"
-        className="fixed bottom-0 inset-x-0 z-40 flex h-16 items-center justify-around border-t border-gray-200 bg-white/95 px-2 py-1 shadow-lg backdrop-blur-md min-[861px]:hidden"
+        className="fixed bottom-0 inset-x-0 z-40 flex h-16 items-center justify-around border-t border-gray-200 bg-white/95 px-2 py-1 shadow-lg backdrop-blur-md min-[861px]:hidden anim-enter"
       >
         {/* 1. Overview */}
         <Link

@@ -85,7 +85,7 @@ export default function AbsensiAdminView({
   return (
     <div className="space-y-4">
       {/* Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
+      <div className="anim-enter flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
         <div className="flex flex-wrap items-center gap-2.5">
           <select
             value={fLokasi}

@@ -11,7 +11,7 @@ export default function ProfilCard({ displayName, avatarUrl, role }: ProfilCardP
   const isAdmin = role === 'admin';
 
   return (
-    <Card bodyClassName="flex flex-col items-center text-center p-6 sm:p-8">
+    <Card className="anim-enter-1" bodyClassName="flex flex-col items-center text-center p-6 sm:p-8">
       {/* Avatar Container */}
       <div className="relative mb-4">
         {avatarUrl ? (

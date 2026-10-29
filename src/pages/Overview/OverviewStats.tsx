@@ -23,6 +23,7 @@ export default function OverviewStats({
         label="Total Siswa Aktif"
         value={totalSiswa}
         subtitle="Siswa dengan kuota sesi > 0"
+        className="anim-enter-1"
         badge={
           <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-[#00B4D8] animate-pulse" />
@@ -37,6 +38,7 @@ export default function OverviewStats({
         label="Total Guru / Pelatih"
         value={totalGuru}
         subtitle="Instruktur berlisensi aktif"
+        className="anim-enter-2"
         badge={<RoleTag role="instructor">Pelatih</RoleTag>}
       />
 
@@ -46,6 +48,7 @@ export default function OverviewStats({
         label={pendaftarLabel}
         value={totalPendaftar}
         subtitle="Registrasi pada rentang waktu terpilih"
+        className="anim-enter-3"
         badge={<StatusBadge status="PENDING" label="Periode Terpilih" />}
       />
     </div>

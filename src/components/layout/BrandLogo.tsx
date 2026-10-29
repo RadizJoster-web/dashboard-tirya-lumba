@@ -3,17 +3,16 @@ interface BrandLogoProps {
   className?: string;
 }
 
-/** Logo Tirya Lumba (subset shape besar dari logo hasil VTracer, aman untuk ukuran kecil). */
+/** Logo Tirya Lumba */
 export default function BrandLogo({ sz = 28, className = '' }: BrandLogoProps) {
   return (
     <img
-      src="/logo-mark.svg"
-      alt=""
-      aria-hidden="true"
+      src="/favicon.png"
+      alt="Tirya Lumba"
       width={sz}
       height={sz}
       draggable={false}
-      className={`shrink-0 select-none ${className}`}
+      className={`shrink-0 select-none object-contain rounded-md ${className}`}
     />
   );
 }

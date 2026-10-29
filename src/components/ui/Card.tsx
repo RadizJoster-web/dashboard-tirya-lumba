@@ -21,7 +21,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-xl border border-gray-200 bg-white shadow-2xs transition-shadow duration-200 ${className}`}
+      className={`anim-enter rounded-xl border border-gray-200 bg-white shadow-2xs transition-all duration-200 ${className}`}
     >
       {(title || subtitle || action) && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">

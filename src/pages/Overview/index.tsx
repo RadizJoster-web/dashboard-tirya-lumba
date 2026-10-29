@@ -63,7 +63,7 @@ export default function Overview() {
   return (
     <div className="space-y-6 pb-8">
       {/* HEADER SECTION DENGAN FILTER TAHUN & BULAN SEPERTI STYLE DASHBOARD */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="anim-enter flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-display text-2xl font-bold text-[#1D3557] tracking-tight">
             Ringkasan Operasional

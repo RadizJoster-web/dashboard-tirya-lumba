@@ -32,7 +32,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`hidden min-[861px]:flex fixed inset-y-0 left-0 z-30 h-dvh flex-col border-r border-gray-200 bg-white transition-all duration-300 ease-in-out shadow-xs ${
+      className={`anim-slide-right hidden min-[861px]:flex fixed inset-y-0 left-0 z-30 h-dvh flex-col border-r border-gray-200 bg-white transition-all duration-300 ease-in-out shadow-xs ${
         isCollapsed ? 'w-[68px] px-2 py-4' : 'w-64 px-3.5 py-5'
       }`}
     >

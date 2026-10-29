@@ -12,7 +12,7 @@ export default function PendaftaranFilter({
   const tabs: TipeAntrean[] = ['Semua', 'Murid', 'Pelatih'];
 
   return (
-    <div className="mb-4 inline-flex items-center max-w-full overflow-x-auto rounded-full border border-gray-200 bg-white p-1 shadow-2xs scrollbar-none">
+    <div className="anim-enter mb-4 inline-flex items-center max-w-full overflow-x-auto rounded-full border border-gray-200 bg-white p-1 shadow-2xs scrollbar-none">
       {tabs.map((tab) => {
         const isActive = tipeAntrean === tab;
         return (

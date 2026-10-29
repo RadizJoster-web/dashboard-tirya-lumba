@@ -142,7 +142,7 @@ export default function AbsensiManagerView({
   return (
     <div className="space-y-4">
       {/* Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4.5 rounded-xl border border-gray-200 shadow-2xs">
+      <div className="anim-enter flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4.5 rounded-xl border border-gray-200 shadow-2xs">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
             Jadwal Operasional Hari Ini

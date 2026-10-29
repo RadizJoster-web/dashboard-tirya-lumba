@@ -60,10 +60,12 @@ export default function PaketPriceForm({
     }
   }
 
+  const staggerClasses = ['anim-enter-1', 'anim-enter-2', 'anim-enter-3', 'anim-enter-4'];
+
   return (
     <form
       onSubmit={(e) => void handleSubmit(e)}
-      className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-2xs space-y-4"
+      className="anim-enter rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-2xs space-y-4"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
         <div>
@@ -96,13 +98,13 @@ export default function PaketPriceForm({
       </div>
 
       <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4 pt-1">
-        {PACKAGE_TYPES.map((type) => {
+        {PACKAGE_TYPES.map((type, idx) => {
           const num = Number(prices[type]);
           const preview = Number.isFinite(num) && num > 0 ? formatRp(num) : 'Rp 0';
           return (
             <div
               key={type}
-              className="rounded-xl border border-gray-200 bg-slate-50/60 p-4 space-y-2"
+              className={`${staggerClasses[idx % 4]} rounded-xl border border-gray-200 bg-slate-50/60 p-4 space-y-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-display font-bold text-sm text-[#1D3557]">

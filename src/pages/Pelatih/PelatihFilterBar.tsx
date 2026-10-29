@@ -17,7 +17,7 @@ export default function PelatihFilterBar({
   onStatusChange,
 }: PelatihFilterBarProps) {
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-2.5">
+    <div className="anim-enter mb-4 flex flex-wrap items-center gap-2 sm:gap-2.5">
       {/* Debounced Search Pill */}
       <div className="relative w-full sm:w-auto sm:min-w-[220px] sm:flex-1">
         <Search

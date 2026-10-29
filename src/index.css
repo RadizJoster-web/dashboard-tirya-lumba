@@ -54,26 +54,6 @@ h6 {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes route-in {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  @keyframes modal-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px) scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -82,16 +62,128 @@ h6 {
       opacity: 1;
     }
   }
+
+  @keyframes enter-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes enter-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes enter-scale {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slide-right {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes bar-grow {
+    from {
+      transform: scaleY(0);
+      opacity: 0;
+    }
+    to {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Core One-Shot Entrance Animations */
+  .anim-fade {
+    animation: fade-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .anim-enter {
+    animation: enter-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .anim-enter-1 {
+    animation: enter-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 60ms;
+  }
+
+  .anim-enter-2 {
+    animation: enter-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 120ms;
+  }
+
+  .anim-enter-3 {
+    animation: enter-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 180ms;
+  }
+
+  .anim-enter-4 {
+    animation: enter-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 240ms;
+  }
+
+  .anim-scale {
+    animation: enter-scale 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .anim-slide-right {
+    animation: slide-right 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .anim-bar {
+    transform-origin: bottom;
+    animation: bar-grow 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   .anim-route {
-    animation: route-in 220ms ease-out;
+    animation: enter-up 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+
   .anim-modal {
-    animation: modal-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation: modal-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+
   .anim-overlay {
-    animation: fade-in 160ms ease-out;
+    animation: fade-in 180ms ease-out both;
   }
+
   [data-sonner-toast] {
-    animation: route-in 240ms ease-out;
+    animation: enter-down 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }
