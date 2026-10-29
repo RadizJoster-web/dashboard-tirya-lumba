@@ -49,13 +49,16 @@ export default function LocationGroupList({
         key: 'mapUrl',
         header: 'Peta / Koordinat',
         width: '30%',
-        render: (location) =>
-          location.mapUrl ? (
+        render: (location) => {
+          const isSafeUrl = Boolean(
+            location.mapUrl && /^https?:\/\//i.test(location.mapUrl.trim()),
+          );
+          return isSafeUrl ? (
             <a
-              href={location.mapUrl}
+              href={location.mapUrl!}
               target="_blank"
-              rel="noreferrer"
-              title={location.mapUrl}
+              rel="noopener noreferrer"
+              title={location.mapUrl!}
               className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-[#0077B6] border border-gray-200 hover:bg-[#E0FBFC] hover:border-[#00B4D8] transition-colors"
             >
               <MapPin size={12} className="text-[#00B4D8]" />
@@ -64,7 +67,8 @@ export default function LocationGroupList({
             </a>
           ) : (
             <span className="text-xs text-slate-400">-</span>
-          ),
+          );
+        },
       },
       {
         key: 'aksi',

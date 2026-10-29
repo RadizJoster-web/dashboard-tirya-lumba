@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { OverviewLoading } from '../../components/loading';
 import { apiGet } from '../../lib/api/client';
 import { useResource } from '../../lib/api/cache';
@@ -24,11 +24,6 @@ const MONTH_NAMES = [
 
 const AVAILABLE_YEARS = [2024, 2025, 2026, 2027];
 
-const fetchSummary = (year: number, month: string) => () =>
-  apiGet<DashboardSummaryData>(
-    `/dashboard/summary?year=${year}&month=${encodeURIComponent(month)}`,
-  );
-
 export default function Overview() {
   const { user } = useAuth();
   const scoped = user!.role === 'pengelola';
@@ -37,9 +32,17 @@ export default function Overview() {
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedMonth, setSelectedMonth] = useState<string>('ALL');
 
+  const summaryFetcher = useCallback(
+    () =>
+      apiGet<DashboardSummaryData>(
+        `/dashboard/summary?year=${selectedYear}&month=${encodeURIComponent(selectedMonth)}`,
+      ),
+    [selectedYear, selectedMonth],
+  );
+
   const { data: summary, loading } = useResource(
     `/dashboard/summary:${selectedYear}:${selectedMonth}`,
-    fetchSummary(selectedYear, selectedMonth),
+    summaryFetcher,
   );
 
   const totalSiswa = summary?.totalSiswa ?? 0;

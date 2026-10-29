@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 
 export interface ResourceState<T> {
   data: T | null;
@@ -136,6 +136,9 @@ export function useResource<T>(
   key: string,
   fetcher: () => Promise<T>,
 ): ResourceState<T> & { reload: () => Promise<void> } {
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
+
   const subscribe = useCallback(
     (listener: () => void) => subscribeTo(key, listener),
     [key],
@@ -145,17 +148,17 @@ export function useResource<T>(
     () => stateOf(key) as ResourceState<T>,
   );
 
-  // Selalu jalankan fetch network saat hook ter-mount
+  // Selalu jalankan fetch network saat key berganti atau komponen mount
   useEffect(() => {
-    loadResource(key, fetcher, true).catch(() => {});
-  }, [key, fetcher]);
+    loadResource(key, fetcherRef.current, true).catch(() => {});
+  }, [key]);
 
   const reload = useCallback(
     () =>
-      loadResource(key, fetcher, true)
+      loadResource(key, fetcherRef.current, true)
         .then(() => undefined)
         .catch(() => undefined),
-    [key, fetcher],
+    [key],
   );
 
   return { ...snapshot, reload };

@@ -5,10 +5,20 @@ import Shell from './components/layout/Shell';
 import { RouteLoading } from './components/loading';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './lib/auth-context';
+import type { Role } from './lib/auth';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode;
+  allowedRoles?: Role[];
+}) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/overview" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -64,12 +74,40 @@ export default function App() {
               <Route path="overview" element={<Overview />} />
               <Route path="pendaftaran" element={<Pendaftaran />} />
               <Route path="pendaftaran/:id" element={<PendaftaranDetail />} />
-              <Route path="jadwal" element={<Jadwal />} />
-              <Route path="lokasi" element={<Lokasi />} />
-              <Route path="paket" element={<Paket />} />
+              <Route
+                path="jadwal"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <Jadwal />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="lokasi"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <Lokasi />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="paket"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <Paket />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="pelatih" element={<Pelatih />} />
               <Route path="pelatih/:id" element={<PelatihDetail />} />
-              <Route path="pengelola" element={<Pengelola />} />
+              <Route
+                path="pengelola"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <Pengelola />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="absen" element={<Absensi />} />
               <Route path="siswa" element={<Siswa />} />
               <Route path="siswa/:id" element={<SiswaDetail />} />
