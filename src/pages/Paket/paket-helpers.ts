@@ -8,7 +8,7 @@ export const EMPTY_PRICES: PriceForm = {
   Reguler: '',
   Privat: '',
   Atlit: '',
-  Beasiswa: '',
+  Ektrakurikuler: '',
 };
 
 export interface PackagesResponse {
