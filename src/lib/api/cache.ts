@@ -1,5 +1,3 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
-
 export interface ResourceState<T> {
   data: T | null;
   error: string | null;
@@ -19,7 +17,7 @@ const fetchers = new Map<string, () => Promise<unknown>>();
 const pending = new Map<string, Promise<unknown>>();
 const listeners = new Map<string, Set<() => void>>();
 
-function stateOf(key: string): ResourceState<unknown> {
+export function stateOf(key: string): ResourceState<unknown> {
   return states.get(key) ?? idle;
 }
 
@@ -28,7 +26,7 @@ function setState(key: string, next: ResourceState<unknown>): void {
   listeners.get(key)?.forEach((listener) => listener());
 }
 
-function subscribeTo(key: string, listener: () => void): () => void {
+export function subscribeTo(key: string, listener: () => void): () => void {
   let group = listeners.get(key);
   if (!group) {
     group = new Set();
@@ -41,10 +39,6 @@ function subscribeTo(key: string, listener: () => void): () => void {
   };
 }
 
-/**
- * Memuat resource dari network request.
- * Mendukung in-flight request deduplication tanpa memblokir refetch jaringan.
- */
 export function loadResource<T>(
   key: string,
   fetcher?: () => Promise<T>,
@@ -54,7 +48,6 @@ export function loadResource<T>(
 
   const current = states.get(key) as ResourceState<T> | undefined;
 
-  // Jika tidak dipaksa dan sedang ada request berjalan, gunakan promise yang sama
   if (!force) {
     const running = pending.get(key);
     if (running) return running as Promise<T>;
@@ -65,7 +58,6 @@ export function loadResource<T>(
     return Promise.reject(new Error(`Resource "${key}" belum memiliki fetcher.`));
   }
 
-  // Tampilkan data yang sudah ada (jika ada) sambil loading di background
   setState(key, {
     data: current?.data ?? null,
     error: null,
@@ -99,10 +91,6 @@ export function loadResource<T>(
   return request as Promise<T>;
 }
 
-/**
- * Invalidation otomatis: Menghapus cache resource dan memicu refetch ke server.
- * Jika keyOrPrefix diberikan, hanya resource yang cocok yang di-invalidate.
- */
 export function invalidateResource(keyOrPrefix?: string): void {
   for (const [key] of states.entries()) {
     if (!keyOrPrefix || key.startsWith(keyOrPrefix)) {
@@ -118,9 +106,6 @@ export function invalidateResource(keyOrPrefix?: string): void {
   }
 }
 
-/**
- * Membersihkan seluruh resource saat logout.
- */
 export function clearResources(): void {
   states.clear();
   pending.clear();
@@ -128,38 +113,4 @@ export function clearResources(): void {
   listeners.forEach((group) => group.forEach((listener) => listener()));
 }
 
-/**
- * Hook useResource: Selalu melakukan network request saat mount (Revalidate-on-Mount)
- * untuk menjamin data real-time dari Vercel CDN atau Backend Server.
- */
-export function useResource<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-): ResourceState<T> & { reload: () => Promise<void> } {
-  const fetcherRef = useRef(fetcher);
-  fetcherRef.current = fetcher;
-
-  const subscribe = useCallback(
-    (listener: () => void) => subscribeTo(key, listener),
-    [key],
-  );
-  const snapshot = useSyncExternalStore(
-    subscribe,
-    () => stateOf(key) as ResourceState<T>,
-  );
-
-  // Selalu jalankan fetch network saat key berganti atau komponen mount
-  useEffect(() => {
-    loadResource(key, fetcherRef.current, true).catch(() => {});
-  }, [key]);
-
-  const reload = useCallback(
-    () =>
-      loadResource(key, fetcherRef.current, true)
-        .then(() => undefined)
-        .catch(() => undefined),
-    [key],
-  );
-
-  return { ...snapshot, reload };
-}
+export { useResource } from './useResource';

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import DataTable, { type DataTableColumn } from '../../components/ui/DataTable';
-import { Button, RoleTag } from '../../components/ui';
+import { RoleTag } from '../../components/ui';
+import { AbsensiToolbar } from './AbsensiToolbar';
 
-interface AbsensiPerson {
+export interface AbsensiPerson {
   peran: 'Murid' | 'Pelatih';
   nama: string;
   lokasi?: string;
@@ -16,15 +17,6 @@ interface AbsensiManagerViewProps {
   onSave: (
     draft: Record<string, 'Hadir' | 'Tidak Hadir'>,
   ) => Promise<boolean>;
-}
-
-function todayFormatted(): string {
-  return new Date().toLocaleDateString('id-ID', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
 }
 
 export default function AbsensiManagerView({
@@ -44,7 +36,6 @@ export default function AbsensiManagerView({
     setSaving(false);
   }
 
-  // Quick action: set all to 'Hadir'
   function markAll(status: 'Hadir' | 'Tidak Hadir') {
     const nextDraft: Record<string, 'Hadir' | 'Tidak Hadir'> = {};
     for (const p of people) {
@@ -103,12 +94,7 @@ export default function AbsensiManagerView({
           <div className="inline-flex rounded-full border border-gray-200 bg-white p-0.5 shadow-2xs">
             <button
               type="button"
-              onClick={() =>
-                setDraft((prev) => ({
-                  ...prev,
-                  [key]: 'Hadir',
-                }))
-              }
+              onClick={() => setDraft((prev) => ({ ...prev, [key]: 'Hadir' }))}
               className={`rounded-full px-3 py-1 text-xs font-bold transition-all duration-150 cursor-pointer ${
                 isHadir
                   ? 'bg-[#DCFCE7] text-[#166534] shadow-2xs'
@@ -119,12 +105,7 @@ export default function AbsensiManagerView({
             </button>
             <button
               type="button"
-              onClick={() =>
-                setDraft((prev) => ({
-                  ...prev,
-                  [key]: 'Tidak Hadir',
-                }))
-              }
+              onClick={() => setDraft((prev) => ({ ...prev, [key]: 'Tidak Hadir' }))}
               className={`rounded-full px-3 py-1 text-xs font-bold transition-all duration-150 cursor-pointer ${
                 !isHadir
                   ? 'bg-[#FFE4DF] text-[#C93B2B] shadow-2xs'
@@ -141,53 +122,14 @@ export default function AbsensiManagerView({
 
   return (
     <div className="space-y-4">
-      {/* Action Toolbar */}
-      <div className="anim-enter flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4.5 rounded-xl border border-gray-200 shadow-2xs">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
-            Jadwal Operasional Hari Ini
-          </span>
-          <h3 className="font-display text-base font-bold text-[#1D3557] mt-0.5">
-            {todayFormatted()}
-          </h3>
-          <p className="text-xs text-slate-500">
-            {lokasi ? `Cabang ${lokasi}` : 'Semua Kolam Cabang'} · {people.length} jadwal sesi terdaftar
-          </p>
-        </div>
+      <AbsensiToolbar
+        lokasi={lokasi}
+        totalPeople={people.length}
+        saving={saving}
+        onMarkAll={markAll}
+        onSave={() => void handleSave()}
+      />
 
-        <div className="flex flex-wrap items-center gap-2">
-          {people.length > 0 && (
-            <div className="flex items-center gap-1.5 mr-auto sm:mr-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => markAll('Hadir')}
-                className="text-xs px-2.5 py-1"
-              >
-                Semua Hadir
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => markAll('Tidak Hadir')}
-                className="text-xs px-2.5 py-1"
-              >
-                Reset
-              </Button>
-            </div>
-          )}
-
-          <Button
-            variant="primary"
-            onClick={() => void handleSave()}
-            disabled={saving || people.length === 0}
-          >
-            {saving ? 'Menyimpan Presensi…' : 'Simpan Presensi Hari Ini'}
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Attendance Operational Table */}
       <DataTable
         columns={columns}
         rows={people}
