@@ -51,9 +51,6 @@ export default function PendaftaranDetail() {
       <PendaftaranDetailHeader
         detail={detail}
         isInstructor={isInstructor}
-        actionLoading={actionLoading}
-        onApprove={handleApprove}
-        onOpenReject={() => setShowRejectModal(true)}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">

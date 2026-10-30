@@ -28,17 +28,28 @@ export default function PendaftaranTable({
         primary: true,
         render: (r) => {
           const photo = assetUrl(r.profilePictureUrl ?? undefined);
+          const initial = r.name ? r.name.charAt(0).toUpperCase() : '?';
           return (
             <div className="flex items-center gap-3">
               {photo ? (
-                <img
-                  src={photo}
-                  alt={r.name}
-                  className="h-9 w-9 rounded-full object-cover shrink-0 border border-gray-200"
-                />
+                <div className="relative h-9 w-9 shrink-0">
+                  <img
+                    src={photo}
+                    alt={r.name}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector('.avatar-fallback');
+                      if (fallback) (fallback as HTMLElement).style.display = 'grid';
+                    }}
+                    className="h-9 w-9 rounded-full object-cover border border-gray-200"
+                  />
+                  <div className="avatar-fallback hidden absolute inset-0 place-items-center rounded-full bg-gradient-to-br from-[#0077B6] to-[#00B4D8] text-xs font-bold text-white shadow-2xs">
+                    {initial}
+                  </div>
+                </div>
               ) : (
                 <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#0077B6] to-[#00B4D8] text-xs font-bold text-white shrink-0 shadow-2xs">
-                  {r.name.charAt(0).toUpperCase()}
+                  {initial}
                 </div>
               )}
               <div className="min-w-0">
@@ -91,7 +102,7 @@ export default function PendaftaranTable({
               size="sm"
               onClick={() => onDetail(r.id)}
             >
-              Tinjau Detail
+              Detail
             </Button>
             {onApprove && (
               <Button
@@ -125,7 +136,7 @@ export default function PendaftaranTable({
   );
 
   return (
-    <DataTable
+    <DataTable<ServerRegistration>
       columns={columns}
       rows={rows}
       rowKey={(r) => r.id}

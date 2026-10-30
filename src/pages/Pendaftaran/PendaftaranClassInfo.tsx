@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ServerRegistrationDetail } from '../../lib/api/types';
+import { PendaftaranScheduleTable } from './PendaftaranScheduleTable';
 
 export const PendaftaranInstructorClassInfo: React.FC<{
   detail: ServerRegistrationDetail;
@@ -27,30 +28,10 @@ export const PendaftaranInstructorClassInfo: React.FC<{
       </div>
 
       <div className="rounded-lg bg-slate-50/80 p-3.5 border border-gray-100">
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2.5">
           Jadwal Ketersediaan Mengajar ({detail.schedules?.length ?? 0} Sesi)
         </span>
-        {detail.schedules && detail.schedules.length > 0 ? (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {detail.schedules.map((s, idx) => (
-              <div
-                key={s.id || idx}
-                className="flex items-center justify-between rounded-lg bg-white p-2.5 border border-gray-200 text-xs"
-              >
-                <span className="font-semibold text-[#1D3557]">
-                  {s.dayOfWeek} • {s.sessionName}
-                </span>
-                <span className="text-slate-500">
-                  {s.location?.name ? `Kolam ${s.location.name}` : 'Kolam'}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-slate-400 italic">
-            Tidak ada jadwal spesifik terlampir.
-          </p>
-        )}
+        <PendaftaranScheduleTable schedules={detail.schedules} />
       </div>
 
       {user?.instructorProfile?.shortBio && (

@@ -8,8 +8,18 @@ const TIMEOUT_MS = 8000;
 
 export function assetUrl(path?: string): string {
   if (!path) return '';
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${API_BASE.replace(/\/api\/?$/, '')}/${path.replace(/^\/+/, '')}`;
+  const baseOrigin = API_BASE.replace(/\/api\/?$/, '');
+  if (/^https?:\/\//i.test(path)) {
+    if (path.includes('.r2.cloudflarestorage.com/')) {
+      const fileKey = path.split('.r2.cloudflarestorage.com/')[1];
+      return `${baseOrigin}/api/files/${fileKey}`;
+    }
+    return path;
+  }
+  if (path.startsWith('/api/')) {
+    return `${baseOrigin}${path}`;
+  }
+  return `${baseOrigin}/${path.replace(/^\/+/, '')}`;
 }
 
 export class ApiError extends Error {
