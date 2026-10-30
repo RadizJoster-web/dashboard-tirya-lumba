@@ -70,7 +70,7 @@ h6 {
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 
@@ -81,7 +81,7 @@ h6 {
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 
@@ -92,7 +92,7 @@ h6 {
     }
     to {
       opacity: 1;
-      transform: scale(1);
+      transform: none;
     }
   }
 
@@ -103,7 +103,7 @@ h6 {
     }
     to {
       opacity: 1;
-      transform: translateX(0);
+      transform: none;
     }
   }
 
@@ -125,7 +125,7 @@ h6 {
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: none;
     }
   }
 
