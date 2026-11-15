@@ -40,6 +40,7 @@ export default function Lokasi() {
       areaId: String(fd.get('areaId') ?? ''),
       category: String(fd.get('category') ?? '').trim(),
       mapUrl: String(fd.get('mapUrl') ?? '').trim(),
+      imageUrl: String(fd.get('imageUrl') ?? '').trim() || null,
     };
     if (
       !payload.name ||

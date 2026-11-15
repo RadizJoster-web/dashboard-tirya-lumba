@@ -5,6 +5,7 @@ import Modal from '../../components/ui/Modal';
 import { Button, Field } from '../../components/ui';
 import type { ServerArea, ServerLocation } from '../../lib/api/types';
 import { QuickAddAreaSection } from './QuickAddAreaSection';
+import { LocationImageUploader } from './LocationImageUploader';
 
 export type LocationFormState = { kind: 'add' } | { kind: 'edit'; row: ServerLocation } | null;
 
@@ -33,6 +34,9 @@ export default function LocationFormModal({
   const [selectedAreaId, setSelectedAreaId] = useState<string>(
     form?.kind === 'edit' ? (form.row.areaId ?? '') : ''
   );
+  const [imageUrl, setImageUrl] = useState<string>(
+    form?.kind === 'edit' ? (form.row.imageUrl ?? '') : ''
+  );
 
   if (!form) return null;
 
@@ -53,6 +57,8 @@ export default function LocationFormModal({
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="grid gap-1">
+        <LocationImageUploader value={imageUrl} onChange={setImageUrl} />
+
         <Field label="Nama kolam" name="name" defaultValue={form.kind === 'edit' ? form.row.name : ''} required />
 
         <div className="mb-3">

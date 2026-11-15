@@ -13,6 +13,7 @@ export interface ServerLocation {
   name: string;
   category?: string;
   mapUrl?: string;
+  imageUrl?: string | null;
   areaId?: string;
   areaName?: string;
   regularPrice?: number;
@@ -24,7 +25,6 @@ export interface ServerPackage {
   type: string;
   price: number;
   sessionCount?: number;
-  imageUrl?: string | null;
 }
 
 export interface DashboardSummaryData {

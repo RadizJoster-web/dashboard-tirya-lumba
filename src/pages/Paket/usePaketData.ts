@@ -3,9 +3,9 @@ import { toast } from 'sonner';
 import { apiGet, apiGetPayload } from '../../lib/api/client';
 import { useResource } from '../../lib/api/cache';
 import type { ServerLocation, ServerPackage } from '../../lib/api/types';
-import type { ImageForm, PriceForm } from './types';
+import type { PriceForm } from './types';
 import {
-  extractPricesAndImages,
+  extractPrices,
   parsePackagesResponse,
   sendPackagePriceUpdates,
 } from './paket-helpers';
@@ -83,13 +83,13 @@ export function usePaketData() {
     return () => { cancelled = true; };
   }, [activeLocationId, packageRequestKey]);
 
-  const { prices: savedPrices, images: savedImages } = useMemo(
-    () => extractPricesAndImages(packages, activeLocationId),
+  const savedPrices = useMemo(
+    () => extractPrices(packages, activeLocationId),
     [activeLocationId, packages],
   );
 
   const savePrices = useCallback(
-    async (prices: PriceForm, images: ImageForm): Promise<boolean> => {
+    async (prices: PriceForm): Promise<boolean> => {
       if (!activeLocationId) {
         toast.error('Pilih lokasi terlebih dahulu.', { style: { color: '#B3341F' } });
         return false;
@@ -100,7 +100,6 @@ export function usePaketData() {
         return await sendPackagePriceUpdates(
           activeLocationId,
           prices,
-          images,
           packages,
           reloadPackages,
         );
@@ -121,7 +120,6 @@ export function usePaketData() {
     packagesError,
     reloadPackages,
     savedPrices,
-    savedImages,
     savePrices,
     saving,
   };

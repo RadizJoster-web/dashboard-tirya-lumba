@@ -16,6 +16,7 @@ export interface LocationPayload {
   areaId: string;
   category: string;
   mapUrl: string;
+  imageUrl?: string | null;
 }
 
 export function useLokasiData() {
