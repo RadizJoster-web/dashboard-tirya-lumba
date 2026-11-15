@@ -24,6 +24,7 @@ export interface ServerPackage {
   type: string;
   price: number;
   sessionCount?: number;
+  imageUrl?: string | null;
 }
 
 export interface DashboardSummaryData {

@@ -16,6 +16,7 @@ export default function Paket() {
     packagesError,
     reloadPackages,
     savedPrices,
+    savedImages,
     savePrices,
     saving,
   } = usePaketData();
@@ -45,6 +46,7 @@ export default function Paket() {
         locations={locations}
         activeLocationId={activeLocationId}
         savedPrices={savedPrices}
+        savedImages={savedImages}
         saving={saving}
         canSave={!packagesLoading && !packagesError}
         onLocationChange={changeLocation}

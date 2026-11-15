@@ -6,3 +6,4 @@ export const PACKAGE_TYPES = [
 ] as const;
 export type PackageType = (typeof PACKAGE_TYPES)[number];
 export type PriceForm = Record<PackageType, string>;
+export type ImageForm = Record<PackageType, string>;

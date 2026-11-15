@@ -1,6 +1,7 @@
 import DataTable, { type DataTableColumn } from '../../components/ui/DataTable';
 import { RoleTag } from '../../components/ui';
 import { formatRp } from '../../lib/format';
+import { assetUrl } from '../../lib/api/client';
 import type { ServerPackage } from '../../lib/api/types';
 
 interface PaketTableProps {
@@ -14,11 +15,25 @@ export default function PaketTable({ currentPackages }: PaketTableProps) {
       header: 'Kategori Paket Kursus',
       width: '40%',
       primary: true,
-      render: (item) => (
-        <div className="flex items-center gap-2">
-          <RoleTag role="student">{item.type}</RoleTag>
-        </div>
-      ),
+      render: (item) => {
+        const img = assetUrl(item.imageUrl || '');
+        return (
+          <div className="flex items-center gap-3">
+            {img ? (
+              <img
+                src={img}
+                alt={item.type}
+                className="h-10 w-10 rounded-lg object-cover border border-gray-200 shadow-2xs shrink-0"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-lg bg-slate-100 border border-dashed border-gray-200 flex items-center justify-center text-slate-400 shrink-0 text-[10px] font-medium">
+                Tanpa foto
+              </div>
+            )}
+            <RoleTag role="student">{item.type}</RoleTag>
+          </div>
+        );
+      },
     },
     {
       key: 'sessions',

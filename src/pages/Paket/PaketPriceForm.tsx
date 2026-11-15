@@ -4,39 +4,48 @@ import { toast } from 'sonner';
 import { Button } from '../../components/ui';
 import type { ServerLocation } from '../../lib/api/types';
 import { PACKAGE_TYPES } from './types';
-import type { PackageType, PriceForm } from './types';
+import type { ImageForm, PackageType, PriceForm } from './types';
 import { PaketPriceCard } from './PaketPriceCard';
 
 interface PaketPriceFormProps {
   locations: ServerLocation[];
   activeLocationId: string;
   savedPrices: PriceForm;
+  savedImages: ImageForm;
   saving: boolean;
   canSave: boolean;
   onLocationChange: (id: string) => void;
-  onSubmit: (prices: PriceForm) => Promise<boolean>;
+  onSubmit: (prices: PriceForm, images: ImageForm) => Promise<boolean>;
 }
 
 export default function PaketPriceForm({
   locations,
   activeLocationId,
   savedPrices,
+  savedImages,
   saving,
   canSave,
   onLocationChange,
   onSubmit,
 }: PaketPriceFormProps) {
-  const [draft, setDraft] = useState<PriceForm | null>(null);
+  const [draftPrices, setDraftPrices] = useState<PriceForm | null>(null);
+  const [draftImages, setDraftImages] = useState<ImageForm | null>(null);
 
-  const prices = draft ?? savedPrices;
+  const prices = draftPrices ?? savedPrices;
+  const images = draftImages ?? savedImages;
 
   function handleLocationChange(id: string) {
-    setDraft(null);
+    setDraftPrices(null);
+    setDraftImages(null);
     onLocationChange(id);
   }
 
   function handlePriceChange(type: PackageType, val: string) {
-    setDraft({ ...prices, [type]: val });
+    setDraftPrices({ ...prices, [type]: val });
+  }
+
+  function handleImageChange(type: PackageType, url: string) {
+    setDraftImages({ ...images, [type]: url });
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -54,9 +63,10 @@ export default function PaketPriceForm({
       }
     }
 
-    const success = await onSubmit(prices);
+    const success = await onSubmit(prices, images);
     if (success) {
-      setDraft(null);
+      setDraftPrices(null);
+      setDraftImages(null);
     }
   }
 
@@ -70,10 +80,10 @@ export default function PaketPriceForm({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
         <div>
           <h3 className="font-display text-base font-bold text-[#1D3557]">
-            Form Tarif Paket per Kolam
+            Form Tarif & Gambar Paket per Kolam
           </h3>
           <p className="mt-0.5 text-xs text-slate-500 font-normal">
-            Pilih lokasi kolam lalu tentukan nominal biaya tarif kursus
+            Pilih lokasi kolam, unggah foto visual paket kursus, dan tentukan tarif harga
           </p>
         </div>
 
@@ -88,9 +98,9 @@ export default function PaketPriceForm({
             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D3557] shadow-2xs focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer"
           >
             <option value="">Pilih Lokasi Kolam</option>
-            {locations.map((location) => (
-              <option key={location.id} value={location.id}>
-                {location.name}
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
               </option>
             ))}
           </select>
@@ -103,8 +113,10 @@ export default function PaketPriceForm({
             key={type}
             type={type}
             value={prices[type]}
+            imageUrl={images[type]}
             staggerClass={staggerClasses[idx % 4]}
             onChange={handlePriceChange}
+            onImageChange={handleImageChange}
           />
         ))}
       </div>
@@ -115,7 +127,7 @@ export default function PaketPriceForm({
           size="sm"
           disabled={saving || !canSave || !activeLocationId}
         >
-          {saving ? 'Menyimpan Tarif…' : 'Simpan Perubahan Tarif'}
+          {saving ? 'Menyimpan Paket…' : 'Simpan Perubahan Paket'}
         </Button>
       </div>
     </form>
