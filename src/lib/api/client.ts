@@ -110,7 +110,7 @@ export function apiGetPayload<T>(path: string): Promise<T> {
 
 export async function apiSend<T>(
   path: string,
-  method: 'POST' | 'PUT' | 'DELETE',
+  method: 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   body?: unknown,
 ): Promise<T> {
   const result = await apiRequest<T>(path, {

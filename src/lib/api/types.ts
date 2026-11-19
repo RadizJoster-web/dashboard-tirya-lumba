@@ -14,6 +14,7 @@ export interface ServerLocation {
   category?: string;
   mapUrl?: string;
   imageUrl?: string | null;
+  isCoachRegistrationOpen?: boolean;
   areaId?: string;
   areaName?: string;
   regularPrice?: number;
@@ -138,3 +139,4 @@ export interface ServerProfil {
 }
 
 export type { ServerRegistration, ServerRegistrationDetail } from './registrationTypes';
+export * from './monitoringTypes';
