@@ -1,13 +1,25 @@
 import { invalidateResource } from './cache';
+import { getToken, setToken, clearToken } from './token';
+
+export { getToken, setToken, clearToken };
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5000/api';
-const TOKEN_KEY = 'tl_jwt';
 const TIMEOUT_MS = 8000;
 
 export function assetUrl(path?: string): string {
   if (!path) return '';
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${API_BASE.replace(/\/api\/?$/, '')}/${path.replace(/^\/+/, '')}`;
+  const baseOrigin = API_BASE.replace(/\/api\/?$/, '');
+  if (/^https?:\/\//i.test(path)) {
+    if (path.includes('.r2.cloudflarestorage.com/')) {
+      const fileKey = path.split('.r2.cloudflarestorage.com/')[1];
+      return `${baseOrigin}/api/files/${fileKey}`;
+    }
+    return path;
+  }
+  if (path.startsWith('/api/')) {
+    return `${baseOrigin}${path}`;
+  }
+  return `${baseOrigin}/${path.replace(/^\/+/, '')}`;
 }
 
 export class ApiError extends Error {
@@ -34,41 +46,6 @@ interface Envelope<T> {
   pagination?: ApiPagination;
 }
 
-export function getToken(): string | null {
-  for (const s of [localStorage, sessionStorage]) {
-    try {
-      const t = s.getItem(TOKEN_KEY);
-      if (t) return t;
-    } catch {
-      // storage unavailable, keep looking
-    }
-  }
-  return null;
-}
-
-export function setToken(token: string, remember: boolean): void {
-  try {
-    localStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(TOKEN_KEY);
-    (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, token);
-  } catch {
-    // storage unavailable, request falls back to cookie-only auth
-  }
-}
-
-export function clearToken(): void {
-  try {
-    localStorage.removeItem(TOKEN_KEY);
-  } catch {
-    // ignore
-  }
-  try {
-    sessionStorage.removeItem(TOKEN_KEY);
-  } catch {
-    // ignore
-  }
-}
-
 export async function apiRequest<T>(
   path: string,
   init?: RequestInit,
@@ -84,7 +61,6 @@ export async function apiRequest<T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  // Cegah browser disk caching untuk request ke server
   if (!headers.has('Cache-Control')) {
     headers.set('Cache-Control', 'no-cache');
   }
@@ -115,11 +91,7 @@ export async function apiRequest<T>(
     throw new ApiError(body?.message ?? `Permintaan gagal (${res.status}).`, res.status);
   }
   if (body.data !== undefined) return body.data;
-  if (
-    allowRawResponse &&
-    typeof body === 'object' &&
-    body !== null
-  ) {
+  if (allowRawResponse && typeof body === 'object' && body !== null) {
     return body as T;
   }
   if (init?.method !== 'DELETE') {
@@ -138,7 +110,7 @@ export function apiGetPayload<T>(path: string): Promise<T> {
 
 export async function apiSend<T>(
   path: string,
-  method: 'POST' | 'PUT' | 'DELETE',
+  method: 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   body?: unknown,
 ): Promise<T> {
   const result = await apiRequest<T>(path, {
@@ -146,8 +118,6 @@ export async function apiSend<T>(
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  // Mutasi sukses: Langsung bersihkan cache lokal dan picu refetch data terbaru
   invalidateResource();
-
   return result;
 }

@@ -3,12 +3,10 @@ import { toast } from 'sonner';
 import { apiGet, apiGetPayload } from '../../lib/api/client';
 import { useResource } from '../../lib/api/cache';
 import type { ServerLocation, ServerPackage } from '../../lib/api/types';
-import { PACKAGE_TYPES } from './types';
 import type { PriceForm } from './types';
 import {
-  EMPTY_PRICES,
+  extractPrices,
   parsePackagesResponse,
-  priceFor,
   sendPackagePriceUpdates,
 } from './paket-helpers';
 import type { PackagesResponse } from './paket-helpers';
@@ -33,9 +31,7 @@ export function usePaketData() {
     requestKey: string;
     message: string;
   } | null>(null);
-  const [completedPackageRequestKey, setCompletedPackageRequestKey] = useState<
-    string | null
-  >(null);
+  const [completedPackageRequestKey, setCompletedPackageRequestKey] = useState<string | null>(null);
   const [packagesRefresh, setPackagesRefresh] = useState(0);
 
   const activeLocationId = locationId || locations[0]?.id || '';
@@ -62,27 +58,21 @@ export function usePaketData() {
 
   useEffect(() => {
     let cancelled = false;
-
     if (!activeLocationId) return;
 
-    apiGetPayload<PackagesResponse>(
-      `/packages/${encodeURIComponent(activeLocationId)}`,
-    )
-      .then((response) => parsePackagesResponse(response, activeLocationId))
+    apiGetPayload<PackagesResponse>(`/packages/${encodeURIComponent(activeLocationId)}`)
+      .then((res) => parsePackagesResponse(res, activeLocationId))
       .then((data) => {
         if (!cancelled) {
           setPackageResult({ locationId: activeLocationId, packages: data });
           setPackageRequestError(null);
         }
       })
-      .catch((error: unknown) => {
+      .catch((err: unknown) => {
         if (!cancelled) {
           setPackageRequestError({
             requestKey: packageRequestKey,
-            message:
-              error instanceof Error
-                ? error.message
-                : 'Gagal memuat data paket.',
+            message: err instanceof Error ? err.message : 'Gagal memuat data paket.',
           });
         }
       })
@@ -90,29 +80,18 @@ export function usePaketData() {
         if (!cancelled) setCompletedPackageRequestKey(packageRequestKey);
       });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [activeLocationId, packageRequestKey]);
 
-  const savedPrices = useMemo(() => {
-    const next = { ...EMPTY_PRICES };
-
-    if (!activeLocationId) return next;
-
-    for (const type of PACKAGE_TYPES) {
-      const found = priceFor(packages, activeLocationId, type);
-      next[type] = found ? String(found.price) : '';
-    }
-    return next;
-  }, [activeLocationId, packages]);
+  const savedPrices = useMemo(
+    () => extractPrices(packages, activeLocationId),
+    [activeLocationId, packages],
+  );
 
   const savePrices = useCallback(
     async (prices: PriceForm): Promise<boolean> => {
       if (!activeLocationId) {
-        toast.error('Pilih lokasi terlebih dahulu.', {
-          style: { color: '#B3341F' },
-        });
+        toast.error('Pilih lokasi terlebih dahulu.', { style: { color: '#B3341F' } });
         return false;
       }
 

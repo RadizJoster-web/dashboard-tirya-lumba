@@ -8,7 +8,7 @@ export const EMPTY_PRICES: PriceForm = {
   Reguler: '',
   Privat: '',
   Atlit: '',
-  Beasiswa: '',
+  Ektrakurikuler: '',
 };
 
 export interface PackagesResponse {
@@ -24,26 +24,16 @@ export function parsePackagesResponse(
   }
 
   return response.packages.map((item: unknown) => {
-    if (
-      typeof item !== 'object' ||
-      item === null ||
-      !('id' in item) ||
-      typeof item.id !== 'string' ||
-      !('type' in item) ||
-      typeof item.type !== 'string' ||
-      !('price' in item) ||
-      typeof item.price !== 'number' ||
-      !Number.isFinite(item.price)
-    ) {
-      throw new Error(
-        'Data paket dari server memiliki format yang tidak valid.',
-      );
+    const raw = item as Record<string, unknown>;
+    if (!raw || typeof raw !== 'object' || typeof raw.id !== 'string') {
+      throw new Error('Data paket dari server memiliki format yang tidak valid.');
     }
 
     return {
-      id: item.id,
-      type: item.type,
-      price: item.price,
+      id: raw.id as string,
+      type: typeof raw.type === 'string' ? raw.type : '',
+      price: typeof raw.price === 'number' ? raw.price : 0,
+      sessionCount: typeof raw.sessionCount === 'number' ? raw.sessionCount : 4,
       locationId,
     };
   });
@@ -59,6 +49,19 @@ export function priceFor(
       p.locationId === locationId &&
       p.type.toLowerCase() === type.toLowerCase(),
   );
+}
+
+export function extractPrices(
+  packages: ServerPackage[],
+  locationId: string,
+): PriceForm {
+  const prices = { ...EMPTY_PRICES };
+  if (!locationId) return prices;
+  for (const type of PACKAGE_TYPES) {
+    const found = priceFor(packages, locationId, type);
+    prices[type] = found ? String(found.price) : '';
+  }
+  return prices;
 }
 
 export async function sendPackagePriceUpdates(
@@ -81,7 +84,7 @@ export async function sendPackagePriceUpdates(
           }),
         );
       }
-    } else {
+    } else if (prices[type] !== '') {
       jobs.push(
         apiSend<ServerPackage>('/packages', 'POST', {
           locationId: activeLocationId,
@@ -102,7 +105,7 @@ export async function sendPackagePriceUpdates(
   reloadPackages();
 
   if (failed.length === 0) {
-    toast.success('Harga paket diperbarui.');
+    toast.success('Harga paket berhasil disimpan.');
     return true;
   }
   const firstError = failed[0].status === 'rejected' ? failed[0].reason : null;

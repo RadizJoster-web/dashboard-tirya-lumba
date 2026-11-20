@@ -23,6 +23,7 @@ function ProtectedRoute({
 }
 
 const Overview = lazy(() => import('./pages/Overview'));
+const Monitoring = lazy(() => import('./pages/Monitoring'));
 const Pendaftaran = lazy(() => import('./pages/Pendaftaran'));
 const PendaftaranDetail = lazy(() => import('./pages/Pendaftaran/Detail'));
 const Jadwal = lazy(() => import('./pages/Jadwal'));
@@ -72,6 +73,7 @@ export default function App() {
             >
               <Route index element={<Navigate to="/overview" replace />} />
               <Route path="overview" element={<Overview />} />
+              <Route path="monitoring" element={<Monitoring />} />
               <Route path="pendaftaran" element={<Pendaftaran />} />
               <Route path="pendaftaran/:id" element={<PendaftaranDetail />} />
               <Route

@@ -14,11 +14,7 @@ export default function PaketTable({ currentPackages }: PaketTableProps) {
       header: 'Kategori Paket Kursus',
       width: '40%',
       primary: true,
-      render: (item) => (
-        <div className="flex items-center gap-2">
-          <RoleTag role="student">{item.type}</RoleTag>
-        </div>
-      ),
+      render: (item) => <RoleTag role="student">{item.type}</RoleTag>,
     },
     {
       key: 'sessions',

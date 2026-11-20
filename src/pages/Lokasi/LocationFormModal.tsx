@@ -4,6 +4,8 @@ import { Plus, X } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import { Button, Field } from '../../components/ui';
 import type { ServerArea, ServerLocation } from '../../lib/api/types';
+import { QuickAddAreaSection } from './QuickAddAreaSection';
+import { LocationImageUploader } from './LocationImageUploader';
 
 export type LocationFormState = { kind: 'add' } | { kind: 'edit'; row: ServerLocation } | null;
 
@@ -32,6 +34,9 @@ export default function LocationFormModal({
   const [selectedAreaId, setSelectedAreaId] = useState<string>(
     form?.kind === 'edit' ? (form.row.areaId ?? '') : ''
   );
+  const [imageUrl, setImageUrl] = useState<string>(
+    form?.kind === 'edit' ? (form.row.imageUrl ?? '') : ''
+  );
 
   if (!form) return null;
 
@@ -52,6 +57,8 @@ export default function LocationFormModal({
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="grid gap-1">
+        <LocationImageUploader value={imageUrl} onChange={setImageUrl} />
+
         <Field label="Nama kolam" name="name" defaultValue={form.kind === 'edit' ? form.row.name : ''} required />
 
         <div className="mb-3">
@@ -65,41 +72,18 @@ export default function LocationFormModal({
                 onClick={() => setShowQuickAdd((v) => !v)}
                 className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-primary hover:underline"
               >
-                {showQuickAdd ? (
-                  <>
-                    <X size={12} /> Batal
-                  </>
-                ) : (
-                  <>
-                    <Plus size={12} /> Tambah area baru
-                  </>
-                )}
+                {showQuickAdd ? <><X size={12} /> Batal</> : <><Plus size={12} /> Tambah area baru</>}
               </button>
             ) : null}
           </div>
 
-          {showQuickAdd ? (
-            <div className="mt-2 mb-2 rounded-lg border border-azure bg-azure/20 p-2.5">
-              <span className="block text-xs font-semibold text-primary">Buat Area Baru:</span>
-              <div className="mt-1.5 flex gap-2">
-                <input
-                  type="text"
-                  value={quickAreaName}
-                  onChange={(e) => setQuickAreaName(e.target.value)}
-                  placeholder="Nama area/kota baru..."
-                  className="w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm focus:border-aqua focus:outline-none"
-                />
-                <Button
-                  type="button"
-                  onClick={() => void handleQuickAdd()}
-                  disabled={addingArea || !quickAreaName.trim()}
-                  className="min-h-0 px-3 py-1.5 text-xs whitespace-nowrap"
-                >
-                  {addingArea ? 'Menyimpan…' : 'Simpan'}
-                </Button>
-              </div>
-            </div>
-          ) : null}
+          <QuickAddAreaSection
+            show={showQuickAdd}
+            name={quickAreaName}
+            adding={addingArea}
+            onChangeName={setQuickAreaName}
+            onAdd={() => void handleQuickAdd()}
+          />
 
           <select
             id="location-area-select"

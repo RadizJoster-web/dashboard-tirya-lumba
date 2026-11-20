@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export interface ModalProps {
@@ -25,7 +26,6 @@ export default function Modal({
       if (e.key === 'Escape') onClose();
     }
     document.addEventListener('keydown', onKey);
-    // Prevent body scroll while modal is open
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
@@ -33,17 +33,16 @@ export default function Modal({
     };
   }, [onClose]);
 
-  // Determine max width
   let maxWidth = wide ? 'max-w-2xl' : 'max-w-md';
   if (size === 'sm') maxWidth = 'max-w-sm';
   if (size === 'md') maxWidth = 'max-w-lg';
   if (size === 'lg') maxWidth = 'max-w-2xl';
   if (size === 'xl') maxWidth = 'max-w-3xl';
 
-  return (
+  const modalNode = (
     <div
       role="presentation"
-      className="anim-overlay fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 sm:p-6"
+      className="anim-overlay fixed inset-0 z-50 flex min-h-screen items-center justify-center overflow-y-auto bg-slate-900/40 p-4 backdrop-blur-xs sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -51,9 +50,8 @@ export default function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`anim-modal relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl ${maxWidth}`}
+        className={`anim-modal relative my-auto flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl ${maxWidth}`}
       >
-        {/* Modal Header */}
         <div className="flex items-start justify-between border-b border-gray-100 px-4 sm:px-6 py-3.5 sm:py-4.5 bg-white">
           <div className="pr-4">
             <h3 className="font-display text-base sm:text-lg font-bold text-[#1D3557]">
@@ -75,10 +73,8 @@ export default function Modal({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">{children}</div>
 
-        {/* Modal Footer */}
         {footer && (
           <div className="border-t border-gray-100 bg-slate-50/70 px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-end gap-2.5">
             {footer}
@@ -87,4 +83,6 @@ export default function Modal({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalNode, document.body) : modalNode;
 }

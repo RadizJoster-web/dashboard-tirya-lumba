@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { apiGet, apiSend } from '../../lib/api/client';
 import { useResource } from '../../lib/api/cache';
 import type { ServerLocation, ServerSession } from '../../lib/api/types';
-import { HARI } from '../../lib/format';
 import { slotKey } from '../../components/jadwal/session-templates';
 
 const fetchLocations = (): Promise<ServerLocation[]> =>
@@ -15,14 +14,9 @@ export const sessionsKey = (locationId: string): string =>
 export async function fetchSessionsForLocation(
   locationId: string,
 ): Promise<ServerSession[]> {
-  const days = await Promise.all(
-    HARI.map((day) =>
-      apiGet<ServerSession[]>(
-        `/sessions?locationId=${encodeURIComponent(locationId)}&dayOfWeek=${encodeURIComponent(day)}`,
-      ),
-    ),
+  return apiGet<ServerSession[]>(
+    `/sessions?locationId=${encodeURIComponent(locationId)}`,
   );
-  return days.flat();
 }
 
 export interface NewSessionPayload {

@@ -2,10 +2,10 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui';
-import { formatRp } from '../../lib/format';
 import type { ServerLocation } from '../../lib/api/types';
 import { PACKAGE_TYPES } from './types';
 import type { PackageType, PriceForm } from './types';
+import { PaketPriceCard } from './PaketPriceCard';
 
 interface PaketPriceFormProps {
   locations: ServerLocation[];
@@ -26,17 +26,17 @@ export default function PaketPriceForm({
   onLocationChange,
   onSubmit,
 }: PaketPriceFormProps) {
-  const [draft, setDraft] = useState<PriceForm | null>(null);
+  const [draftPrices, setDraftPrices] = useState<PriceForm | null>(null);
 
-  const prices = draft ?? savedPrices;
+  const prices = draftPrices ?? savedPrices;
 
   function handleLocationChange(id: string) {
-    setDraft(null);
+    setDraftPrices(null);
     onLocationChange(id);
   }
 
   function handlePriceChange(type: PackageType, val: string) {
-    setDraft({ ...prices, [type]: val });
+    setDraftPrices({ ...prices, [type]: val });
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -56,7 +56,7 @@ export default function PaketPriceForm({
 
     const success = await onSubmit(prices);
     if (success) {
-      setDraft(null);
+      setDraftPrices(null);
     }
   }
 
@@ -73,7 +73,7 @@ export default function PaketPriceForm({
             Form Tarif Paket per Kolam
           </h3>
           <p className="mt-0.5 text-xs text-slate-500 font-normal">
-            Pilih lokasi kolam lalu tentukan nominal biaya tarif kursus
+            Pilih lokasi kolam dan tentukan tarif harga masing-masing paket kursus
           </p>
         </div>
 
@@ -88,9 +88,9 @@ export default function PaketPriceForm({
             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D3557] shadow-2xs focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 cursor-pointer"
           >
             <option value="">Pilih Lokasi Kolam</option>
-            {locations.map((location) => (
-              <option key={location.id} value={location.id}>
-                {location.name}
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
               </option>
             ))}
           </select>
@@ -98,48 +98,15 @@ export default function PaketPriceForm({
       </div>
 
       <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4 pt-1">
-        {PACKAGE_TYPES.map((type, idx) => {
-          const num = Number(prices[type]);
-          const preview = Number.isFinite(num) && num > 0 ? formatRp(num) : 'Rp 0';
-          return (
-            <div
-              key={type}
-              className={`${staggerClasses[idx % 4]} rounded-xl border border-gray-200 bg-slate-50/60 p-4 space-y-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-display font-bold text-sm text-[#1D3557]">
-                  {type}
-                </span>
-                <span className="rounded-full bg-[#E0FBFC] px-2 py-0.5 text-[10px] font-bold text-[#0077B6]">
-                  4 Sesi
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Tarif Kursus (Rp)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  step={1000}
-                  inputMode="numeric"
-                  value={prices[type]}
-                  onChange={(e) => handlePriceChange(type, e.target.value)}
-                  placeholder="Contoh: 350000"
-                  required
-                  className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-[#1D3557] focus:border-[#00B4D8] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/30 tabular-nums transition-all"
-                />
-              </div>
-
-              <div className="pt-1">
-                <span className="text-[11px] font-semibold text-[#0077B6] tabular-nums block">
-                  {preview}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+        {PACKAGE_TYPES.map((type, idx) => (
+          <PaketPriceCard
+            key={type}
+            type={type}
+            value={prices[type]}
+            staggerClass={staggerClasses[idx % 4]}
+            onChange={handlePriceChange}
+          />
+        ))}
       </div>
 
       <div className="flex items-center justify-end pt-2 border-t border-gray-100">
@@ -148,7 +115,7 @@ export default function PaketPriceForm({
           size="sm"
           disabled={saving || !canSave || !activeLocationId}
         >
-          {saving ? 'Menyimpan Tarif…' : 'Simpan Perubahan Tarif'}
+          {saving ? 'Menyimpan Paket…' : 'Simpan Perubahan Paket'}
         </Button>
       </div>
     </form>

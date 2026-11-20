@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Inbox } from 'lucide-react';
+import { DataTableMobileList } from './DataTableMobileList';
 
 export interface DataTableColumn<T> {
   key: string;
@@ -27,6 +28,12 @@ function cellValue<T>(row: T, column: DataTableColumn<T>): ReactNode {
   if (column.render) return column.render(row);
   const raw = (row as Record<string, unknown>)[column.key];
   return raw === null || raw === undefined || raw === '' ? '-' : String(raw);
+}
+
+function getAlignClass(align?: 'left' | 'center' | 'right') {
+  if (align === 'right') return 'text-right';
+  if (align === 'center') return 'text-center';
+  return 'text-left';
 }
 
 export default function DataTable<T>({
@@ -66,15 +73,8 @@ export default function DataTable<T>({
   const meta = columns.filter((c) => c !== primary && !c.hideOnMobile && !c.asActions);
   const actionColumn = columns.find((c) => c.asActions);
 
-  function getAlignClass(align?: 'left' | 'center' | 'right') {
-    if (align === 'right') return 'text-right';
-    if (align === 'center') return 'text-center';
-    return 'text-left';
-  }
-
   return (
     <>
-      {/* Desktop / Tablet Table View */}
       <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xs sm:block anim-enter">
         <div className="overflow-x-auto">
           <table className="w-full table-fixed border-collapse text-left">
@@ -135,46 +135,15 @@ export default function DataTable<T>({
         </div>
       </div>
 
-      {/* Mobile Card List View */}
-      <ul className="grid gap-3 sm:hidden">
-        {rows.map((row, index) => (
-          <li
-            key={rowKey(row, index)}
-            className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs anim-enter"
-          >
-            <div className="text-sm font-semibold text-[#1D3557] break-words">
-              {cellValue(row, primary)}
-            </div>
-            {meta.length > 0 ? (
-              <dl className="mt-3 grid gap-2 border-t border-gray-100 pt-2.5">
-                {meta.map((c) => (
-                  <div
-                    key={c.key}
-                    className="flex items-center justify-between gap-3 text-xs"
-                  >
-                    <dt className="shrink-0 font-medium text-slate-400">
-                      {c.mobileLabel ?? c.header}
-                    </dt>
-                    <dd className="min-w-0 text-right font-medium text-[#1D3557] break-words">
-                      {cellValue(row, c)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            ) : null}
-            {actionColumn ? (
-              <div className="mt-3.5 border-t border-gray-100 pt-2.5">
-                {actionColumn.render?.(row)}
-              </div>
-            ) : null}
-            {actions ? (
-              <div className="mt-3.5 border-t border-gray-100 pt-2.5 flex items-center gap-2">
-                {actions(row)}
-              </div>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+      <DataTableMobileList
+        rows={rows}
+        rowKey={rowKey}
+        primary={primary}
+        meta={meta}
+        actionColumn={actionColumn}
+        actions={actions}
+        cellValue={cellValue}
+      />
     </>
   );
 }

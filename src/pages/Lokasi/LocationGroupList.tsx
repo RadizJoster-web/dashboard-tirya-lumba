@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { ExternalLink, MapPin } from 'lucide-react';
 import DataTable, { type DataTableColumn } from '../../components/ui/DataTable';
 import { Button, RoleTag } from '../../components/ui';
+import { assetUrl } from '../../lib/api/client';
 import type { ServerLocation } from '../../lib/api/types';
 
 interface LocationGroup {
@@ -27,13 +28,27 @@ export default function LocationGroupList({
         header: 'Nama Kolam Renang',
         width: '32%',
         primary: true,
-        render: (location) => (
-          <div>
-            <span className="font-bold text-[#1D3557] text-sm block">
-              {location.name}
-            </span>
-          </div>
-        ),
+        render: (location) => {
+          const img = assetUrl(location.imageUrl || '');
+          return (
+            <div className="flex items-center gap-3">
+              {img ? (
+                <img
+                  src={img}
+                  alt={location.name}
+                  className="h-10 w-10 rounded-lg object-cover border border-gray-200 shadow-2xs shrink-0"
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-lg bg-slate-100 border border-dashed border-gray-200 flex items-center justify-center text-slate-400 shrink-0 text-[10px] font-medium">
+                  Tanpa foto
+                </div>
+              )}
+              <span className="font-bold text-[#1D3557] text-sm block">
+                {location.name}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: 'category',
@@ -77,18 +92,10 @@ export default function LocationGroupList({
         asActions: true,
         render: (location) => (
           <div className="flex items-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(location)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => onEdit(location)}>
               Edit
             </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => onDelete(location)}
-            >
+            <Button variant="danger" size="sm" onClick={() => onDelete(location)}>
               Hapus
             </Button>
           </div>

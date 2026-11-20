@@ -12,9 +12,9 @@ import {
   UserCircle,
   UserPlus,
   Wallet,
-  X,
 } from 'lucide-react';
 import type { SessionUser } from '../../../lib/auth';
+import { MobileNavDrawer, type MoreItem } from './MobileNavDrawer';
 
 interface MobileBottomNavProps {
   user: SessionUser | null;
@@ -25,7 +25,6 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isAdmin = user?.role === 'admin';
 
-  // Check active routes
   const isOverview = !!useMatch({ path: '/overview', end: true });
   const isPendaftaran = !!useMatch({ path: '/pendaftaran', end: true });
   const isSiswa = !!useMatch({ path: '/siswa', end: true });
@@ -35,7 +34,7 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
   const isMoreActive =
     !isOverview && !isPendaftaran && !isSiswa && !isAbsen && !isProfil;
 
-  const moreItems = [
+  const moreItems: MoreItem[] = [
     { path: '/pelatih', label: 'Data Pelatih', icon: Trophy },
     ...(isAdmin
       ? [
@@ -50,12 +49,10 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
 
   return (
     <>
-      {/* Fixed Bottom Tab Bar on Mobile */}
       <nav
         aria-label="Navigasi Bawah Mobile"
         className="fixed bottom-0 inset-x-0 z-40 flex h-16 items-center justify-around border-t border-gray-200 bg-white/95 px-2 py-1 shadow-lg backdrop-blur-md min-[861px]:hidden anim-enter"
       >
-        {/* 1. Overview */}
         <Link
           to="/overview"
           className={`flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
@@ -66,7 +63,6 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
           <span className="mt-1 text-[10px]">Overview</span>
         </Link>
 
-        {/* 2. Pendaftaran */}
         <Link
           to="/pendaftaran"
           className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
@@ -84,7 +80,6 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
           <span className="mt-1 text-[10px]">Antrean</span>
         </Link>
 
-        {/* 3. Siswa */}
         <Link
           to="/siswa"
           className={`flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
@@ -95,7 +90,6 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
           <span className="mt-1 text-[10px]">Siswa</span>
         </Link>
 
-        {/* 4. Absensi */}
         <Link
           to="/absen"
           className={`flex flex-1 flex-col items-center justify-center py-1 transition-colors ${
@@ -106,7 +100,6 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
           <span className="mt-1 text-[10px]">Presensi</span>
         </Link>
 
-        {/* 5. More Menu Drawer Trigger */}
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
@@ -121,53 +114,12 @@ export default function MobileBottomNav({ user, pending }: MobileBottomNavProps)
         </button>
       </nav>
 
-      {/* Mobile Drawer / Bottom Sheet for "More" Menus */}
-      {drawerOpen && (
-        <div
-          role="presentation"
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-900/40 backdrop-blur-xs min-[861px]:hidden animate-in fade-in duration-200"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setDrawerOpen(false);
-          }}
-        >
-          <div className="w-full rounded-t-2xl border-t border-gray-200 bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div>
-                <h3 className="font-display text-base font-bold text-[#1D3557]">
-                  Menu Selengkapnya
-                </h3>
-                <p className="text-xs text-slate-400">
-                  {isAdmin ? 'Akses master data dan konfigurasi' : 'Navigasi dan profil'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5 py-4">
-              {moreItems.map((item) => {
-                const ItemIcon = item.icon;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setDrawerOpen(false)}
-                    className="flex items-center gap-2.5 rounded-xl border border-gray-200 bg-slate-50/70 p-3 text-xs font-semibold text-[#1D3557] hover:bg-[#E0FBFC] hover:text-[#0077B6] hover:border-[#00B4D8]/30 transition-all"
-                  >
-                    <ItemIcon size={18} className="text-[#0077B6] shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      <MobileNavDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        isAdmin={isAdmin}
+        items={moreItems}
+      />
     </>
   );
 }

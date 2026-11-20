@@ -6,7 +6,7 @@ export default function PaketHeader() {
           Master Paket & Tarif Kursus
         </h2>
         <p className="mt-0.5 text-sm text-slate-500 font-normal">
-          Kelola 4 kategori paket kursus renang (Reguler, Privat, Prestasi, Ekskul) per lokasi cabang
+          Kelola 4 kategori paket kursus renang (Reguler, Privat, Atlit, Ektrakurikuler) per lokasi cabang
         </p>
       </div>
     </div>

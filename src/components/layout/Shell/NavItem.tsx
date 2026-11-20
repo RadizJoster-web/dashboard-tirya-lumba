@@ -1,6 +1,7 @@
 import { Link, useMatch } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
+  Activity,
   CalendarDays,
   ClipboardCheck,
   GraduationCap,
@@ -15,6 +16,7 @@ import {
 
 const ICONS: Record<string, LucideIcon> = {
   '/overview': LayoutDashboard,
+  '/monitoring': Activity,
   '/pendaftaran': UserPlus,
   '/jadwal': CalendarDays,
   '/lokasi': MapPin,
@@ -28,6 +30,7 @@ const ICONS: Record<string, LucideIcon> = {
 
 const LABELS: Record<string, string> = {
   '/overview': 'Overview',
+  '/monitoring': 'Monitoring Kuota',
   '/pendaftaran': 'Pendaftaran',
   '/jadwal': 'Jadwal & Sesi',
   '/lokasi': 'Lokasi',
