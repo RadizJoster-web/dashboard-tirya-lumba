@@ -3,7 +3,12 @@ import { getToken, setToken, clearToken } from './token';
 
 export { getToken, setToken, clearToken };
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5000/api';
+const rawApiBase =
+  (import.meta.env.VITE_API_URL as string | undefined)?.trim() ||
+  'http://localhost:5000/api';
+const API_BASE = rawApiBase.endsWith('/api')
+  ? rawApiBase
+  : rawApiBase.replace(/\/+$/, '') + '/api';
 const TIMEOUT_MS = 8000;
 
 export function assetUrl(path?: string): string {
