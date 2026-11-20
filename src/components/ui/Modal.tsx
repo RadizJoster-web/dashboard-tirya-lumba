@@ -10,6 +10,7 @@ export interface ModalProps {
   wide?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   description?: ReactNode;
+  closeOnBackdrop?: boolean;
 }
 
 export default function Modal({
@@ -20,6 +21,7 @@ export default function Modal({
   wide = false,
   size,
   description,
+  closeOnBackdrop = false,
 }: ModalProps) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -44,7 +46,7 @@ export default function Modal({
       role="presentation"
       className="anim-overlay fixed inset-0 z-50 flex min-h-screen items-center justify-center overflow-y-auto bg-slate-900/40 p-4 backdrop-blur-xs sm:p-6"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (closeOnBackdrop && e.target === e.currentTarget) onClose();
       }}
     >
       <div
