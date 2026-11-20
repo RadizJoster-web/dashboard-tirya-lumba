@@ -13,7 +13,7 @@ interface SavedSessionsModalProps {
 }
 
 export default function SavedSessionsModal({ locationName, sessions, onClose, onEdit, onDelete }: SavedSessionsModalProps) {
-  const ordered = [...sessions].sort((a, b) => {
+  const ordered = sessions.toSorted((a, b) => {
     const dayDiff = HARI.indexOf(a.dayOfWeek) - HARI.indexOf(b.dayOfWeek);
     if (dayDiff !== 0) return dayDiff;
     return a.sessionName.localeCompare(b.sessionName, 'id');

@@ -39,7 +39,7 @@ export default function ChartBar({
             return (
               <div
                 key={step}
-                className="flex items-center gap-2 sm:gap-3 w-full border-b border-dashed border-gray-200"
+                className="flex items-center gap-2 sm:gap-3 w-full border-b border-slate-100"
               >
                 <span className="w-5 sm:w-7 shrink-0 text-right font-mono text-[10px] sm:text-[11px] font-medium text-slate-400 tabular-nums">
                   {val}
@@ -68,8 +68,8 @@ export default function ChartBar({
                 {/* Floating Tooltip */}
                 {isHovered && (
                   <div className="absolute -top-11 z-20 flex flex-col items-center pointer-events-none anim-scale">
-                    <div className="rounded-lg bg-[#1D3557] px-2.5 py-1 text-center shadow-lg">
-                      <span className="block text-[11px] font-bold text-white tabular-nums">
+                    <div className="rounded-lg bg-[#1D3557] px-2.5 py-1 text-center shadow-md">
+                      <span className="block text-[11px] font-semibold text-white tabular-nums">
                         {value} pendaftar
                       </span>
                     </div>
@@ -79,7 +79,7 @@ export default function ChartBar({
 
                 {/* Bar Element */}
                 <div
-                  className="w-full max-w-[42px] transition-all duration-300 ease-out anim-bar"
+                  className="w-full max-w-[36px] transition-all duration-300 ease-out anim-bar"
                   style={{
                     height: `${Math.max(barHeightPct, 0)}%`,
                     minHeight: `${minHeightPx}px`,
@@ -87,12 +87,12 @@ export default function ChartBar({
                   }}
                 >
                   <div
-                    className={`h-full w-full rounded-t-xl transition-all duration-200 ${
+                    className={`h-full w-full rounded-t-lg transition-all duration-200 ${
                       isPeak
-                        ? 'bg-[#00B4D8] hover:bg-[#0077B6] shadow-sm shadow-[#00B4D8]/30'
+                        ? 'bg-[#00B4D8] hover:bg-[#0077B6]'
                         : isHovered
                         ? 'bg-[#0077B6]'
-                        : 'bg-[#1D3557]/80 hover:bg-[#1D3557]'
+                        : 'bg-[#0077B6]/80 hover:bg-[#0077B6]'
                     }`}
                   />
                 </div>

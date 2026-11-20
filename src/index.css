@@ -16,6 +16,12 @@
   color-scheme: light;
 }
 
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--color-basedash);
@@ -35,22 +41,37 @@ h5,
 h6 {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
-/* Custom Scrollbar for sleek modern SaaS look */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+p {
+  text-wrap: pretty;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+
+/* Fallback for pre-2024 WebKit browsers */
+@supports not (scrollbar-color: auto) {
+  html {
+    scrollbar-width: auto;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

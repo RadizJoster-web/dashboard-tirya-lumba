@@ -79,24 +79,19 @@ export default function Topbar({ user, onLogout }: TopbarProps) {
 
         {/* Right: Quick actions & Profile */}
         <div className="flex items-center gap-3">
-          {/* Quick search display shortcut */}
-          <div className="relative hidden md:block">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              readOnly
-              placeholder="Search..."
-              onClick={() => {
-                if (location.pathname !== '/siswa' && location.pathname !== '/pelatih') {
-                  navigate('/siswa');
-                }
-              }}
-              className="h-8.5 w-44 lg:w-56 rounded-full border border-gray-200 bg-slate-50/70 pl-8.5 pr-3 text-xs text-slate-600 placeholder:text-slate-400 cursor-pointer hover:border-gray-300 focus:outline-none transition-all"
-            />
-          </div>
+          {/* Quick search shortcut button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (location.pathname !== '/siswa' && location.pathname !== '/pelatih') {
+                navigate('/siswa');
+              }
+            }}
+            className="hidden md:inline-flex items-center gap-2 h-8.5 rounded-full border border-slate-200 bg-slate-50/70 px-3.5 text-xs text-slate-500 hover:text-slate-700 hover:border-slate-300 hover:bg-slate-100/70 transition-all cursor-pointer"
+          >
+            <Search size={14} className="text-slate-400" />
+            <span>Cari Data...</span>
+          </button>
 
           {/* Clean notification bell placeholder */}
           <button

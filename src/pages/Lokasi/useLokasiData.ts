@@ -35,7 +35,7 @@ export function useLokasiData() {
   const rows = useMemo(() => data ?? [], [data]);
   const areas = useMemo(
     () =>
-      [...(areaData ?? [])].sort((a, b) => a.name.localeCompare(b.name, 'id')),
+      (areaData ?? []).toSorted((a, b) => a.name.localeCompare(b.name, 'id')),
     [areaData],
   );
   const isLoading = locationsLoading || areasLoading;
@@ -56,11 +56,11 @@ export function useLokasiData() {
       items.push(location);
       grouped.set(areaName, items);
     }
-    return [...grouped.entries()]
-      .sort(([a], [b]) => a.localeCompare(b, 'id'))
+    return Array.from(grouped.entries())
+      .toSorted(([a], [b]) => a.localeCompare(b, 'id'))
       .map(([name, items]) => ({
         name,
-        items: [...items].sort((a, b) => a.name.localeCompare(b.name, 'id')),
+        items: items.toSorted((a, b) => a.name.localeCompare(b.name, 'id')),
       }));
   }, [rows, areaNames]);
 
